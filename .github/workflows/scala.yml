@@ -1,0 +1,53 @@
+name: Scala CI
+
+on:
+  push:
+    branches: 
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build_and_publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'sbt'
+    - name: Run tests
+      run: sbt test
+    - name: build doc
+      run: sbt doc
+    - name: make package
+      run: sbt package
+    - name: 'Upload Compiled Sources'
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: target/scala-2.13
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v3.0.0
+      with:
+        name: dist
+        path: dist
+    - name: Push DOC
+      uses: datalbry/copy_folder_to_another_repo_action@1.0.0
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.BOT_PUSH }}
+      with:
+        source_folder: ' target/scala-2.13/api'
+        destination_repo: 'modicio/modicio-docs'
+        destination_folder: 'docs'
+        destination_branch: 'main'
+        user_email: ${{ secrets.BOT_MAIL }}
+        user_name: 'modicio-bot'
+        commit_msg: '[GHA] Publish ScalaDoc'
+        
+
