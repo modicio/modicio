@@ -17,6 +17,7 @@ package modicio.codi
 
 import scala.collection.mutable
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * @param typeFactory
@@ -26,8 +27,22 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   protected val baseModels: mutable.Map[String, BaseModel] = mutable.Map[String, BaseModel]()
 
-  def getType(name: String, identity: String): Future[Option[TypeHandle]]
-  def getReferences: Future[Set[TypeHandle]]
+  def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
+    if(identity == Fragment.REFERENCE_IDENTITY && baseModels.contains(name)){
+      Future.successful(Some(baseModels(name).createHandle))
+    }else{
+      getDynamicType(name, identity)
+    }
+  }
+
+  protected def getDynamicType(name: String, identity: String): Future[Option[TypeHandle]]
+
+  def getReferences: Future[Set[TypeHandle]] = {
+    getDynamicReferences map (refs => refs ++ baseModels.values.map(_.createHandle))
+  }
+
+  protected def getDynamicReferences: Future[Set[TypeHandle]]
+
   def getSingletonTypes(name: String): Future[Set[TypeHandle]]
 
   /**

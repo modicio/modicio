@@ -362,6 +362,14 @@ class DeepInstance(instanceId: String, identity: String, shape: Shape, typeHandl
     getTypeHandle.getFragment.getTypeClosure
   }
 
+  //TODO doc
+  def getExtensionClosure: Set[DeepInstance] = {
+    val closure = mutable.Set[DeepInstance]()
+    closure.add(this)
+    closure.addAll(unfoldedExtensions.flatMap(_.getExtensionClosure))
+    closure.toSet
+  }
+
   /**
    * <p>Associate a given DeepInstance to this DeepInstance. Such an association represents a concrete
    * [[AssociationRule AssociationRule]] in form of [[AssociationData AssociationData]].
