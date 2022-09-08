@@ -15,6 +15,8 @@
  */
 package modicio.native.input
 
+import io.circe.generic.JsonCodec
+
 /**
  * @param name
  * @param template
@@ -23,6 +25,7 @@ package modicio.native.input
  * @param attributes
  * @param values
  */
+@JsonCodec
 case class Statement(name: String,
                      template: Boolean,
                      childOf: Seq[String],

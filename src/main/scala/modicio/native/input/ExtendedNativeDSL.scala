@@ -15,14 +15,8 @@
  */
 package modicio.native.input
 
-import io.circe.parser
-import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe.generic.JsonCodec
+import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 
-object NativeInputParser {
-
-  def parse(nativeInput: String): NativeInput = {
-    val decodingResult = parser.decode[NativeInput](nativeInput)
-    decodingResult.toOption.getOrElse(throw new Exception("Decoding Error"))
-  }
-
-}
+case class ExtendedNativeDSL(definition: NativeDSL, configuration: Seq[(InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData])])

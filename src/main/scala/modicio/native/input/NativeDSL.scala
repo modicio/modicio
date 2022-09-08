@@ -15,4 +15,5 @@
  */
 package modicio.native.input
 
-case class NativeInput(model: Seq[Statement])
+
+case class NativeDSL(model: Seq[Statement])

@@ -19,13 +19,15 @@ import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.concurrent.Future
 
-abstract class Transformer[T](protected val registry: Registry,
+abstract class Transformer[IN, OUT](protected val registry: Registry,
                               protected val definitionVerifier: DefinitionVerifier,
                               protected val modelVerifier: ModelVerifier) {
 
   protected val typeFactory = new TypeFactory(definitionVerifier, modelVerifier)
   typeFactory.setRegistry(registry)
 
-  def extendModel(input: T): Future[Unit]
+  def extend(input: IN): Future[Unit]
+
+  def decompose(input: Option[String]): Future[OUT]
 
 }
