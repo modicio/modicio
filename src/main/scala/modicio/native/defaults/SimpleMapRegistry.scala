@@ -27,7 +27,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
   private val typeRegistry = mutable.Map[String, mutable.Map[String, TypeHandle]]()
   private val instanceRegistry = mutable.Map[String, DeepInstance]()
 
-  override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
+  override def getDynamicType(name: String, identity: String): Future[Option[TypeHandle]] = {
     val typeGroup = typeRegistry.get(name)
     if (typeGroup.isEmpty) {
       Future.successful(None)
@@ -60,9 +60,8 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     Future.successful(typeGroup.addOne(identity, typeHandle))
   }
 
-  override def getReferences: Future[Set[TypeHandle]] = {
-    Future.successful(typeRegistry.values.flatMap(_.values).filter(_.getTypeIdentity == Fragment.REFERENCE_IDENTITY)
-      .toSet ++ baseModels.values.map(_.createHandle))
+  override def getDynamicReferences: Future[Set[TypeHandle]] = {
+    Future.successful(typeRegistry.values.flatMap(_.values).filter(_.getTypeIdentity == Fragment.REFERENCE_IDENTITY).toSet)
   }
 
   override def get(instanceId: String): Future[Option[DeepInstance]] = {
