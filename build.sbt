@@ -11,5 +11,6 @@ libraryDependencies ++= Seq(
 )
 
 scalacOptions ++= Seq(
-  "-Ymacro-annotations"
+  "-Ymacro-annotations",
+  "-language:implicitConversions"
 )

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.defaults
+package modicio.nativelang.defaults
 
-import modicio.codi.TypeHandle
-import modicio.verification.ModelVerifier
+import modicio.codi.Rule
+import modicio.verification.DefinitionVerifier
 
-class SimpleModelVerifier extends ModelVerifier {
+class SimpleDefinitionVerifier extends DefinitionVerifier {
 
-  override def verify(typeHandle: TypeHandle): Boolean = true
+  override def verify(rules: Set[Rule]): Boolean = true
 
 }

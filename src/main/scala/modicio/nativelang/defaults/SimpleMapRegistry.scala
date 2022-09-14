@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.defaults
+package modicio.nativelang.defaults
 
 import modicio.codi.{DeepInstance, Fragment, InstanceFactory, Registry, TypeFactory, TypeHandle}
 

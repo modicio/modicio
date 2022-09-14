@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.input
+package modicio.nativelang.input
 
 import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.input
+package modicio.nativelang.input
 
+import io.circe.syntax._
+import io.circe.generic.JsonCodec
+import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 
-case class NativeDSL(model: Seq[Statement])
+case class ExtendedNativeDSL(definition: NativeDSL, configuration: Seq[(InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData])])

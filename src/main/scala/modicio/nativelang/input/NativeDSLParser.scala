@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.input
+package modicio.nativelang.input
 
 import io.circe.{Decoder, Json, parser}
 import io.circe.generic.auto._
