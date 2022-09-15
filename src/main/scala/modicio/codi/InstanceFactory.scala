@@ -20,6 +20,9 @@ import modicio.codi.values.ConcreteValue
 import modicio.util.Identity
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
+import scala.language.implicitConversions
+import scala.jdk.FutureConverters._
+
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
