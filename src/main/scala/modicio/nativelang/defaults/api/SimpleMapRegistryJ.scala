@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.codi.api
+package modicio.nativelang.defaults.api
 
-import modicio.codi.Rule
-import modicio.api.JavaAPIConversions._
+import modicio.codi.api.{InstanceFactoryJ, RegistryJ}
+import modicio.codi.{Registry, TypeFactory}
+import modicio.nativelang.defaults.SimpleMapRegistry
 
-trait RuleJ {
+import scala.language.implicitConversions
 
-  def getRule: Rule
+abstract class SimpleMapRegistryJ(typeFactory: TypeFactory, instanceFactoryJ: InstanceFactoryJ) extends SimpleMapRegistry(typeFactory, instanceFactoryJ) with RegistryJ {
 
-  def getId: java.lang.String = getRule.id
-
-  def serialiseJ(): java.lang.String = getRule.serialise()
-
-  def serialiseSimpleJ(): java.lang.String = getRule.serialiseSimple()
-
-  def forkJ(identity: java.lang.String): RuleJ
-
-  def isPolymorphEqualJ(ruleJ: RuleJ): Boolean = getRule.isPolymorphEqual(ruleJ)
+  override def getRegistry: Registry = this
 
 }

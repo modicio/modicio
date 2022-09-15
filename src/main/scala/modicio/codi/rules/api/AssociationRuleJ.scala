@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.codi.api
+package modicio.codi.rules.api
 
 import modicio.codi.Rule
-import modicio.api.JavaAPIConversions._
+import modicio.codi.api.RuleJ
+import modicio.codi.rules.AssociationRule
 
-trait RuleJ {
+class AssociationRuleJ(nativeValue: java.lang.String) extends AssociationRule(nativeValue) with RuleJ {
 
-  def getRule: Rule
+  override def getRule: Rule = this
 
-  def getId: java.lang.String = getRule.id
-
-  def serialiseJ(): java.lang.String = getRule.serialise()
-
-  def serialiseSimpleJ(): java.lang.String = getRule.serialiseSimple()
-
-  def forkJ(identity: java.lang.String): RuleJ
-
-  def isPolymorphEqualJ(ruleJ: RuleJ): Boolean = getRule.isPolymorphEqual(ruleJ)
+  override def forkJ(identity: String): RuleJ =  new AssociationRuleJ(super.fork(identity).nativeValue)
 
 }
