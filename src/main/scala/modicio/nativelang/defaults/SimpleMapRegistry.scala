@@ -146,7 +146,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       }
     } else {
       //TODO
-      Future.successful()
+      Future.successful((): Unit)
     }
   }
 }

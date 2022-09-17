@@ -19,8 +19,10 @@ import modicio.codi._
 import modicio.codi.api._
 import modicio.codi.datamappings._
 import modicio.codi.datamappings.api._
-import modicio.codi.rules.AttributeRule
-import modicio.codi.rules.api.AttributeRuleJ
+import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
+import modicio.codi.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
+import modicio.codi.values.api.{ConcreteAssociationJ, ConcreteAttributeJ, ConcreteValueJ, ValueDescriptorJ}
 import modicio.nativelang.defaults.SimpleMapRegistry
 import modicio.nativelang.defaults.api.SimpleMapRegistryJ
 
@@ -39,6 +41,12 @@ object JavaAPIConversions {
   implicit object SetFunctor extends ContainerFunctor[Set] {
     override def map[A, B](container: Set[A], f: (A) => B): Set[B] = {
       Option(container).map(_.map(f)).getOrElse(Set.empty[B])
+    }
+  }
+
+  implicit object SeqFunctor extends ContainerFunctor[Seq] {
+    override def map[A, B](container: Seq[A], f: (A) => B): Seq[B] = {
+      Option(container).map(_.map(f)).getOrElse(Seq.empty[B])
     }
   }
 
@@ -62,6 +70,10 @@ object JavaAPIConversions {
   implicit def convert[T](value: java.util.Set[T]): Set[T] = value.asScala.toSet
 
   implicit def convert[T](value: Set[T]): java.util.Set[T] = value.asJava
+
+  implicit def convert[T](value: java.util.List[T]): Seq[T] = value.asScala.toSeq
+
+  implicit def convert[T](value: Seq[T]): java.util.List[T] = value.asJava
 
   implicit def convert[T, K](value: Map[T, K]): java.util.Map[T, K] = value.asJava
 
@@ -92,7 +104,11 @@ object JavaAPIConversions {
     new TypeFactoryJ(typeFactory.definitionVerifier, typeFactory.modelVerifier)
   }
 
+  implicit def convert(value: Definition): DefinitionJ = new DefinitionJ(value)
+
   implicit def convert(value: RuleJ): Rule = value.getRule
+
+  implicit def convert(value: ValueDescriptorJ): ValueDescriptor = value.getValueDescriptor
 
   implicit def convert(value: RuleData): RuleDataJ =
     RuleDataJ tupled RuleData.unapply(value).get
@@ -101,6 +117,16 @@ object JavaAPIConversions {
     RuleData tupled RuleDataJ.unapply(value).get
 
   implicit def convert(value: AttributeRule): AttributeRuleJ = new AttributeRuleJ(value.nativeValue)
+
+  implicit def convert(value: AssociationRule): AssociationRuleJ = new AssociationRuleJ(value.nativeValue)
+
+  implicit def convert(value: ExtensionRule): ExtensionRuleJ = new ExtensionRuleJ(value.nativeValue)
+
+  implicit def convert(value: ConcreteValue): ConcreteValueJ = new ConcreteValueJ(value.nativeValue)
+
+  implicit def convert(value: ConcreteAssociation): ConcreteAssociationJ = new ConcreteAssociationJ(value.nativeValue)
+
+  implicit def convert(value: ConcreteAttribute): ConcreteAttributeJ = new ConcreteAttributeJ(value.nativeValue)
 
   implicit def convert(value: FragmentData): FragmentDataJ = FragmentDataJ tupled FragmentData.unapply(value).get
 

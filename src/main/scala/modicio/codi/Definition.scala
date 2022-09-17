@@ -23,7 +23,7 @@ import modicio.verification.DefinitionVerifier
 import scala.collection.mutable
 
 /**
- * <p> The Definition class is a final concrete [[Base Base]] implementation representing the set of
+ * <p> The Definition class is a concrete [[Base Base]] implementation representing the set of
  * [[Rule Rules]] a [[Fragment Fragment]] possesses.
  * <p> The Definition encapsulates the Rules in individual sets and provides an api to edit the rule-set. Note that the
  * Definition class itself does not ensure validity of the resulting model, especially in an extension-hierarchy. If a new Rule is
@@ -36,7 +36,7 @@ import scala.collection.mutable
  * @param definitionVerifier the [[DefinitionVerifier DefinitionVerifier]] to allow or reject modifications of the
  *                           rule-set.
  */
-final class Definition
+class Definition
 (
   val definitionVerifier: DefinitionVerifier
 ) extends Observable with Base {

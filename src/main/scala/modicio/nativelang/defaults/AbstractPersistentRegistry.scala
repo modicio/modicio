@@ -217,7 +217,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
     } else {
       //TODO
-      Future.successful()
+      Future.successful((): Unit)
     }
   }
 

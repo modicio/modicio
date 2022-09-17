@@ -60,7 +60,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
     fragment match {
       case fragment: BaseModel => {
         baseModels.put(fragment.name, fragment)
-        Future.successful()
+        Future.successful((): Unit)
       }
       case _ => setNode(typeHandle)
     }

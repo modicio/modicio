@@ -36,7 +36,7 @@ class NativeDSLTransformer(registry: Registry,
 
   override def extend(input: NativeDSL): Future[Unit] = {
     input.model.foreach(statement => evaluateStatement(statement))
-    Future.successful()
+    Future.successful((): Unit)
   }
 
   def evaluateStatement(statement: Statement): Unit = {

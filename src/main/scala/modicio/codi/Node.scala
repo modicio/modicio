@@ -45,7 +45,7 @@ class Node
       //resolve extensions
       val extensionRules = definition.getExtensionRules
       if (extensionRules.isEmpty) {
-        Future.successful()
+        Future.successful((): Unit)
       }else{
         Future.sequence(extensionRules.map(extensionRule => {
           registry.getType(extensionRule.parentName, extensionRule.parentIdentity)
@@ -88,14 +88,14 @@ class Node
     //TODO verify here
     definition.applyRule(rule)
     fold()
-    Future.successful()
+    Future.successful((): Unit)
   }
 
   override def removeRule(rule: Rule): Unit = {
     //TODO verify here
     definition.removeRule(rule)
     fold()
-    Future.successful()
+    Future.successful((): Unit)
   }
 
 }

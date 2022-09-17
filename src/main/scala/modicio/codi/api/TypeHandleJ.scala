@@ -16,7 +16,7 @@
 package modicio.codi.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi.Fragment
+import modicio.codi.{Fragment, TypeIterator}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
@@ -46,4 +46,6 @@ class TypeHandleJ(fragment: Fragment, static: Boolean) extends modicio.codi.Type
   }
 
   def getAssociatedJ: java.util.Set[TypeHandleJ] = convert(super.getAssociated)
+
+  override def iterator: TypeIterator = super.iterator
 }
