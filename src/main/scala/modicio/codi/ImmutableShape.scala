@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.codi.datamappings.api
+package modicio.codi
 
-import scala.beans.BeanProperty
+import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 
-case class RuleDataJ(@BeanProperty id: java.lang.String,
-                     @BeanProperty fragmentName: java.lang.String,
-                     @BeanProperty identity: java.lang.String,
-                     @BeanProperty nativeValue: java.lang.String,
-                     @BeanProperty typeOf: Int)
+/**
+ * @param attributes
+ * @param associations
+ * @param extensions
+ */
+case class ImmutableShape(instanceData: InstanceData,
+                          attributes: Set[AttributeData],
+                          associations: Set[AssociationData],
+                          extensions: Set[ExtensionData])

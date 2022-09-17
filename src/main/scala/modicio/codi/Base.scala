@@ -16,7 +16,7 @@
 
 package modicio.codi
 
-import modicio.codi.rules.{AssociationRule, AttributeRule, BehaviourRule, ConstraintRule, ExtensionRule}
+import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
 import modicio.codi.values.ConcreteValue
 
 /**
@@ -57,19 +57,4 @@ trait Base {
    */
   def getConcreteValues: Set[ConcreteValue]
 
-  /**
-   * <p>Get all [[ConstraintRule ConstraintRules]] of the target.
-   * <p>Throws always an [[UnsupportedOperationException]]!
-   *
-   * @return Set[ConstraintRule]
-   */
-  def getConstraintRules: Set[ConstraintRule] = ???
-
-  /**
-   * <p>Get all [[BehaviourRule BehaviourRules]] of the target.
-   * <p>Throws always an [[UnsupportedOperationException]]!
-   *
-   * @return Set[BehaviourRule]
-   */
-  def getBehaviourRules: Set[BehaviourRule] = ???
 }

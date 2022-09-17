@@ -15,53 +15,59 @@
  */
 package modicio.codi.api
 
-import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
-import modicio.codi.rules.AttributeRule
-import modicio.codi.{DeepInstance, Shape, TypeHandle}
+import modicio.api.JavaAPIConversions._
+import modicio.codi.datamappings.api.{AssociationDataJ, AttributeDataJ}
+import modicio.codi.rules.api.AttributeRuleJ
+import modicio.codi.{DeepInstance, Shape}
 
-import scala.collection.mutable
-import scala.concurrent.Future
+import java.util.Optional
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.implicitConversions
 
 class DeepInstanceJ(instanceId: java.lang.String, identity: java.lang.String, shape: Shape, typeHandleJ: TypeHandleJ, registryJ: RegistryJ)
   extends DeepInstance(instanceId, identity, shape, typeHandleJ, registryJ.getRegistry) {
 
-  def getTypeHandle: TypeHandle = super.getTypeHandle
+  def getTypeHandleJ: TypeHandleJ = super.getTypeHandle
 
-  def getInstanceId: String = super.getInstanceId
+  def getInstanceIdJ: java.lang.String = super.getInstanceId
 
-  def unfold(): Future[DeepInstance] = super.unfold()
+  def unfoldJ(): java.util.concurrent.CompletableFuture[DeepInstanceJ] = super.unfold() map ( d => convert(d))
 
-  def commit: Future[Any] = super.commit
+  def commitJ: java.util.concurrent.CompletableFuture[Any] = super.commit
 
-  def getPolymorphSubtype(typeName: String): Option[DeepInstance] = super.getPolymorphSubtype(typeName)
+  def getPolymorphSubtypeJ(typeName: java.lang.String): Optional[DeepInstanceJ] =
+    convert(super.getPolymorphSubtype(typeName))
 
-  def toData: (InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData]) = super.toData
+  def toDataJ: ImmutableShapeJ = super.toData
 
-  def attributeMap(): Map[AttributeData, AttributeRule] = super.attributeMap()
+  def attributeMapJ(): java.util.Map[AttributeDataJ, AttributeRuleJ] = super.attributeMap().map(x => (convert(x._1), convert(x._2)))
 
-  def deepAttributeMap(): Map[AttributeData, AttributeRule] = super.deepAttributeMap()
+  def deepAttributeMapJ(): java.util.Map[AttributeDataJ, AttributeRuleJ] = super.deepAttributeMap().map(x => (convert(x._1), convert(x._2)))
 
-  def associationTypes: Set[String] = super.associationTypes
+  def associationTypesJ: java.util.Set[java.lang.String] = super.associationTypes
 
-  def associationRuleMap: Map[String, mutable.Set[String]] = super.associationRuleMap
+  def associationRuleMapJ: java.util.Map[java.lang.String, java.util.Set[java.lang.String]] =
+    super.associationRuleMap.map(x => (x._1, convert(x._2.toSet)))
 
-  def deepAssociationRuleMap: Map[String, mutable.Set[String]] = super.deepAssociationRuleMap
+  def deepAssociationRuleMapJ: java.util.Map[java.lang.String, java.util.Set[java.lang.String]] =
+    super.deepAssociationRuleMap.map(x => (x._1, convert(x._2.toSet)))
 
-  def assignValue(key: String, value: String): Boolean = super.assignValue(key, value)
+  def assignValueJ(key: java.lang.String, value: java.lang.String): Boolean = super.assignValue(key, value)
 
-  def assignDeepValue(key: String, value: String): Boolean = super.assignDeepValue(key, value)
+  def assignDeepValueJ(key: java.lang.String, value: java.lang.String): Boolean = super.assignDeepValue(key, value)
 
-  def value(key: String): Option[String] = super.value(key)
+  def valueJ(key: java.lang.String): Optional[java.lang.String] = super.value(key)
 
-  def deepValue(key: String): Option[String] = super.deepValue(key)
+  def deepValueJ(key: java.lang.String): Optional[java.lang.String] = super.deepValue(key)
 
-  def getAssociations: Set[AssociationData] = super.getAssociations
+  def getAssociationsJ: java.util.Set[AssociationDataJ] = convert(super.getAssociations)
 
-  def getDeepAssociations: Set[AssociationData] = super.getDeepAssociations
+  def getDeepAssociationsJ: java.util.Set[AssociationDataJ] = convert(super.getDeepAssociations)
 
-  def getTypeClosure: Set[String] = super.getTypeClosure
+  def getTypeClosureJ: java.util.Set[java.lang.String] = super.getTypeClosure
 
-  def getExtensionClosure: Set[DeepInstance] = super.getExtensionClosure
+  def getExtensionClosureJ: java.util.Set[DeepInstanceJ] = convert(super.getExtensionClosure)
 
-  def associate(deepInstance: DeepInstance, associateAs: String, byRelation: String): Boolean = super.associate(deepInstance, associateAs, byRelation)
+  def associateJ(deepInstance: DeepInstanceJ, associateAs: java.lang.String, byRelation: java.lang.String): Boolean =
+    super.associate(deepInstance, associateAs, byRelation)
 }

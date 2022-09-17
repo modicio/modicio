@@ -17,8 +17,6 @@ package modicio.codi.datamappings
 
 import modicio.codi.{Fragment, Rule}
 
-import scala.beans.BeanProperty
-
 /**
  * <p> Tuple to represent a [[Rule Rule]] for serialisation.
  * This class can contain any concrete Rule.
@@ -32,4 +30,4 @@ import scala.beans.BeanProperty
  * @param nativeValue  serialised value of the [[Rule Rule]]. Depending on the serialised format, all
  *                     different concrete rules must be distinguishable
  */
-case class RuleData(@BeanProperty id: String, @BeanProperty fragmentName: String, @BeanProperty identity: String, @BeanProperty nativeValue: String, @BeanProperty typeOf: Int)
+case class RuleData(id: String, fragmentName: String, identity: String, nativeValue: String, typeOf: Int)

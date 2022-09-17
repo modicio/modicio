@@ -15,47 +15,115 @@
  */
 package modicio.api
 
-import modicio.codi.{Registry, Rule, TypeHandle}
-import modicio.codi.api.{RegistryJ, RuleJ, TypeHandleJ}
+import modicio.codi._
+import modicio.codi.api._
+import modicio.codi.datamappings._
+import modicio.codi.datamappings.api._
+import modicio.codi.rules.AttributeRule
+import modicio.codi.rules.api.AttributeRuleJ
+import modicio.nativelang.defaults.SimpleMapRegistry
+import modicio.nativelang.defaults.api.SimpleMapRegistryJ
 
 import scala.concurrent.Future
-import scala.language.implicitConversions
-import scala.jdk.OptionConverters._
-import scala.jdk.FutureConverters._
 import scala.jdk.CollectionConverters._
+import scala.jdk.FutureConverters._
+import scala.jdk.OptionConverters._
+import scala.language.implicitConversions
 
 object JavaAPIConversions {
 
-  implicit def futureToFuture[T](value: java.util.concurrent.CompletableFuture[T]): Future[T] = {
-    value.asScala
+  trait ContainerFunctor[Container[_]] {
+    def map[A, B](container: Container[A], f: A => B): Container[B]
   }
 
-  implicit def futureToFuture[T](value: Future[T]): java.util.concurrent.CompletableFuture[T] = {
-    value.asJava.toCompletableFuture
+  implicit object SetFunctor extends ContainerFunctor[Set] {
+    override def map[A, B](container: Set[A], f: (A) => B): Set[B] = {
+      Option(container).map(_.map(f)).getOrElse(Set.empty[B])
+    }
   }
 
-  implicit def optionToOption[T](value: Option[T]): java.util.Optional[T] = {
-    value.toJava
+  implicit object OptionFunctor extends ContainerFunctor[Option] {
+    override def map[A, B](container: Option[A], f: (A) => B): Option[B] = {
+      Option(container).map(_.map(f)).getOrElse(Option.empty[B])
+    }
   }
 
-  implicit def optionToOption[T](value: java.util.Optional[T]): Option[T] = {
-    value.toScala
+  implicit def functorConvert[F[_], A, B](x: F[A])(implicit f: A => B, functor: ContainerFunctor[F]): F[B] = functor.map(x, f)
+
+
+  implicit def convert[T](value: java.util.concurrent.CompletableFuture[T]): Future[T] = value.asScala
+
+  implicit def convert[T](value: Future[T]): java.util.concurrent.CompletableFuture[T] = value.asJava.toCompletableFuture
+
+  implicit def convert[T](value: Option[T]): java.util.Optional[T] = value.toJava
+
+  implicit def convert[T](value: java.util.Optional[T]): Option[T] = value.toScala
+
+  implicit def convert[T](value: java.util.Set[T]): Set[T] = value.asScala.toSet
+
+  implicit def convert[T](value: Set[T]): java.util.Set[T] = value.asJava
+
+  implicit def convert[T, K](value: Map[T, K]): java.util.Map[T, K] = value.asJava
+
+  implicit def convert[T, K](value: java.util.Map[T, K]): Map[T, K] = value.asScala.toMap
+
+  implicit def convert(value: TypeHandle): TypeHandleJ = new TypeHandleJ(value.getFragment, value.getIsStatic)
+
+  implicit def convert(value: DeepInstance): DeepInstanceJ = new DeepInstanceJ(value.instanceId, value.identity, value.shape, value.typeHandle, value.registry)
+
+  implicit def convert(value: RegistryJ): Registry = value.getRegistry
+
+  implicit def convert(value: Registry): RegistryJ = value match {
+    case value: SimpleMapRegistry => value
+    case _ => throw new IllegalArgumentException()
   }
 
-  implicit def setToSet[T](value: java.util.Set[T]): Set[T] = {
-    value.asScala.toSet
+  implicit def convert(simpleMapRegistry: SimpleMapRegistry): SimpleMapRegistryJ = {
+    val res = new SimpleMapRegistryJ(simpleMapRegistry.typeFactory, simpleMapRegistry.instanceFactory)
+    res.load(simpleMapRegistry)
+    res
   }
 
-  implicit def setToSet[T](value: Set[T]): java.util.Set[T] = {
-    value.asJava
+  implicit def convert(instanceFactory: InstanceFactory): InstanceFactoryJ = {
+    new InstanceFactoryJ(instanceFactory.definitionVerifier, instanceFactory.modelVerifier)
   }
 
-  implicit def typeHandleToTypeHandleJ(value: TypeHandle): TypeHandleJ = new TypeHandleJ(value.getFragment, value.getIsStatic)
+  implicit def convert(typeFactory: TypeFactory): TypeFactoryJ = {
+    new TypeFactoryJ(typeFactory.definitionVerifier, typeFactory.modelVerifier)
+  }
 
-  implicit def registryJToRegistry(value: RegistryJ): Registry = value.getRegistry
+  implicit def convert(value: RuleJ): Rule = value.getRule
 
-  implicit def ruleJToRule(value: RuleJ): Rule = value.getRule
+  implicit def convert(value: RuleData): RuleDataJ =
+    RuleDataJ tupled RuleData.unapply(value).get
 
+  implicit def convert(value: RuleDataJ): RuleData =
+    RuleData tupled RuleDataJ.unapply(value).get
 
+  implicit def convert(value: AttributeRule): AttributeRuleJ = new AttributeRuleJ(value.nativeValue)
 
+  implicit def convert(value: FragmentData): FragmentDataJ = FragmentDataJ tupled FragmentData.unapply(value).get
+
+  implicit def convert(value: FragmentDataJ): FragmentData = FragmentData tupled FragmentDataJ.unapply(value).get
+
+  implicit def convert(value: AssociationData): AssociationDataJ =
+    AssociationDataJ tupled AssociationData.unapply(value).get
+
+  implicit def convert(value: AssociationDataJ): AssociationData =
+    AssociationData tupled AssociationDataJ.unapply(value).get
+
+  implicit def convert(value: AttributeData): AttributeDataJ = AttributeDataJ tupled AttributeData.unapply(value).get
+
+  implicit def convert(value: AttributeDataJ): AttributeData = AttributeData tupled AttributeDataJ.unapply(value).get
+
+  implicit def convert(value: ExtensionData): ExtensionDataJ = ExtensionDataJ tupled ExtensionData.unapply(value).get
+
+  implicit def convert(value: ExtensionDataJ): ExtensionData = ExtensionData tupled ExtensionDataJ.unapply(value).get
+
+  implicit def convert(value: InstanceData): InstanceDataJ = InstanceDataJ tupled InstanceData.unapply(value).get
+
+  implicit def convert(value: InstanceDataJ): InstanceData = InstanceData tupled InstanceDataJ.unapply(value).get
+
+  implicit def convert(value: ImmutableShape): ImmutableShapeJ =
+    ImmutableShapeJ(value.instanceData, convert(value.attributes), convert(value.associations), convert(value.extensions))
 }

@@ -16,12 +16,13 @@
 package modicio.codi.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi
 import modicio.codi.Fragment
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
 
 class TypeHandleJ(fragment: Fragment, static: Boolean) extends modicio.codi.TypeHandle(fragment, static) {
+
   override def getTypeName: String = super.getTypeName
 
   def getTypeIdentityJ: java.lang.String = super.getTypeIdentity
@@ -32,7 +33,7 @@ class TypeHandleJ(fragment: Fragment, static: Boolean) extends modicio.codi.Type
 
   def updateSingletonRootJ(): java.util.concurrent.CompletableFuture[Any] = super.updateSingletonRoot()
 
-  def unfoldJ(): java.util.concurrent.CompletableFuture[codi.TypeHandle] = super.unfold()
+  def unfoldJ(): java.util.concurrent.CompletableFuture[TypeHandleJ] = super.unfold() map (convert)
 
   def commitJ(): java.util.concurrent.CompletableFuture[Unit] = super.commit()
 
@@ -44,5 +45,5 @@ class TypeHandleJ(fragment: Fragment, static: Boolean) extends modicio.codi.Type
     super.removeRule(ruleJ.getRule)
   }
 
-  def getAssociatedJ: java.util.Set[TypeHandleJ] = super.getAssociated.map(t => typeHandleToTypeHandleJ(t))
+  def getAssociatedJ: java.util.Set[TypeHandleJ] = convert(super.getAssociated)
 }

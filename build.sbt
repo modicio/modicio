@@ -1,8 +1,8 @@
 name := "modicio"
 version := "0.1"
-scalaVersion := "2.13.7"
+scalaVersion := "2.13.8"
 
-val circeVersion = "0.14.1"
+val circeVersion = "0.14.2"
 
 libraryDependencies ++= Seq(
   "io.circe"  %% "circe-core"     % circeVersion,
@@ -12,5 +12,7 @@ libraryDependencies ++= Seq(
 
 scalacOptions ++= Seq(
   "-Ymacro-annotations",
-  "-language:implicitConversions"
+  "-language:implicitConversions",
+  "-Xlog-implicits",
+  "-deprecation"
 )

@@ -16,7 +16,7 @@
 package modicio.codi
 
 import modicio.codi.datamappings.RuleData
-import modicio.codi.rules.{AssociationRule, AttributeRule, BehaviourRule, ConstraintRule, ExtensionRule}
+import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
 import modicio.codi.values.ConcreteValue
 import modicio.util.Observable
 import modicio.verification.DefinitionVerifier
@@ -178,17 +178,4 @@ final class Definition
    */
   override def getConcreteValues: Set[ConcreteValue] = Set.from(values)
 
-  /**
-   * <p> Not implemented yet. Returns an empty set always
-   *
-   * @return Set[ConstraintRule] - empty set
-   */
-  override def getConstraintRules: Set[ConstraintRule] = Set()
-
-  /**
-   * <p> Not implemented yet. Returns an empty set always
-   *
-   * @return Set[BehaviourRule] - empty set
-   */
-  override def getBehaviourRules: Set[BehaviourRule] = Set()
 }

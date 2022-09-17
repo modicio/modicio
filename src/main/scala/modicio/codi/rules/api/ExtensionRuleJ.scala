@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.codi.datamappings.api
+package modicio.codi.rules.api
 
-import scala.beans.BeanProperty
+import modicio.codi.Rule
+import modicio.codi.api.RuleJ
+import modicio.codi.rules.ExtensionRule
 
-case class RuleDataJ(@BeanProperty id: java.lang.String,
-                     @BeanProperty fragmentName: java.lang.String,
-                     @BeanProperty identity: java.lang.String,
-                     @BeanProperty nativeValue: java.lang.String,
-                     @BeanProperty typeOf: Int)
+class ExtensionRuleJ(nativeValue: java.lang.String) extends ExtensionRule(nativeValue) with RuleJ {
+
+  override def getRule: Rule = this
+
+  override def forkJ(identity: String): RuleJ = new ExtensionRuleJ(super.fork(identity).nativeValue)
+
+}

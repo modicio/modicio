@@ -15,13 +15,13 @@
  */
 package modicio.nativelang.defaults.api
 
-import modicio.codi.api.{InstanceFactoryJ, RegistryJ}
-import modicio.codi.{Registry, TypeFactory}
+import modicio.codi.Registry
+import modicio.codi.api.{InstanceFactoryJ, RegistryJ, TypeFactoryJ}
 import modicio.nativelang.defaults.SimpleMapRegistry
 
 import scala.language.implicitConversions
 
-abstract class SimpleMapRegistryJ(typeFactory: TypeFactory, instanceFactoryJ: InstanceFactoryJ) extends SimpleMapRegistry(typeFactory, instanceFactoryJ) with RegistryJ {
+class SimpleMapRegistryJ(typeFactory: TypeFactoryJ, instanceFactoryJ: InstanceFactoryJ) extends SimpleMapRegistry(typeFactory, instanceFactoryJ) with RegistryJ {
 
   override def getRegistry: Registry = this
 

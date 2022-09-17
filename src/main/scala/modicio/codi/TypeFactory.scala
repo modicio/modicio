@@ -24,11 +24,8 @@ import modicio.verification.{DefinitionVerifier, ModelVerifier}
  * @param definitionVerifier
  * @param modelVerifier
  */
-class TypeFactory
-(
-  definitionVerifier: DefinitionVerifier,
-  modelVerifier: ModelVerifier
-) {
+class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
+                  private[modicio] val modelVerifier: ModelVerifier) {
 
   private var registry: Registry = _
 
@@ -36,7 +33,7 @@ class TypeFactory
 
   def newType(name: String, identity: String, isTemplate: Boolean): TypeHandle = {
     val definition = new Definition(definitionVerifier)
-    val fragment = new Node(name, identity, isTemplate/*, modelVerifier*/)
+    val fragment = new Node(name, identity, isTemplate /*, modelVerifier*/)
 
     fragment.setRegistry(registry)
     fragment.setDefinition(definition)

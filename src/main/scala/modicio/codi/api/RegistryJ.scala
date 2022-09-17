@@ -15,25 +15,26 @@
  */
 package modicio.codi.api
 
-import modicio.api.JavaAPIConversions.futureToFuture
+import modicio.api.JavaAPIConversions._
 import modicio.codi.{DeepInstance, Registry}
 
 import java.util
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
+import scala.concurrent.ExecutionContext.Implicits.global
 
 trait RegistryJ {
 
   def getRegistry: Registry
 
   def getSingletonTypesJ(name: String): java.util.concurrent.CompletableFuture[util.Set[TypeHandleJ]] =
-    futureToFuture(getRegistry.getSingletonTypes(name))
+    getRegistry.getSingletonTypes(name) map (s => convert(s.map(t => convert(t))))
 
   def autoRemoveJ(name: String, SINGLETON_IDENTITY: String): CompletableFuture[Any] = getRegistry.autoRemove(name, SINGLETON_IDENTITY)
 
-  def getJ(instanceId: String): CompletableFuture[Optional[DeepInstanceJ]] = futureToFuture(getRegistry.get(instanceId))
+  def getJ(instanceId: String): CompletableFuture[Optional[DeepInstanceJ]] = convert(getRegistry.get(instanceId)) map (s => convert(s.map(t => convert(t))))
 
-  def getAllJ(typeName: String): CompletableFuture[util.Set[DeepInstanceJ]] = futureToFuture(getRegistry.getAll(typeName))
+  def getAllJ(typeName: String): CompletableFuture[util.Set[DeepInstanceJ]] = convert(getRegistry.getAll(typeName)) map (s => convert(s.map(t => convert(t))))
 
   def setInstanceJ(deepInstance: DeepInstance): CompletableFuture[Unit] = getRegistry.setInstance(deepInstance)
 
