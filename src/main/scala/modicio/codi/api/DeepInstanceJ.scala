@@ -24,7 +24,7 @@ import java.util.Optional
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
 
-class DeepInstanceJ(instanceId: java.lang.String, identity: java.lang.String, shape: Shape, typeHandleJ: TypeHandleJ, registryJ: RegistryJ)
+class DeepInstanceJ(instanceId: java.lang.String, identity: java.lang.String, shape: ShapeJ, typeHandleJ: TypeHandleJ, registryJ: RegistryJ)
   extends DeepInstance(instanceId, identity, shape, typeHandleJ, registryJ.getRegistry) {
 
   def getTypeHandleJ: TypeHandleJ = super.getTypeHandle

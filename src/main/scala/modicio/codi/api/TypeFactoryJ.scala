@@ -18,9 +18,9 @@ package modicio.codi.api
 import modicio.api.JavaAPIConversions._
 import modicio.codi.datamappings.api.{FragmentDataJ, RuleDataJ}
 import modicio.codi.{Rule, TypeFactory}
-import modicio.verification.{DefinitionVerifier, ModelVerifier}
+import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
 
-class TypeFactoryJ(definitionVerifier: DefinitionVerifier, modelVerifier: ModelVerifier)
+class TypeFactoryJ(definitionVerifier: DefinitionVerifierJ, modelVerifier: ModelVerifierJ)
   extends TypeFactory(definitionVerifier, modelVerifier) {
 
   def setRegistryJ(registry: RegistryJ): Unit = super.setRegistry(registry)

@@ -15,13 +15,13 @@
  */
 package modicio.codi.api
 
+import modicio.api.JavaAPIConversions._
 import modicio.codi.datamappings.InstanceData
 import modicio.codi.{DeepInstance, InstanceFactory, Shape, TypeHandle}
-import modicio.verification.{DefinitionVerifier, ModelVerifier}
-import modicio.api.JavaAPIConversions._
+import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
 
-class InstanceFactoryJ(definitionVerifier: DefinitionVerifier,
-                       modelVerifier: ModelVerifier) extends InstanceFactory(definitionVerifier, modelVerifier){
+class InstanceFactoryJ(definitionVerifier: DefinitionVerifierJ,
+                       modelVerifier: ModelVerifierJ) extends InstanceFactory(definitionVerifier, modelVerifier){
 
   def newInstanceJ(typeName: java.lang.String): java.util.concurrent.CompletableFuture[DeepInstance] = super.newInstance(typeName)
 
