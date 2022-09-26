@@ -15,6 +15,27 @@
  */
 package modicio.codi.api
 
-class ShapeJ {
+import modicio.api.JavaAPIConversions._
+import modicio.codi.Shape
+import modicio.codi.datamappings.api.{AssociationDataJ, AttributeDataJ, ExtensionDataJ}
 
+import java.util.Optional
+import scala.collection.mutable
+
+class ShapeJ(attributes: java.util.Set[AttributeDataJ],
+             associations: java.util.Set[AssociationDataJ],
+             extensions: java.util.Set[ExtensionDataJ])
+
+  extends Shape(attributes map convert, mutable.Set.from(convert(associations)), extensions map convert){
+  def getAttributeJ(key: java.lang.String): Optional[AttributeDataJ] = convert(super.getAttribute(key))
+
+  def getAttributesJ: java.util.Set[AttributeDataJ] = convert(super.getAttributes)
+
+  def getAssociationsJ: java.util.Set[AssociationDataJ] = convert(super.getAssociations)
+
+  def removeAssociationJ(associationId: Long): Unit = super.removeAssociation(associationId)
+
+  def addAssociationJ(association: AssociationDataJ): Unit = super.addAssociation(association)
+
+  def getExtensionsJ: java.util.Set[ExtensionDataJ] = convert(super.getExtensions)
 }

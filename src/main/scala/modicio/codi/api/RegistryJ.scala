@@ -16,7 +16,7 @@
 package modicio.codi.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi.{DeepInstance, Registry}
+import modicio.codi.Registry
 
 import java.util
 import java.util.Optional
@@ -30,12 +30,14 @@ trait RegistryJ {
   def getSingletonTypesJ(name: String): java.util.concurrent.CompletableFuture[util.Set[TypeHandleJ]] =
     getRegistry.getSingletonTypes(name) map (s => convert(s.map(t => convert(t))))
 
+  def setType(typeHandle: TypeHandleJ): CompletableFuture[Any] = getRegistry.setType(typeHandle)
+
   def autoRemoveJ(name: String, SINGLETON_IDENTITY: String): CompletableFuture[Any] = getRegistry.autoRemove(name, SINGLETON_IDENTITY)
 
   def getJ(instanceId: String): CompletableFuture[Optional[DeepInstanceJ]] = convert(getRegistry.get(instanceId)) map (s => convert(s.map(t => convert(t))))
 
   def getAllJ(typeName: String): CompletableFuture[util.Set[DeepInstanceJ]] = convert(getRegistry.getAll(typeName)) map (s => convert(s.map(t => convert(t))))
 
-  def setInstanceJ(deepInstance: DeepInstance): CompletableFuture[Unit] = getRegistry.setInstance(deepInstance)
+  def setInstanceJ(deepInstance: DeepInstanceJ): CompletableFuture[Any] = getRegistry.setInstance(deepInstance)
 
 }

@@ -30,7 +30,7 @@ class TypeIteratorJ(initialFragment: Fragment) extends TypeIterator(initialFragm
 
   def asDefinitionJ: Optional[DefinitionJ] = convert(super.asDefinition)
 
-  def splitJ: Optional[TypeIteratorJ] = convert(super.split)
+  def splitJ: Optional[TypeIteratorJ] = super.split map convert
 
   def splitHandleJ: Optional[TypeHandleJ] = convert(super.splitHandle)
 

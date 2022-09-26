@@ -16,16 +16,24 @@
 package modicio.codi.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi.datamappings.InstanceData
-import modicio.codi.{DeepInstance, InstanceFactory, Shape, TypeHandle}
+import modicio.codi.InstanceFactory
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class InstanceFactoryJ(definitionVerifier: DefinitionVerifierJ,
                        modelVerifier: ModelVerifierJ) extends InstanceFactory(definitionVerifier, modelVerifier){
 
-  def newInstanceJ(typeName: java.lang.String): java.util.concurrent.CompletableFuture[DeepInstance] = super.newInstance(typeName)
+  def setRegistryJ(registry: RegistryJ): Unit = super.setRegistry(registry)
 
-  def newInstanceJ(typeName: java.lang.String, newIdentity: java.lang.String): java.util.concurrent.CompletableFuture[DeepInstance] = super.newInstance(typeName, newIdentity)
+  def newInstanceJ(typeName: java.lang.String): java.util.concurrent.CompletableFuture[DeepInstanceJ] =
+    super.newInstance(typeName) map convert
 
-  def loadInstanceJ(instanceData: InstanceData, shape: Shape, typeHandle: TypeHandle): java.util.Optional[DeepInstance] = super.loadInstance(instanceData, shape, typeHandle)
+/*
+  def newInstanceJ(typeName: java.lang.String, newIdentity: java.lang.String): java.util.concurrent.CompletableFuture[DeepInstanceJ] =
+    super.newInstance(typeName, newIdentity) map convert
+
+  def loadInstanceJ(instanceData: InstanceData, shape: Shape, typeHandle: TypeHandleJ): java.util.Optional[DeepInstanceJ] =
+    super.loadInstance(instanceData, shape, typeHandle) map convert
+ */
 }

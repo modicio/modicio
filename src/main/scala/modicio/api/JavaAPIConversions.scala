@@ -19,13 +19,18 @@ import modicio.codi._
 import modicio.codi.api._
 import modicio.codi.datamappings._
 import modicio.codi.datamappings.api._
-import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
 import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
-import modicio.codi.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
+import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
 import modicio.codi.values.api.{ConcreteAssociationJ, ConcreteAttributeJ, ConcreteValueJ, ValueDescriptorJ}
+import modicio.codi.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
 import modicio.nativelang.defaults.SimpleMapRegistry
 import modicio.nativelang.defaults.api.SimpleMapRegistryJ
+import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
+import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
+import java.util
+import java.util.concurrent.CompletableFuture
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 import scala.jdk.FutureConverters._
@@ -58,6 +63,22 @@ object JavaAPIConversions {
 
   implicit def functorConvert[F[_], A, B](x: F[A])(implicit f: A => B, functor: ContainerFunctor[F]): F[B] = functor.map(x, f)
 
+
+  implicit def futureConvert[T, S <: Iterable[T], B](x: Future[S])(implicit f: T => B): CompletableFuture[Iterable[B]] = {
+    x.map(t => Option(t).map(_.map(f)).getOrElse(Option.empty[B]).iterator.to(Iterable)).toCompletableFuture
+  }
+
+  implicit def futureConvert[T, S <: java.util.Collection[T], B](x: CompletableFuture[S])(implicit f: T => B): Future[Iterable[B]] = {
+    x.asScala.map(t => Option(t).map(_.asScala.map(f)).getOrElse(Option.empty[B]).iterator.to(Iterable))
+  }
+
+  implicit def futureConvertSet[T, B](x: CompletableFuture[java.util.Set[T]])(implicit f: T => B): Future[Set[B]] = {
+   futureConvert[T, java.util.Set[T], B](x).map(_.toSet)
+  }
+
+  implicit def futureConvertOption[T, B](x: CompletableFuture[java.util.Optional[T]])(implicit f: T => B): Future[Option[B]] = {
+    x.asScala.map(t => convert(t).map(f))
+  }
 
   implicit def convert[T](value: java.util.concurrent.CompletableFuture[T]): Future[T] = value.asScala
 
@@ -96,7 +117,7 @@ object JavaAPIConversions {
     res
   }
 
-  implicit def convert(instanceFactory: InstanceFactory): InstanceFactoryJ = {
+  implicit def convert(instanceFactory: modicio.codi.InstanceFactory): InstanceFactoryJ = {
     new InstanceFactoryJ(instanceFactory.definitionVerifier, instanceFactory.modelVerifier)
   }
 
@@ -107,6 +128,21 @@ object JavaAPIConversions {
   implicit def convert(value: Definition): DefinitionJ = new DefinitionJ(value)
 
   implicit def convert(value: RuleJ): Rule = value.getRule
+
+  implicit def convert(value: Rule): RuleJ = value match {
+    case rule: AssociationRule => rule
+    case rule: AttributeRule => rule
+    case value: ConcreteValue => value
+    case rule: ExtensionRule => rule
+    case _ => throw new IllegalArgumentException()
+  }
+
+  implicit def convertBase(value: Base): BaseJ = value match {
+    case j: BaseJ => j
+    case model: BaseModel => throw new IllegalArgumentException()
+    case definition: Definition => convert(definition)
+    case _ => throw new IllegalArgumentException()
+  }
 
   implicit def convert(value: ValueDescriptorJ): ValueDescriptor = value.getValueDescriptor
 
@@ -152,4 +188,22 @@ object JavaAPIConversions {
 
   implicit def convert(value: ImmutableShape): ImmutableShapeJ =
     ImmutableShapeJ(value.instanceData, convert(value.attributes), convert(value.associations), convert(value.extensions))
+
+  implicit def convert(value: DefinitionVerifier): DefinitionVerifierJ = {
+    new DefinitionVerifierJ {
+      override def verifyJ(rules: util.Set[RuleJ]): Boolean = value.verify(rules map convert)
+    }
+  }
+
+  implicit def convert(value: ModelVerifier): ModelVerifierJ = {
+    new ModelVerifierJ {
+      override def verifyJ(typeHandle: TypeHandleJ): Boolean = value.verify(typeHandle)
+    }
+  }
+
+  implicit def convert(value: Shape): ShapeJ =
+    new ShapeJ(convert(value.getAttributes), convert(value.getAssociations), convert(value.getExtensions))
+
+
+  implicit def convert(value: TypeIterator): TypeIteratorJ = new TypeIteratorJ(value.initialFragment)
 }

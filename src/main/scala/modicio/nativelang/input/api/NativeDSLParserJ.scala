@@ -13,20 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.codi.api
+package modicio.nativelang.input.api
 
-import modicio.codi.Base
-import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
-import modicio.api.JavaAPIConversions._
-import modicio.codi.values.api.ConcreteValueJ
+import modicio.nativelang.input.{ExtendedNativeDSL, NativeDSL, NativeDSLParser}
 
-trait BaseJ extends Base{
-  def getAttributeRulesJ: java.util.Set[AttributeRuleJ] = convert(getAttributeRules)
+object NativeDSLParserJ {
 
-  def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(getAssociationRules)
+  def parse(nativeInput: java.lang.String): NativeDSL = NativeDSLParser.parse(nativeInput)
 
-  def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(getExtensionRules)
-
-  def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(getConcreteValues)
+  def produceJsonString(extendedNativeDSL: ExtendedNativeDSL): String = NativeDSLParser.produceString(extendedNativeDSL)
 
 }

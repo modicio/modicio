@@ -20,8 +20,10 @@ import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
 import modicio.codi.values.api.ConcreteValueJ
 import modicio.codi.{Definition, Rule}
 import modicio.api.JavaAPIConversions._
+import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.codi.values.ConcreteValue
 
-class DefinitionJ(val definition: Definition) {
+class DefinitionJ(val definition: Definition) extends BaseJ {
 
   def getRulesJ: java.util.Set[Rule] = definition.getRules
 
@@ -29,12 +31,20 @@ class DefinitionJ(val definition: Definition) {
 
   def forkJ(identity: java.lang.String): DefinitionJ = definition.fork(identity)
 
-  def getAttributeRulesJ: java.util.Set[AttributeRuleJ] = convert(definition.getAttributeRules)
+  override def getAttributeRulesJ: java.util.Set[AttributeRuleJ] = convert(definition.getAttributeRules)
 
-  def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(definition.getAssociationRules)
+  override def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(definition.getAssociationRules)
 
-  def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(definition.getExtensionRules)
+  override def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(definition.getExtensionRules)
 
-  def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(definition.getConcreteValues)
+  override def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(definition.getConcreteValues)
+
+  override def getAttributeRules: Set[AttributeRule] = definition.getAttributeRules
+
+  override def getAssociationRules: Set[AssociationRule] = definition.getAssociationRules
+
+  override def getExtensionRules: Set[ExtensionRule] = definition.getExtensionRules
+
+  override def getConcreteValues: Set[ConcreteValue] = definition.getConcreteValues
 
 }

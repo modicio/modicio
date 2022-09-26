@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.codi.api
+package modicio.nativelang.defaults.api
 
-import modicio.codi.Base
-import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
-import modicio.api.JavaAPIConversions._
-import modicio.codi.values.api.ConcreteValueJ
+import modicio.codi.api.TypeHandleJ
+import modicio.verification.api.ModelVerifierJ
 
-trait BaseJ extends Base{
-  def getAttributeRulesJ: java.util.Set[AttributeRuleJ] = convert(getAttributeRules)
+class SimpleModelVerifierJ extends ModelVerifierJ {
 
-  def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(getAssociationRules)
-
-  def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(getExtensionRules)
-
-  def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(getConcreteValues)
+  override def verifyJ(typeHandle: TypeHandleJ): Boolean = true
 
 }
