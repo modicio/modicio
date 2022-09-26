@@ -109,7 +109,7 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
       case rule: AssociationRule => {
         //TODO some sophisticated reasoning must be made here!
         // it has especially to be checked that the target is a child of the parent target
-        rule.associationName == associationName && rule.multiplicity == multiplicity && targetName == targetName
+        rule.associationName == associationName && rule.multiplicity == multiplicity && rule.targetName == targetName
       }
       case _ => false
     }

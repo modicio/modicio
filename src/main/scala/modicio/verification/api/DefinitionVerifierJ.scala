@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.defaults
+package modicio.verification.api
 
-import modicio.codi.TypeHandle
-import modicio.verification.ModelVerifier
+import modicio.codi.Rule
+import modicio.codi.api.RuleJ
+import modicio.verification.DefinitionVerifier
 
-class SimpleModelVerifier extends ModelVerifier {
+import modicio.api.JavaAPIConversions._
 
-  override def verify(typeHandle: TypeHandle): Boolean = true
+trait DefinitionVerifierJ extends DefinitionVerifier {
+
+  override final def verify(rules: Set[Rule]): Boolean = verifyJ(convert(rules))
+
+  def verifyJ(rules: java.util.Set[RuleJ]): Boolean
 
 }

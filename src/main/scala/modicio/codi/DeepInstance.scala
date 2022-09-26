@@ -48,7 +48,11 @@ import scala.concurrent.Future
  * @param typeHandle the instantiated [[Fragment Fragment]] type, represented by its [[TypeHandle TypeHandle]]
  * @param registry   the [[Registry Registry]] of the runtime-environment
  */
-class DeepInstance(instanceId: String, identity: String, shape: Shape, typeHandle: TypeHandle, registry: Registry) {
+class DeepInstance(private[modicio] val instanceId: String,
+                   private[modicio] val identity: String,
+                   private[modicio] val shape: Shape,
+                   private[modicio] val typeHandle: TypeHandle,
+                   private[modicio] val registry: Registry) {
 
   /**
    * <p>Contains the concrete extensions after unfold() was called.
@@ -148,12 +152,12 @@ class DeepInstance(instanceId: String, identity: String, shape: Shape, typeHandl
    *
    * @return Tuple of data representations
    */
-  def toData: (InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData]) = {
-    (
+  def toData: ImmutableShape = {
+    ImmutableShape(
       InstanceData(instanceId, typeHandle.getTypeName, identity),
-      shape.getExtensions,
       shape.getAttributes,
-      shape.getAssociations
+      shape.getAssociations,
+      shape.getExtensions
     )
   }
 

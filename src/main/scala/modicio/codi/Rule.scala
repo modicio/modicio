@@ -32,7 +32,7 @@ import modicio.util.Identity
  * @see [[Definition]]<p>[[BaseModel]]<p>[[RuleData]]
  * @param nativeValue he string representation in the native-language format
  */
-abstract class Rule(protected val nativeValue: String) {
+abstract class Rule(private[modicio] val nativeValue: String) {
 
   /**
    * <p>The id serves as a technical identifier of the Rule. For in-memory usecases it is optional but must be set for

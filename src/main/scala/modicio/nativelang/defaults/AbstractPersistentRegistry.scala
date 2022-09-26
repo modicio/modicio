@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.defaults
+package modicio.nativelang.defaults
 
 import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, FragmentData, InstanceData, RuleData}
-import modicio.codi.{DeepInstance, Fragment, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
+import modicio.codi.{DeepInstance, Fragment, ImmutableShape, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -150,13 +150,14 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @return
    */
   override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
-    val (instanceData, extensionData, attributeData, associationData) = deepInstance.toData
+    val data = deepInstance.toData
+    val (instanceData, attributeData, associationData, extensionData) = (ImmutableShape unapply data).get
     get(deepInstance.getInstanceId) flatMap (oldInstanceOption => {
       val (_, oldExtensionData: Set[ExtensionData], oldAttributeData: Set[AttributeData], oldAssociationData: Set[AssociationData]) = {
         if(oldInstanceOption.isDefined){
           oldInstanceOption.get.toData
         }else{
-          (null, Set(), Set(), Set())
+          (null, Set[ExtensionData](), Set[AttributeData](), Set[AssociationData]())
         }
       }
       for {
@@ -216,7 +217,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
     } else {
       //TODO
-      Future.successful()
+      Future.successful((): Unit)
     }
   }
 

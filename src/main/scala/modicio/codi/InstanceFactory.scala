@@ -23,13 +23,15 @@ import modicio.verification.{DefinitionVerifier, ModelVerifier}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.jdk.FutureConverters._
+import scala.language.implicitConversions
 
 /**
  * @param definitionVerifier
  * @param modelVerifier
  */
-class InstanceFactory(definitionVerifier: DefinitionVerifier,
-                      modelVerifier: ModelVerifier) {
+class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
+                      private[modicio] val modelVerifier: ModelVerifier) {
 
   private var registry: Registry = _
 

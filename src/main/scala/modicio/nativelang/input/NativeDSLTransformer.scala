@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.input
+package modicio.nativelang.input
 
-import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
-import modicio.codi.{Registry, Shape, Transformer}
 import modicio.codi.values.ConcreteValue
+import modicio.codi.{ImmutableShape, Registry, Transformer}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
  * @param registry
@@ -37,7 +36,7 @@ class NativeDSLTransformer(registry: Registry,
 
   override def extend(input: NativeDSL): Future[Unit] = {
     input.model.foreach(statement => evaluateStatement(statement))
-    Future.successful()
+    Future.successful((): Unit)
   }
 
   def evaluateStatement(statement: Statement): Unit = {
@@ -58,7 +57,7 @@ class NativeDSLTransformer(registry: Registry,
   override def decompose(input: Option[String]): Future[ExtendedNativeDSL] = {
     if(input.isDefined){
       val statements = mutable.Set[Statement]()
-      val configuration = mutable.Set[(InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData])]()
+      val configuration = mutable.Set[ImmutableShape]()
 
       registry.get(input.get) flatMap (flatInstance => {
         if(flatInstance.isDefined){
@@ -74,7 +73,8 @@ class NativeDSLTransformer(registry: Registry,
               val s = Statement(frag.name+":"+frag.identity, frag.isTemplate, childOf, associations, attributes, values)
               statements.add(s)
             })
-            ExtendedNativeDSL(NativeDSL(statements.toSeq), configuration.toSeq)
+            ExtendedNativeDSL(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
+              (s.instanceData, s.extensions, s.attributes, s.associations)))
           })
         }else{
           Future.failed(new IllegalArgumentException("Invalid instanceId in decompose()"))

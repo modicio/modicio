@@ -17,7 +17,7 @@ package modicio.codi
 
 import scala.collection.mutable.ListBuffer
 
-class TypeIterator(private val initialFragment: Fragment) {
+class TypeIterator(private[modicio] val initialFragment: Fragment) {
 
   private val _currentBuffer: ListBuffer[Fragment] = ListBuffer(initialFragment)
 

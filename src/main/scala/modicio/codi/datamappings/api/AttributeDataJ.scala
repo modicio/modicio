@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.input
+package modicio.codi.datamappings.api
 
-import io.circe.syntax._
-import io.circe.generic.JsonCodec
-import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
+import scala.beans.BeanProperty
 
-case class ExtendedNativeDSL(definition: NativeDSL, configuration: Seq[(InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData])])
+case class AttributeDataJ(@BeanProperty id: Long,
+                          @BeanProperty instanceId: java.lang.String,
+                          @BeanProperty key: java.lang.String,
+                          @BeanProperty var value: java.lang.String,
+                          @BeanProperty isFinal: Boolean)

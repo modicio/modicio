@@ -13,7 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.input
+package modicio.codi.api
 
+import modicio.codi.datamappings.api.{AssociationDataJ, AttributeDataJ, ExtensionDataJ, InstanceDataJ}
 
-case class NativeDSL(model: Seq[Statement])
+import scala.beans.BeanProperty
+
+/**
+ * @param attributes
+ * @param associations
+ * @param extensions
+ */
+case class ImmutableShapeJ(@BeanProperty instanceData: InstanceDataJ,
+                           @BeanProperty attributes: java.util.Set[AttributeDataJ],
+                           @BeanProperty associations: java.util.Set[AssociationDataJ],
+                           @BeanProperty extensions: java.util.Set[ExtensionDataJ])

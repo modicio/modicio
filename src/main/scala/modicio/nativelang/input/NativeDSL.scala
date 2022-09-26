@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.defaults
+package modicio.nativelang.input
 
-import modicio.codi.Rule
-import modicio.verification.DefinitionVerifier
 
-class SimpleDefinitionVerifier extends DefinitionVerifier {
-
-  override def verify(rules: Set[Rule]): Boolean = true
-
-}
+case class NativeDSL(model: Seq[Statement])

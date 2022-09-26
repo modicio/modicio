@@ -56,7 +56,7 @@ abstract class Fragment(val name: String, val identity: String, val isTemplate: 
   private final object _definitionObserver extends Observer {
     override def onChange(): Future[Unit] = {
       //TODO commit here if in some kind of automatic mode
-      Future.successful()
+      Future.successful((): Unit)
     }
   }
 
@@ -156,7 +156,7 @@ abstract class Fragment(val name: String, val identity: String, val isTemplate: 
     // resolve associations
     val associationRules: Set[AssociationRule] = definition.getAssociationRules
     if (associationRules.isEmpty) {
-      Future.successful()
+      Future.successful((): Unit)
     } else {
       if (associationRules.nonEmpty && registryOption.isEmpty) {
         throw new Exception("Undefined registry in fragment to unfold")

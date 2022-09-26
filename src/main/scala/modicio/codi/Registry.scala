@@ -25,7 +25,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
  */
 abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: InstanceFactory) {
 
-  protected val baseModels: mutable.Map[String, BaseModel] = mutable.Map[String, BaseModel]()
+  protected var baseModels: mutable.Map[String, BaseModel] = mutable.Map[String, BaseModel]()
 
   def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     if(identity == Fragment.REFERENCE_IDENTITY && baseModels.contains(name)){
@@ -60,7 +60,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
     fragment match {
       case fragment: BaseModel => {
         baseModels.put(fragment.name, fragment)
-        Future.successful()
+        Future.successful((): Unit)
       }
       case _ => setNode(typeHandle)
     }

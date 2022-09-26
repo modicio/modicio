@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.native.defaults
+package modicio.nativelang.defaults
 
-import modicio.codi.{DeepInstance, Fragment, InstanceFactory, Registry, TypeFactory, TypeHandle}
+import modicio.codi._
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,8 +24,14 @@ import scala.concurrent.Future
 class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory)
   extends Registry(typeFactory, instanceFactory) {
 
-  private val typeRegistry = mutable.Map[String, mutable.Map[String, TypeHandle]]()
-  private val instanceRegistry = mutable.Map[String, DeepInstance]()
+  private[modicio] val typeRegistry = mutable.Map[String, mutable.Map[String, TypeHandle]]()
+  private[modicio] val instanceRegistry = mutable.Map[String, DeepInstance]()
+
+  private[modicio] def load(registry: SimpleMapRegistry): Unit = {
+    baseModels = registry.baseModels
+    this.typeRegistry.addAll(registry.typeRegistry)
+    this.instanceRegistry.addAll(registry.instanceRegistry)
+  }
 
   override def getDynamicType(name: String, identity: String): Future[Option[TypeHandle]] = {
     val typeGroup = typeRegistry.get(name)
@@ -140,7 +146,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       }
     } else {
       //TODO
-      Future.successful()
+      Future.successful((): Unit)
     }
   }
 }
