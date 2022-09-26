@@ -1,5 +1,7 @@
 ![Scala CI](https://github.com/modicio/modicio/workflows/Scala%20CI/badge.svg)
 
+> :birthday: **An experimental Java wrapper is available as a direct framework member! Documentation can be found [here](https://github.com/modicio/modicio/wiki/Getting-Started).**
+
 # modicio
 
 A framework for entity modelling and management at runtime using eternal compartments.
