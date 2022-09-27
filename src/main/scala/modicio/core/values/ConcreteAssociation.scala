@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.values
 
-import modicio.core.TypeHandle
+/**
+ * @param nativeValue
+ */
+class ConcreteAssociation(nativeValue: String) extends ValueDescriptor(nativeValue) {
 
-trait ModelVerifier {
+  def targetIdentity: String = elements.head
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def targetModelElement: String = elements(1)
+
+  override def serializeSimple: String = targetIdentity + ":" + targetModelElement + " final=" + isFinal
+
 
 }

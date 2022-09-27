@@ -17,6 +17,6 @@ package modicio.nativelang.input
 
 import io.circe.syntax._
 import io.circe.generic.JsonCodec
-import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 
 case class ExtendedNativeDSL(definition: NativeDSL, configuration: Seq[(InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData])])

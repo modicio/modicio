@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
 
-import modicio.core.TypeHandle
+package modicio.core.rules
 
-trait ModelVerifier {
-
-  def verify(typeHandle: TypeHandle): Boolean
-
+object RuleDataType {
+  val ATTRIBUTE = 0
+  val VALUE = 1
+  val ASSOCIATION = 2
+  val EXTENSION = 3
+  val BEHAVIOUR = 4
+  val CONSTRAINT = 5
 }

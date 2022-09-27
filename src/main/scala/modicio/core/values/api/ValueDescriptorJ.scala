@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.values.api
 
-import modicio.core.TypeHandle
+import modicio.core.values.ValueDescriptor
+import modicio.api.JavaAPIConversions._
 
-trait ModelVerifier {
+trait ValueDescriptorJ {
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def getValueDescriptor: ValueDescriptor
+
+  def serializeJ: java.lang.String = getValueDescriptor.nativeValue
+  def serializeSimpleJ: java.lang.String = getValueDescriptor.serializeSimple
+
+  def toSeqJ: java.util.List[String] = getValueDescriptor.toSeq
 
 }
+
+

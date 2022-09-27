@@ -15,7 +15,7 @@
  */
 package modicio.verification
 
-import modicio.codi.Rule
+import modicio.core.Rule
 
 trait DefinitionVerifier {
 

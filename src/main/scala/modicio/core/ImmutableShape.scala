@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core
 
-import modicio.core.TypeHandle
+import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
 
-trait ModelVerifier {
-
-  def verify(typeHandle: TypeHandle): Boolean
-
-}
+/**
+ * @param attributes
+ * @param associations
+ * @param extensions
+ */
+case class ImmutableShape(instanceData: InstanceData,
+                          attributes: Set[AttributeData],
+                          associations: Set[AssociationData],
+                          extensions: Set[ExtensionData])

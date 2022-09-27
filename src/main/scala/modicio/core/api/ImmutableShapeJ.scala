@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.api
 
-import modicio.core.TypeHandle
+import modicio.core.datamappings.api.{AssociationDataJ, AttributeDataJ, ExtensionDataJ, InstanceDataJ}
 
-trait ModelVerifier {
+import scala.beans.BeanProperty
 
-  def verify(typeHandle: TypeHandle): Boolean
-
-}
+/**
+ * @param attributes
+ * @param associations
+ * @param extensions
+ */
+case class ImmutableShapeJ(@BeanProperty instanceData: InstanceDataJ,
+                           @BeanProperty attributes: java.util.Set[AttributeDataJ],
+                           @BeanProperty associations: java.util.Set[AssociationDataJ],
+                           @BeanProperty extensions: java.util.Set[ExtensionDataJ])

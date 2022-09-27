@@ -15,8 +15,8 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, ModelElementData, InstanceData, RuleData}
-import modicio.codi.{DeepInstance, ModelElement, ImmutableShape, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
+import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, ModelElementData, InstanceData, RuleData}
+import modicio.core.{DeepInstance, ModelElement, ImmutableShape, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}

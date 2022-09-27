@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.util
 
-import modicio.core.TypeHandle
+import scala.collection.mutable.ListBuffer
 
-trait ModelVerifier {
+trait Observable {
 
-  def verify(typeHandle: TypeHandle): Boolean
+  protected val observers: ListBuffer[Observer] = ListBuffer()
+
+  protected def notifyObservers(): Unit = observers.foreach(_.onChange())
+
+  def registerObserver(observer: Observer): Unit = observers.addOne(observer)
+
+  def unregisterObserver(observer: Observer): Unit = observers.remove(observers.indexOf(observer))
 
 }

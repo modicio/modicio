@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.api
 
-import modicio.core.TypeHandle
+import modicio.core.Rule
+import modicio.api.JavaAPIConversions._
 
-trait ModelVerifier {
+trait RuleJ {
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def getRule: Rule
+
+  def getId: java.lang.String = getRule.id
+
+  def serialiseJ(): java.lang.String = getRule.serialise()
+
+  def serialiseSimpleJ(): java.lang.String = getRule.serialiseSimple()
+
+  def forkJ(identity: java.lang.String): RuleJ
+
+  def isPolymorphEqualJ(ruleJ: RuleJ): Boolean = getRule.isPolymorphEqual(ruleJ)
 
 }

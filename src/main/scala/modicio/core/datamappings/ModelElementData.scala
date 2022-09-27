@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.datamappings
 
-import modicio.core.TypeHandle
+import modicio.core.ModelElement
 
-trait ModelVerifier {
-
-  def verify(typeHandle: TypeHandle): Boolean
-
-}
+/**
+ * <p>Tuple to represent a [[ModelElement ModelElement]] for serialisation.
+ * <p>This class is produced by the ModelElement itself.
+ * <p> Name and identity form a unique combination which serves as ID.
+ *
+ * @param name       the name of the type-modelElement
+ * @param identity   identity value
+ * @param isTemplate flag if the ModelElement describes a template-type or instantiable-type
+ */
+case class ModelElementData(name: String, identity: String, isTemplate: Boolean, isNode: Boolean)

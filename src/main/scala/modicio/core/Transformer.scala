@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core
 
-import modicio.core.TypeHandle
+import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
-trait ModelVerifier {
+import scala.concurrent.Future
 
-  def verify(typeHandle: TypeHandle): Boolean
+abstract class Transformer[IN, OUT](protected val registry: Registry,
+                              protected val definitionVerifier: DefinitionVerifier,
+                              protected val modelVerifier: ModelVerifier) {
+
+  protected val typeFactory = new TypeFactory(definitionVerifier, modelVerifier)
+  typeFactory.setRegistry(registry)
+
+  def extend(input: IN): Future[Unit]
+
+  def decompose(input: Option[String]): Future[OUT]
 
 }

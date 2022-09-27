@@ -13,12 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.values
 
-import modicio.core.TypeHandle
+/**
+ * @param nativeValue
+ */
+abstract class ValueDescriptor(val nativeValue: String) {
 
-trait ModelVerifier {
+  protected val elements: Seq[String] = toSeq
+  val isFinal: Boolean = elements.last == "true"
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def serialize: String = nativeValue
+  def serializeSimple: String
+
+  def toSeq: Seq[String] = {
+    nativeValue.replaceAll("[()]", "").split(":").toSeq
+  }
+
+}
+
+object ValueDescriptor {
+
+  def fromSeq(elements: Seq[String]): String = {
+    var result = "(" + elements.head
+    elements.tail.foreach(element => result = result.concat(":"+element))
+    result + ")"
+  }
 
 }

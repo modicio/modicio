@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.util
 
-import modicio.core.TypeHandle
+import java.util.UUID
 
-trait ModelVerifier {
+object IdentityProvider {
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def newRandomId(): String = UUID.randomUUID().toString
+
+  def newTimestampId(): Long = System.currentTimeMillis()
 
 }

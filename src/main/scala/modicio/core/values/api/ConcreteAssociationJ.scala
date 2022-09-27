@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.values.api
 
-import modicio.core.TypeHandle
+import modicio.core.values.{ConcreteAssociation, ValueDescriptor}
 
-trait ModelVerifier {
+class ConcreteAssociationJ(nativeValue: java.lang.String) extends ConcreteAssociation(nativeValue) with ValueDescriptorJ {
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def targetIdentityJ: java.lang.String = super.targetIdentity
 
+  def targetModelElementJ: java.lang.String = super.targetModelElement
+
+  def getValueDescriptor: ValueDescriptor = this
 }

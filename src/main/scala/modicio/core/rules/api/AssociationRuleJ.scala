@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.rules.api
 
-import modicio.core.TypeHandle
+import modicio.core.Rule
+import modicio.core.api.RuleJ
+import modicio.core.rules.AssociationRule
 
-trait ModelVerifier {
+class AssociationRuleJ(nativeValue: java.lang.String) extends AssociationRule(nativeValue) with RuleJ {
 
-  def verify(typeHandle: TypeHandle): Boolean
+  override def getRule: Rule = this
+
+  override def forkJ(identity: String): RuleJ =  new AssociationRuleJ(super.fork(identity).nativeValue)
 
 }

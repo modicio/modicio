@@ -15,8 +15,8 @@
  */
 package modicio.verification.api
 
-import modicio.codi.TypeHandle
-import modicio.codi.api.TypeHandleJ
+import modicio.core.TypeHandle
+import modicio.core.api.TypeHandleJ
 import modicio.verification.ModelVerifier
 
 import modicio.api.JavaAPIConversions._

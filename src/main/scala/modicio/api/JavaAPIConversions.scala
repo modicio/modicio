@@ -15,14 +15,14 @@
  */
 package modicio.api
 
-import modicio.codi._
-import modicio.codi.api._
-import modicio.codi.datamappings._
-import modicio.codi.datamappings.api._
-import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
-import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
-import modicio.codi.values.api.{ConcreteAssociationJ, ConcreteAttributeJ, ConcreteValueJ, ValueDescriptorJ}
-import modicio.codi.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
+import modicio.core._
+import modicio.core.api._
+import modicio.core.datamappings._
+import modicio.core.datamappings.api._
+import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
+import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.values.api.{ConcreteAssociationJ, ConcreteAttributeJ, ConcreteValueJ, ValueDescriptorJ}
+import modicio.core.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
 import modicio.nativelang.defaults.SimpleMapRegistry
 import modicio.nativelang.defaults.api.SimpleMapRegistryJ
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
@@ -117,7 +117,7 @@ object JavaAPIConversions {
     res
   }
 
-  implicit def convert(instanceFactory: modicio.codi.InstanceFactory): InstanceFactoryJ = {
+  implicit def convert(instanceFactory: modicio.core.InstanceFactory): InstanceFactoryJ = {
     new InstanceFactoryJ(instanceFactory.definitionVerifier, instanceFactory.modelVerifier)
   }
 

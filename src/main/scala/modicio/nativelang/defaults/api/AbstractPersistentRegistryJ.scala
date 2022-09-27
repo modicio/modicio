@@ -16,10 +16,10 @@
 package modicio.nativelang.defaults.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi.Registry
-import modicio.codi.api.{InstanceFactoryJ, RegistryJ, TypeFactoryJ}
-import modicio.codi.datamappings._
-import modicio.codi.datamappings.api._
+import modicio.core.Registry
+import modicio.core.api.{InstanceFactoryJ, RegistryJ, TypeFactoryJ}
+import modicio.core.datamappings._
+import modicio.core.datamappings.api._
 import modicio.nativelang.defaults.AbstractPersistentRegistry
 
 import java.util.Optional

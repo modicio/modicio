@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.datamappings.api
 
-import modicio.core.TypeHandle
+import scala.beans.BeanProperty
 
-trait ModelVerifier {
-
-  def verify(typeHandle: TypeHandle): Boolean
-
-}
+case class RuleDataJ(@BeanProperty id: java.lang.String,
+                     @BeanProperty modelElementName: java.lang.String,
+                     @BeanProperty identity: java.lang.String,
+                     @BeanProperty nativeValue: java.lang.String,
+                     @BeanProperty typeOf: Int)

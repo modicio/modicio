@@ -15,9 +15,9 @@
  */
 package modicio.nativelang.input
 
-import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
-import modicio.codi.values.ConcreteValue
-import modicio.codi.{ImmutableShape, Registry, Transformer}
+import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.values.ConcreteValue
+import modicio.core.{ImmutableShape, Registry, Transformer}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable

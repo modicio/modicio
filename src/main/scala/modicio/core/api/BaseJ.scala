@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.verification
+package modicio.core.api
 
-import modicio.core.TypeHandle
+import modicio.core.Base
+import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
+import modicio.api.JavaAPIConversions._
+import modicio.core.values.api.ConcreteValueJ
 
-trait ModelVerifier {
+trait BaseJ extends Base{
+  def getAttributeRulesJ: java.util.Set[AttributeRuleJ] = convert(getAttributeRules)
 
-  def verify(typeHandle: TypeHandle): Boolean
+  def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(getAssociationRules)
+
+  def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(getExtensionRules)
+
+  def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(getConcreteValues)
 
 }

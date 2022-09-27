@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.defaults.api
 
-import modicio.codi.api.RuleJ
+import modicio.core.api.RuleJ
 import modicio.verification.api.DefinitionVerifierJ
 
 import java.util

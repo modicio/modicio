@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.codi._
+import modicio.core._
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
