@@ -17,7 +17,7 @@ package modicio.codi.datamappings.api
 
 import scala.beans.BeanProperty
 
-case class FragmentDataJ(@BeanProperty name: java.lang.String,
+case class ModelElementDataJ(@BeanProperty name: java.lang.String,
                          @BeanProperty identity: java.lang.String,
                          @BeanProperty isTemplate: Boolean,
                          @BeanProperty isNode: Boolean)

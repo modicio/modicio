@@ -19,37 +19,37 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class TypeHandle(private val fragment: Fragment, val static: Boolean) {
+class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
-  def isValid: Boolean = fragment.isValid
+  def isValid: Boolean = modelElement.isValid
 
-  def getTypeName: String = fragment.name
+  def getTypeName: String = modelElement.name
 
-  def getTypeIdentity: String = fragment.identity
+  def getTypeIdentity: String = modelElement.identity
 
   def getIsStatic: Boolean = static
 
-  def getIsTemplate: Boolean = fragment.isTemplate
+  def getIsTemplate: Boolean = modelElement.isTemplate
 
-  def isConcrete: Boolean = fragment.isConcrete
+  def isConcrete: Boolean = modelElement.isConcrete
 
-  def hasSingleton: Future[Boolean] = fragment.hasSingleton
+  def hasSingleton: Future[Boolean] = modelElement.hasSingleton
 
-  def hasSingletonRoot: Future[Boolean] = fragment.hasSingletonRoot
+  def hasSingletonRoot: Future[Boolean] = modelElement.hasSingletonRoot
 
-  def updateSingletonRoot(): Future[Any] = fragment.updateSingletonRoot()
+  def updateSingletonRoot(): Future[Any] = modelElement.updateSingletonRoot()
 
-  private[modicio] def getFragment: Fragment = fragment
+  private[modicio] def getModelElement: ModelElement = modelElement
 
-  def unfold(): Future[TypeHandle] = fragment.unfold() map (_ => this)
+  def unfold(): Future[TypeHandle] = modelElement.unfold() map (_ => this)
 
-  def commit(): Future[Unit] = fragment.commit()
+  def commit(): Future[Unit] = modelElement.commit()
 
-  def iterator: TypeIterator = new TypeIterator(fragment)
+  def iterator: TypeIterator = new TypeIterator(modelElement)
 
   def applyRule(rule: Rule): Unit = {
     if (!static) {
-      fragment.applyRule(rule)
+      modelElement.applyRule(rule)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")
     }
@@ -57,7 +57,7 @@ class TypeHandle(private val fragment: Fragment, val static: Boolean) {
 
   def removeRule(rule: Rule): Unit = {
     if (!static) {
-      fragment.definition.removeRule(rule)
+      modelElement.definition.removeRule(rule)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")
     }
@@ -65,14 +65,14 @@ class TypeHandle(private val fragment: Fragment, val static: Boolean) {
 
   def removeRule(ruleID: String): Unit = {
     if (!static) {
-      fragment.definition.removeRuleByID(ruleID)
+      modelElement.definition.removeRuleByID(ruleID)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")
     }
   }
 
   def getAssociated: Set[TypeHandle] = {
-    fragment.associations.toSet
+    modelElement.associations.toSet
   }
 
 }

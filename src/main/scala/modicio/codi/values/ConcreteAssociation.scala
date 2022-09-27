@@ -22,9 +22,9 @@ class ConcreteAssociation(nativeValue: String) extends ValueDescriptor(nativeVal
 
   def targetIdentity: String = elements.head
 
-  def targetFragment: String = elements(1)
+  def targetModelElement: String = elements(1)
 
-  override def serializeSimple: String = targetIdentity + ":" + targetFragment + " final=" + isFinal
+  override def serializeSimple: String = targetIdentity + ":" + targetModelElement + " final=" + isFinal
 
 
 }

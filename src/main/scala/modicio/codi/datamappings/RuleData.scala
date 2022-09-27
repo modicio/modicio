@@ -15,7 +15,7 @@
  */
 package modicio.codi.datamappings
 
-import modicio.codi.{Fragment, Rule}
+import modicio.codi.{ModelElement, Rule}
 
 /**
  * <p> Tuple to represent a [[Rule Rule]] for serialisation.
@@ -25,9 +25,9 @@ import modicio.codi.{Fragment, Rule}
  * @param id           technical identifier of the rule. The [[Rule Rule]] may assign automatically generated values.
  *                     if no such value exist, the id has the value of [[Rule#UNKNOWN_ID UNKNOWN_ID]] and must be
  *                     assigned manually.
- * @param fragmentName name of the [[Fragment Fragment]] this rule is part of
- * @param identity     identity of the [[Fragment Fragment]] this rule is part of
+ * @param modelElementName name of the [[ModelElement ModelElement]] this rule is part of
+ * @param identity     identity of the [[ModelElement ModelElement]] this rule is part of
  * @param nativeValue  serialised value of the [[Rule Rule]]. Depending on the serialised format, all
  *                     different concrete rules must be distinguishable
  */
-case class RuleData(id: String, fragmentName: String, identity: String, nativeValue: String, typeOf: Int)
+case class RuleData(id: String, modelElementName: String, identity: String, nativeValue: String, typeOf: Int)

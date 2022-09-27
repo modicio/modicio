@@ -15,7 +15,7 @@
  */
 package modicio.codi.datamappings
 
-import modicio.codi.{DeepInstance, Fragment, Shape}
+import modicio.codi.{DeepInstance, ModelElement, Shape}
 
 /**
  * <p> Tuple to represent a [[DeepInstance DeepInstance]] for serialisation.
@@ -23,7 +23,7 @@ import modicio.codi.{DeepInstance, Fragment, Shape}
  * Such serialised members refer to this class via a given instanceId.
  *
  * @param instanceId unique technical identifier of a [[DeepInstance DeepInstance]]
- * @param instanceOf name of the [[Fragment Fragment]] this instance is type of
+ * @param instanceOf name of the [[ModelElement ModelElement]] this instance is type of
  * @param identity   identity of the instantiated instance-type clabject
  */
 case class InstanceData(instanceId: String, instanceOf: String, identity: String)

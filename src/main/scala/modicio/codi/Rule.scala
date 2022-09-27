@@ -19,7 +19,7 @@ import modicio.codi.datamappings.RuleData
 import modicio.util.Identity
 
 /**
- * <p>Overall abstract class to represent any rule held by a [[Definition Definition]] or [[BaseModel BaseModel]].
+ * <p>Overall abstract class to represent any rule held by a [[Definition Definition]].
  * <p>Instances of this class and their concrete implementations are stored as [[RuleData]] by
  * their serialised value.
  * <p>The nativeValue of a Rule must contain all information regarding the Rule and the concrete Rule-type. The nativeValue
@@ -29,7 +29,7 @@ import modicio.util.Identity
  * <p> The abstract Rule class handles the id value, which must always be the first value of a nativeValue of any concrete
  * Rule, separated by a ":" from the rest. If no id is known, the nativeValue must start with the ":" directly.
  *
- * @see [[Definition]]<p>[[BaseModel]]<p>[[RuleData]]
+ * @see [[Definition]]<p>[[RuleData]]
  * @param nativeValue he string representation in the native-language format
  */
 abstract class Rule(private[modicio] val nativeValue: String) {

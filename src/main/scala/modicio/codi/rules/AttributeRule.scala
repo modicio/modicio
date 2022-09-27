@@ -15,7 +15,7 @@
  */
 package modicio.codi.rules
 
-import modicio.codi.{Fragment, Rule}
+import modicio.codi.{ModelElement, Rule}
 import modicio.codi.datamappings.RuleData
 
 /**
@@ -94,7 +94,7 @@ class AttributeRule(nativeValue: String) extends Rule(nativeValue) {
   /**
    * <p>Implementation of [[Rule#fork Rule.fork()]].
    *
-   * @param identity the identity of an instantiated [[Fragment Fragment]]
+   * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
   override def fork(identity: String): Rule = AttributeRule.create(name, datatype, nonEmpty, Some(Rule.UNKNOWN_ID))

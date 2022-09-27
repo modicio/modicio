@@ -24,7 +24,7 @@ import scala.collection.mutable
 
 /**
  * <p> The Definition class is a concrete [[Base Base]] implementation representing the set of
- * [[Rule Rules]] a [[Fragment Fragment]] possesses.
+ * [[Rule Rules]] a [[ModelElement ModelElement]] possesses.
  * <p> The Definition encapsulates the Rules in individual sets and provides an api to edit the rule-set. Note that the
  * Definition class itself does not ensure validity of the resulting model, especially in an extension-hierarchy. If a new Rule is
  * added or an old Rule is removed, the provided [[DefinitionVerifier DefinitionVerifier]] is called with
@@ -57,11 +57,11 @@ class Definition
   /**
    * <p> Generates the set of [[RuleData RuleData]] which contains all [[Rule Rules]] of
    * this Definition in their serialised form.
-   * <p> The name and identity parameters are required because the Definition does not know by which [[Fragment Fragment]]
+   * <p> The name and identity parameters are required because the Definition does not know by which [[ModelElement ModelElement]]
    * it is used. However the RuleData serialisation requires this information.
    *
-   * @param name     name of the [[Fragment Fragment]] possessing this Definition
-   * @param identity identity of the [[Fragment Fragment]] possessing this Definition
+   * @param name     name of the [[ModelElement ModelElement]] possessing this Definition
+   * @param identity identity of the [[ModelElement ModelElement]] possessing this Definition
    * @return Set[RuleData] - all Rules part of the Definition in their serialised form
    */
   def toData(name: String, identity: String): Set[RuleData] = {
@@ -75,7 +75,7 @@ class Definition
    * specified identity which must be exchanged during the fork.
    * <p> This operation calls [[Rule#fork Rule.fork(identity)]] on each rule.
    *
-   * @param identity the identifier of the forked [[Fragment Fragment]] following the default usage.
+   * @param identity the identifier of the forked [[ModelElement ModelElement]] following the default usage.
    * @return Definition - the forked deep-copy of this Definition
    */
   def fork(identity: String): Definition = {

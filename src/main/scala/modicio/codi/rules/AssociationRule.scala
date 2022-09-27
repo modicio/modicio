@@ -15,7 +15,7 @@
  */
 package modicio.codi.rules
 
-import modicio.codi.{Fragment, Rule}
+import modicio.codi.{ModelElement, Rule}
 import modicio.codi.datamappings.RuleData
 
 /**
@@ -25,7 +25,7 @@ import modicio.codi.datamappings.RuleData
  * <p> <strong>String format: "ID:ASSOCIATION_NAME:TARGET_NAME:MULTIPLICITY"</strong>
  * <P> where ID is the unique technical identifier of the [[Rule Rule]]
  * <p> where ASSOCIATION_NAME is the arbitrary name of the relation
- * <p> where TARGET_NAME is the name of the [[Fragment Fragment]] type that can be associated
+ * <p> where TARGET_NAME is the name of the [[ModelElement ModelElement]] type that can be associated
  * <P> where MULTIPLICITY is ["*" | "u_int" | "u_int...u_int" | "u_int...*"]
  *
  * @see [[Rule]]<p>[[RuleData]]
@@ -94,7 +94,7 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
   /**
    * <p>Implementation of [[Rule#fork Rule.fork()]].
    *
-   * @param identity the identity of an instantiated [[Fragment Fragment]]
+   * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
   override def fork(identity: String): Rule = AssociationRule.create(associationName, targetName, multiplicity, Some(Rule.UNKNOWN_ID))
@@ -151,7 +151,7 @@ object AssociationRule {
    * changed manually.
    *
    * @param associationName name of the association relation
-   * @param target          name of the target [[Fragment Fragment]] type to associate
+   * @param target          name of the target [[ModelElement ModelElement]] type to associate
    * @param multiplicity    multiplicity value, see [[AssociationRule AssociationRule]]
    * @param idOption        id value if known, set to default otherwise
    * @return AssociationRule created from provided values

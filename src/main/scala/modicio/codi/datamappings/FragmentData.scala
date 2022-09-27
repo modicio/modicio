@@ -15,21 +15,15 @@
  */
 package modicio.codi.datamappings
 
-import modicio.codi.{Fragment, Node}
+import modicio.codi.ModelElement
 
 /**
- * <p>Tuple to represent a [[Fragment Fragment]] for serialisation.
- * <p>This class is produced by the Fragment itself.
- * <p>This class represents only [[Node Nodes]] in
- * the reference case, but Nodes and concrete [[BaseModel BaseModels]] in the instantiated case. This is because
- * BaseModels follow their static implementation in code in the reference case (immutable). Nodes are in this case dynamic
- * which is indicated by the reference identity.
- * After forking a Fragment, BaseModels and Nodes are represented in data equally and immutable by this tuple.
- *
+ * <p>Tuple to represent a [[ModelElement ModelElement]] for serialisation.
+ * <p>This class is produced by the ModelElement itself.
  * <p> Name and identity form a unique combination which serves as ID.
  *
- * @param name       the name of the type-fragment
+ * @param name       the name of the type-modelElement
  * @param identity   identity value
- * @param isTemplate flag if the Fragment describes a template-type or instantiable-type
+ * @param isTemplate flag if the ModelElement describes a template-type or instantiable-type
  */
-case class FragmentData(name: String, identity: String, isTemplate: Boolean, isNode: Boolean)
+case class ModelElementData(name: String, identity: String, isTemplate: Boolean, isNode: Boolean)

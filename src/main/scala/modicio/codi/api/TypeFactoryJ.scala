@@ -16,7 +16,7 @@
 package modicio.codi.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi.datamappings.api.{FragmentDataJ, RuleDataJ}
+import modicio.codi.datamappings.api.{ModelElementDataJ, RuleDataJ}
 import modicio.codi.{Rule, TypeFactory}
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
 
@@ -27,7 +27,7 @@ class TypeFactoryJ(definitionVerifier: DefinitionVerifierJ, modelVerifier: Model
 
   def newTypeJ(name: java.lang.String, identity: java.lang.String, isTemplate: Boolean): TypeHandleJ = super.newType(name, identity, isTemplate)
 
-  def loadTypeJ(fragmentData: FragmentDataJ, ruleData: java.util.Set[RuleDataJ]): TypeHandleJ = super.loadType(fragmentData, ruleData.map(convert))
+  def loadTypeJ(modelElementData: ModelElementDataJ, ruleData: java.util.Set[RuleDataJ]): TypeHandleJ = super.loadType(modelElementData, ruleData.map(convert))
 
   def loadRuleJ(ruleData: RuleDataJ): Rule = super.loadRule(ruleData)
 }

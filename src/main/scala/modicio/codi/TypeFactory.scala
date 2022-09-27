@@ -15,7 +15,7 @@
  */
 package modicio.codi
 
-import modicio.codi.datamappings.{FragmentData, RuleData}
+import modicio.codi.datamappings.{ModelElementData, RuleData}
 import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule, RuleDataType}
 import modicio.codi.values.ConcreteValue
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
@@ -33,26 +33,26 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
 
   def newType(name: String, identity: String, isTemplate: Boolean): TypeHandle = {
     val definition = new Definition(definitionVerifier)
-    val fragment = new Node(name, identity, isTemplate /*, modelVerifier*/)
+    val modelElement = new Node(name, identity, isTemplate /*, modelVerifier*/)
 
-    fragment.setRegistry(registry)
-    fragment.setDefinition(definition)
-    fragment.setVerifiers(definitionVerifier, modelVerifier)
+    modelElement.setRegistry(registry)
+    modelElement.setDefinition(definition)
+    modelElement.setVerifiers(definitionVerifier, modelVerifier)
 
-    fragment.createHandle
+    modelElement.createHandle
   }
 
-  def loadType(fragmentData: FragmentData, ruleData: Set[RuleData]): TypeHandle = {
+  def loadType(modelElementData: ModelElementData, ruleData: Set[RuleData]): TypeHandle = {
     val definition = new Definition(definitionVerifier)
     ruleData.foreach(data => definition.applyRule(loadRule(data)))
 
-    val fragment = new Node(fragmentData.name, fragmentData.identity, fragmentData.isTemplate)
+    val modelElement = new Node(modelElementData.name, modelElementData.identity, modelElementData.isTemplate)
 
-    fragment.setRegistry(registry)
-    fragment.setDefinition(definition)
-    fragment.setVerifiers(definitionVerifier, modelVerifier)
+    modelElement.setRegistry(registry)
+    modelElement.setDefinition(definition)
+    modelElement.setVerifiers(definitionVerifier, modelVerifier)
 
-    fragment.createHandle
+    modelElement.createHandle
   }
 
   def loadRule(ruleData: RuleData): Rule = {

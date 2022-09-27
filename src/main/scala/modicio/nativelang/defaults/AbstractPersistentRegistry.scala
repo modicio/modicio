@@ -15,8 +15,8 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, FragmentData, InstanceData, RuleData}
-import modicio.codi.{DeepInstance, Fragment, ImmutableShape, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
+import modicio.codi.datamappings.{AssociationData, AttributeData, ExtensionData, ModelElementData, InstanceData, RuleData}
+import modicio.codi.{DeepInstance, ModelElement, ImmutableShape, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -28,15 +28,15 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   protected case class IODiff[T](toDelete: Set[T], toAdd: Set[T], toUpdate: Set[T])
 
 
-  protected def fetchFragmentData(name: String, identity: String): Future[Option[FragmentData]]
+  protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]]
 
-  protected def fetchFragmentData(identity: String): Future[Set[FragmentData]]
+  protected def fetchModelElementData(identity: String): Future[Set[ModelElementData]]
 
   protected def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]]
 
   protected def fetchInstanceData(instanceId: String): Future[Option[InstanceData]]
 
-  protected def fetchRuleData(fragmentName: String, identity: String): Future[Set[RuleData]]
+  protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]]
 
   protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]]
 
@@ -45,7 +45,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]]
 
 
-  protected def writeFragmentData(fragmentData: FragmentData): Future[FragmentData]
+  protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData]
 
   protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData]
 
@@ -58,7 +58,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
 
-  protected def removeFragmentWithRules(fragmentName: String, identity: String): Future[Any]
+  protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
 
   protected def removeInstanceWithData(instanceId: String): Future[Any]
 
@@ -71,12 +71,12 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     for {
-      fragmentDataOption <- fetchFragmentData(name, identity)
+      modelElementDataOption <- fetchModelElementData(name, identity)
       ruleData <- fetchRuleData(name, identity)
     } yield {
-      if(fragmentDataOption.isDefined){
-        val fragmentData = fragmentDataOption.get;
-        Some(typeFactory.loadType(fragmentData, ruleData))
+      if(modelElementDataOption.isDefined){
+        val modelElementData = modelElementDataOption.get;
+        Some(typeFactory.loadType(modelElementData, ruleData))
       }else {
         None
       }
@@ -85,29 +85,29 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   override def getReferences: Future[Set[TypeHandle]] = {
     for {
-      fragmentDataSet <- fetchFragmentData(Fragment.REFERENCE_IDENTITY)
-      ruleDataSet <- Future.sequence(fragmentDataSet.map(f => fetchRuleData(f.name, f.identity)))
+      modelElementDataSet <- fetchModelElementData(ModelElement.REFERENCE_IDENTITY)
+      ruleDataSet <- Future.sequence(modelElementDataSet.map(f => fetchRuleData(f.name, f.identity)))
     } yield {
-      if(fragmentDataSet.size != ruleDataSet.size){
-        Future.failed(new Exception("Not matching fragment and rule-set relations"))
+      if(modelElementDataSet.size != ruleDataSet.size){
+        Future.failed(new Exception("Not matching modelElement and rule-set relations"))
       }
-      fragmentDataSet.map(fragmentData => (fragmentData, {
+      modelElementDataSet.map(modelElementData => (modelElementData, {
         ruleDataSet.find(rules => rules.exists(ruleData =>
-          ruleData.fragmentName == fragmentData.name && ruleData.identity == fragmentData.identity))
+          ruleData.modelElementName == modelElementData.name && ruleData.identity == modelElementData.identity))
       })).map(modelTuple => {
-        val (fragmentData, ruleDataOption) = modelTuple
+        val (modelElementData, ruleDataOption) = modelTuple
         val ruleData: Set[RuleData] = ruleDataOption.getOrElse(Set())
-        typeFactory.loadType(fragmentData, ruleData)
+        typeFactory.loadType(modelElementData, ruleData)
       }) //++ baseModels.values.map(_.createHandle).toSet
     }
   }
 
   override protected def setNode(typeHandle: TypeHandle): Future[Unit] = {
-    fetchRuleData(typeHandle.getFragment.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
-      val (fragmentData, ruleData) = typeHandle.getFragment.toData
+    fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
+      val (modelElementData, ruleData) = typeHandle.getModelElement.toData
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
-        _ <- writeFragmentData(fragmentData)
+        _ <- writeModelElementData(modelElementData)
       } yield {}
     })
   }
@@ -172,24 +172,24 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   /**
    * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
    * <p> <strong>Experimental Feature</strong>
-   * <p> In case of a reference-identity Fragment, the Fragment is deleted only. In consequence, children pointing to that Fragment
-   * and other Fragments associating this Fragment become invalid and must be repaired manually.
-   * <p> In case of a singleton-identity Fragment, the whole singleton-fork of the Fragment tree and the corresponding
+   * <p> In case of a reference-identity ModelElement, the ModelElement is deleted only. In consequence, children pointing to that ModelElement
+   * and other ModelElements associating this ModelElement become invalid and must be repaired manually.
+   * <p> In case of a singleton-identity ModelElement, the whole singleton-fork of the ModelElement tree and the corresponding
    * [[DeepInstance DeepInstance]] tree are removed.
    * <p> In case of a user-space identity, nothing happens yet => TODO
    *
-   * @param name     of the [[Fragment Fragment]] trying to remove
-   * @param identity of the [[Fragment Fragment]] trying to remove
+   * @param name     of the [[ModelElement ModelElement]] trying to remove
+   * @param identity of the [[ModelElement ModelElement]] trying to remove
    * @return
    */
   override def autoRemove(name: String, identity: String): Future[Any] = {
 
-    if (identity == Fragment.REFERENCE_IDENTITY) {
+    if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
-      removeFragmentWithRules(name, identity)
+      removeModelElementWithRules(name, identity)
 
-    } else if (identity == Fragment.SINGLETON_IDENTITY) {
-      //In case of a singleton identity fragment
+    } else if (identity == ModelElement.SINGLETON_IDENTITY) {
+      //In case of a singleton identity modelElement
 
       val singletonInstanceId = DeepInstance.deriveSingletonInstanceId(identity, name)
 
@@ -199,14 +199,14 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
           //unfold the singleton deep-instance
 
           deepInstanceOption.get.unfold() flatMap (unfoldedInstance => {
-            val extensions = unfoldedInstance.getTypeHandle.getFragment.getParents
+            val extensions = unfoldedInstance.getTypeHandle.getModelElement.getParents
 
             //delete all parent model-elements of the singleton deep-instance
             //delete the actual deep-instance and trigger deletion of its parents
             for {
               _ <- removeInstanceWithData(singletonInstanceId)
-              _ <- Future.sequence(extensions.map(extension => autoRemove(extension.name, Fragment.SINGLETON_IDENTITY)))
-              _ <- removeFragmentWithRules(name, identity)
+              _ <- Future.sequence(extensions.map(extension => autoRemove(extension.name, ModelElement.SINGLETON_IDENTITY)))
+              _ <- removeModelElementWithRules(name, identity)
             } yield {}
           })
 

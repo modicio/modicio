@@ -16,7 +16,7 @@
 package modicio.codi.values
 
 import modicio.codi.rules.{AssociationRule, AttributeRule, RuleDataType}
-import modicio.codi.{Fragment, Rule}
+import modicio.codi.{ModelElement, Rule}
 
 /**
  * @param nativeValue he string representation in the native-language format
@@ -95,7 +95,7 @@ class ConcreteValue(nativeValue: String) extends Rule(nativeValue) {
   /**
    * <p>Implementation of [[Rule#fork Rule.fork()]].
    *
-   * @param identity the identity of an instantiated [[Fragment Fragment]]
+   * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
   override def fork(identity: String): Rule =

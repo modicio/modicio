@@ -40,17 +40,17 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
   def newInstance(typeName: String): Future[DeepInstance] = newInstance(typeName, Identity.create())
 
   def newInstance(typeName: String, newIdentity: String): Future[DeepInstance] = {
-    registry.getType(typeName, Fragment.REFERENCE_IDENTITY) flatMap (typeHandleOption =>
+    registry.getType(typeName, ModelElement.REFERENCE_IDENTITY) flatMap (typeHandleOption =>
       typeHandleOption.getOrElse(throw new Exception("type-model not found")).unfold() flatMap (referenceTypeHandle => {
-        if (referenceTypeHandle.getFragment.isTemplate) {
+        if (referenceTypeHandle.getModelElement.isTemplate) {
           Future.failed(new Exception("unable to instantiate template type-models at bottom level"))
         } else {
           val identity: String = newIdentity
-          val deepValueSet: Set[ConcreteValue] = referenceTypeHandle.getFragment.deepValueSet
-          val unfoldedReferenceFragment: Fragment = referenceTypeHandle.getFragment.fork(identity)
+          val deepValueSet: Set[ConcreteValue] = referenceTypeHandle.getModelElement.deepValueSet
+          val unfoldedReferenceModelElement: ModelElement = referenceTypeHandle.getModelElement.fork(identity)
 
-          unfoldedReferenceFragment.setVerifiers(definitionVerifier, modelVerifier)
-          unfoldedReferenceFragment.createHandle.unfold() flatMap (unfoldedTypeHandle => {
+          unfoldedReferenceModelElement.setVerifiers(definitionVerifier, modelVerifier)
+          unfoldedReferenceModelElement.createHandle.unfold() flatMap (unfoldedTypeHandle => {
             val instanceBuffer: mutable.Set[DeepInstance] = mutable.Set[DeepInstance]()
             val rootInstanceId = deriveInstance(unfoldedTypeHandle, identity, deepValueSet, instanceBuffer).getInstanceId
             Future.sequence(instanceBuffer.map(registry.setInstance)) map (_ => instanceBuffer.find(_.getInstanceId == rootInstanceId).get)
@@ -61,7 +61,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
 
   /**
    *
-   * @param typeHandle unfolded TypeHandle with forked and identified fragment model
+   * @param typeHandle unfolded TypeHandle with forked and identified modelElement model
    * @param identity
    * @param deepValueSet
    * @param instanceBuffer
@@ -71,14 +71,14 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
                                identity: String, rootInstanceId: String,
                                deepValueSet: Set[ConcreteValue],
                                instanceBuffer: mutable.Set[DeepInstance]): Set[ExtensionData] = {
-    val fragment = typeHandle.getFragment
-    val extensions = fragment.getParents
-    extensions.map(extensionFragment => deriveInstance(extensionFragment.createHandle, identity, deepValueSet, instanceBuffer)).map(newInstance => ExtensionData(0, rootInstanceId, newInstance.getInstanceId))
+    val modelElement = typeHandle.getModelElement
+    val extensions = modelElement.getParents
+    extensions.map(extensionModelElement => deriveInstance(extensionModelElement.createHandle, identity, deepValueSet, instanceBuffer)).map(newInstance => ExtensionData(0, rootInstanceId, newInstance.getInstanceId))
   }
 
   /**
    *
-   * @param typeHandle unfolded TypeHandle with forked and identified fragment model
+   * @param typeHandle unfolded TypeHandle with forked and identified modelElement model
    * @param identity
    * @param deepValueSet
    * @param instanceBuffer
@@ -89,7 +89,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
                              deepValueSet: Set[ConcreteValue],
                              instanceBuffer: mutable.Set[DeepInstance]): DeepInstance = {
     val instanceId: String = {
-      if(Fragment.isSingletonIdentity(identity)){
+      if(ModelElement.isSingletonIdentity(identity)){
         DeepInstance.deriveSingletonInstanceId(identity, typeHandle.getTypeName)
       }else{
         Identity.create()
@@ -113,7 +113,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
    * @return
    */
   private def deriveAttributes(typeHandle: TypeHandle, instanceId: String, deepValueSet: Set[ConcreteValue]): Set[AttributeData] = {
-    val attributeRules = typeHandle.getFragment.definition.getAttributeRules
+    val attributeRules = typeHandle.getModelElement.definition.getAttributeRules
     attributeRules.map(attributeRule => {
       val valueOption = deepValueSet.find(value => value.concreteOf(attributeRule))
       if(valueOption.isEmpty) {
@@ -134,14 +134,14 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
    * @return
    */
   private def deriveAssociations(typeHandle: TypeHandle, instanceId: String, deepValueSet: Set[ConcreteValue]): Set[AssociationData] = {
-    val associationRules = typeHandle.getFragment.definition.getAssociationRules
+    val associationRules = typeHandle.getModelElement.definition.getAssociationRules
     val result = mutable.Set[AssociationData]()
     associationRules.foreach(associationRule => {
       //there may be concrete values of this rule
       deepValueSet.filter(value => value.concreteOf(associationRule)).foreach(value => {
         val relationName = value.valueName
         val concreteAssociation = value.getAssociationDescriptor
-        val target = concreteAssociation.targetFragment
+        val target = concreteAssociation.targetModelElement
         //val targetIdentity = concreteAssociation.targetIdentity // we assume only singleton identities here!
         result.add(AssociationData(0, relationName, instanceId, DeepInstance.deriveRootSingletonInstanceId(target), isFinal = true))
       })
@@ -155,12 +155,12 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
   /**
    * Load and construct the DeepInstance of a given TypeHandle.
    * <p> This operation must first check, that an Instance can and should be constructed at all. This is not the case,
-   * if the TypeHandle describes a reference-fragment (#-Identity). In case of singleton objects, type-specific flags
+   * if the TypeHandle describes a reference-modelElement (#-Identity). In case of singleton objects, type-specific flags
    * are set.
    * <p> If no instance can be constructed, because no instance data was found or the given TypeHandle is corrupted, an
    * empty option is returned.
    * <p> <strong>In the general case, this operation returns a DeepInstance which is not unfolded!</strong>
-   * Although depending on the used Registry, an unfolded or partially unfolded (Fragment-side) result is possible.
+   * Although depending on the used Registry, an unfolded or partially unfolded (ModelElement-side) result is possible.
    *
    * @param instanceData
    * @param configuration

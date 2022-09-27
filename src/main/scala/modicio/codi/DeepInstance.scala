@@ -26,8 +26,8 @@ import scala.concurrent.Future
 /**
  * <p> The DeepInstance is the central class of the clabject-hierarchy. See the external documentation for more information
  * and examples.
- * <p> A DeepInstance must have a [[TypeHandle TypeHandle]] containing its instantiated type-fragment;
- * A [[Registry Registry]] for lazy reloads on unfold() calls, which contains the all instances and fragments
+ * <p> A DeepInstance must have a [[TypeHandle TypeHandle]] containing its instantiated type-modelElement;
+ * A [[Registry Registry]] for lazy reloads on unfold() calls, which contains the all instances and modelElements
  * used in the sam runtime-environment.
  * <p> A DeepInstance is identified by a technical unique instanceId and an identity representing the clabject.
  * <p> <strong>Following the intended usage, DeepInstances are always constructed using the [[InstanceFactory InstanceFactory]]</strong>
@@ -45,7 +45,7 @@ import scala.concurrent.Future
  * @param identity   unique identity of the overall clabject
  * @param shape      contains all objectified values such as [[AssociationData AssociationData]],
  *                   [[ExtensionData ExtensionData]] and [[AttributeData AttributeData]]
- * @param typeHandle the instantiated [[Fragment Fragment]] type, represented by its [[TypeHandle TypeHandle]]
+ * @param typeHandle the instantiated [[ModelElement ModelElement]] type, represented by its [[TypeHandle TypeHandle]]
  * @param registry   the [[Registry Registry]] of the runtime-environment
  */
 class DeepInstance(private[modicio] val instanceId: String,
@@ -60,8 +60,8 @@ class DeepInstance(private[modicio] val instanceId: String,
   private val unfoldedExtensions: mutable.Set[DeepInstance] = mutable.Set[DeepInstance]()
 
   /**
-   * <p> Produces the [[TypeHandle TypeHandle]] of the associated [[Fragment Fragment]] type.
-   * <p> If the DeepInstance is not unfolded, the Fragment is not unfolded as well!
+   * <p> Produces the [[TypeHandle TypeHandle]] of the associated [[ModelElement ModelElement]] type.
+   * <p> If the DeepInstance is not unfolded, the ModelElement is not unfolded as well!
    *
    * @return TypeHandle
    */
@@ -78,7 +78,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * <p> Unfold the given DeepInstance asynchronously. This operation loads all DeepInstances specified by
    * [[ExtensionData ExtensionData]] from the provided [[Registry Registry]] and adds
    * them to the concreteExtensions Set. The unfold call is propagated to the loaded extensions as well. The unfold call
-   * is also propagated to the [[Fragment Fragment]] calling [[Fragment#unfold Fragment.unfold()]]
+   * is also propagated to the [[ModelElement ModelElement]] calling [[ModelElement#unfold ModelElement.unfold()]]
    * <p> <strong>This method must be called before deep queries and operations such as deepAttributeMap() and similar methods
    * starting with deep...() are used. They will produce local-only results otherwise.</strong>
    * <p> If an already unfolded DeepInstance is unfolded again, the wired extensions are cleared and this method recreates
@@ -135,7 +135,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * @return Option[DeepInstance] - unfolded DeepInstance tree of the requested type
    */
   def getPolymorphSubtype(typeName: String): Option[DeepInstance] = {
-    if (typeName == typeHandle.getFragment.name) {
+    if (typeName == typeHandle.getModelElement.name) {
       return Some(this)
     }
     if (getTypeClosure.contains(typeName)) {
@@ -171,7 +171,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * @return Map[AttributeData, AttributeRule] - attributes of this particular DeepInstance
    */
   def attributeMap(): Map[AttributeData, AttributeRule] = {
-    val propertyRules = typeHandle.getFragment.definition.getAttributeRules
+    val propertyRules = typeHandle.getModelElement.definition.getAttributeRules
     shape.getAttributes.toSeq.sortBy(_.id).map(property => (property, propertyRules.find(_.name == property.key).get)).toMap
   }
 
@@ -224,7 +224,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    */
   def associationRuleMap: Map[String, mutable.Set[String]] = {
     val results: mutable.Map[String, mutable.Set[String]] = mutable.Map()
-    typeHandle.getFragment.definition.getAssociationRules.foreach(rule => {
+    typeHandle.getModelElement.definition.getAssociationRules.foreach(rule => {
       val key = rule.associationName
       val value = rule.targetName
       val entry = results.get(key)
@@ -356,14 +356,14 @@ class DeepInstance(private[modicio] val instanceId: String,
 
   /**
    * <p> Get the closure of the types of this DeepInstance, i.e. get the set of type-names of all
-   * [[Fragment Fragments]] in this instances type-hierarchy.
+   * [[ModelElement ModelElements]] in this instances type-hierarchy.
    * <p> The DeepInstance can be used as any of the types as provided by this method.
    * <p> <strong>This operation requires the DeepInstance (or the TypeHandle only) to be unfolded!</strong>
    *
    * @return Set[String] of all type names the DeepInstance type-hierarchy contains.
    */
   def getTypeClosure: Set[String] = {
-    getTypeHandle.getFragment.getTypeClosure
+    getTypeHandle.getModelElement.getTypeClosure
   }
 
   //TODO doc
@@ -379,7 +379,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * [[AssociationRule AssociationRule]] in form of [[AssociationData AssociationData]].
    * <p> To establish an association, the polymorph type of the provided DeepInstance and the relation name are required.
    * This operation checks if the association is allowed by a corresponding [[AssociationRule AssociationRule]] and
-   * if the provided associateAs fragment-type is allowed by the rule or by the fuzzy polymorphism.
+   * if the provided associateAs modelElement-type is allowed by the rule or by the fuzzy polymorphism.
    *
    * <p> <strong>Fuzzy polymorphism</strong> means that the associate operation checks if the provided DeepInstance has a
    * type in its type-closure that is target to the association rule representing the given byRelation. If this is fulfilled,
@@ -404,7 +404,7 @@ class DeepInstance(private[modicio] val instanceId: String,
     println("associateAs: " + associateAs)
     if (instanceTypes.contains(associateAs)) {
       //check if the proposed relation is defined on top of a type which is in the instance type hierarchy
-      val allowedAssociationTypes = typeHandle.getFragment.getDeepAssociationRulesOfRelation(byRelation).map(_.targetName)
+      val allowedAssociationTypes = typeHandle.getModelElement.getDeepAssociationRulesOfRelation(byRelation).map(_.targetName)
       if (instanceTypes.intersect(allowedAssociationTypes).nonEmpty) {
         shape.addAssociation(AssociationData(0, byRelation, instanceId, deepInstance.getPolymorphSubtype(associateAs).get.getInstanceId, isFinal = false))
         true
@@ -419,8 +419,8 @@ class DeepInstance(private[modicio] val instanceId: String,
 
 object DeepInstance {
 
-  def deriveSingletonInstanceId(identity: String, fragmentName: String): String = {
-    identity + ":" + fragmentName
+  def deriveSingletonInstanceId(identity: String, modelElementName: String): String = {
+    identity + ":" + modelElementName
   }
 
   def isSingletonInstanceId(instanceId: String): Boolean = {
@@ -433,8 +433,8 @@ object DeepInstance {
       instanceIdPrefix.split(":").length == 1
   }
 
-  def deriveRootSingletonInstanceId(fragmentName: String): String = {
-    Fragment.composeSingletonIdentity(fragmentName) + ":" + fragmentName
+  def deriveRootSingletonInstanceId(modelElementName: String): String = {
+    ModelElement.composeSingletonIdentity(modelElementName) + ":" + modelElementName
   }
 
 }

@@ -100,7 +100,7 @@ object JavaAPIConversions {
 
   implicit def convert[T, K](value: java.util.Map[T, K]): Map[T, K] = value.asScala.toMap
 
-  implicit def convert(value: TypeHandle): TypeHandleJ = new TypeHandleJ(value.getFragment, value.getIsStatic)
+  implicit def convert(value: TypeHandle): TypeHandleJ = new TypeHandleJ(value.getModelElement, value.getIsStatic)
 
   implicit def convert(value: DeepInstance): DeepInstanceJ = new DeepInstanceJ(value.instanceId, value.identity, value.shape, value.typeHandle, value.registry)
 
@@ -164,9 +164,9 @@ object JavaAPIConversions {
 
   implicit def convert(value: ConcreteAttribute): ConcreteAttributeJ = new ConcreteAttributeJ(value.nativeValue)
 
-  implicit def convert(value: FragmentData): FragmentDataJ = FragmentDataJ tupled FragmentData.unapply(value).get
+  implicit def convert(value: ModelElementData): ModelElementDataJ = ModelElementDataJ tupled ModelElementData.unapply(value).get
 
-  implicit def convert(value: FragmentDataJ): FragmentData = FragmentData tupled FragmentDataJ.unapply(value).get
+  implicit def convert(value: ModelElementDataJ): ModelElementData = ModelElementData tupled ModelElementDataJ.unapply(value).get
 
   implicit def convert(value: AssociationData): AssociationDataJ =
     AssociationDataJ tupled AssociationData.unapply(value).get
@@ -205,5 +205,5 @@ object JavaAPIConversions {
     new ShapeJ(convert(value.getAttributes), convert(value.getAssociations), convert(value.getExtensions))
 
 
-  implicit def convert(value: TypeIterator): TypeIteratorJ = new TypeIteratorJ(value.initialFragment)
+  implicit def convert(value: TypeIterator): TypeIteratorJ = new TypeIteratorJ(value.initialModelElement)
 }

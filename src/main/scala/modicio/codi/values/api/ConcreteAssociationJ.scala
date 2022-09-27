@@ -21,7 +21,7 @@ class ConcreteAssociationJ(nativeValue: java.lang.String) extends ConcreteAssoci
 
   def targetIdentityJ: java.lang.String = super.targetIdentity
 
-  def targetFragmentJ: java.lang.String = super.targetFragment
+  def targetModelElementJ: java.lang.String = super.targetModelElement
 
   def getValueDescriptor: ValueDescriptor = this
 }

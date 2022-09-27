@@ -26,7 +26,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   //protected var baseModels: mutable.Map[String, BaseModel] = mutable.Map[String, BaseModel]()
 
   def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
-    //if(identity == Fragment.REFERENCE_IDENTITY && baseModels.contains(name)){
+    //if(identity == ModelElement.REFERENCE_IDENTITY && baseModels.contains(name)){
     //  Future.successful(Some(baseModels(name).createHandle))
     //}else{
       getDynamicType(name, identity)
@@ -45,20 +45,18 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   def getSingletonTypes(name: String): Future[Set[TypeHandle]]
 
   /**
-   * Add a [[Fragment Fragment]] to this Registry.
-   * <p> This operation must distinguish between [[BaseModel BaseModels]] with reference-identity and any other
-   * model-elements. reference-BaseModels are always stored only in a non-persistent data structure and not passed to the
-   * template-method handling persistence because reference BaseModels are coded into the application logic and are set
-   * on application start always.
+   * Add a [[ModelElement ModelElement]] to this Registry.
+   * This implementation is slightly more complicated then necessary to provide support
+   * for future model implementation changes.
    *
    * @param typeHandle [[TypeHandle TypeHandle]] of the model-element to store/register
    * @return
    */
   def setType(typeHandle: TypeHandle): Future[Unit] = {
-    val fragment = typeHandle.getFragment
-    fragment match {
-      //case fragment: BaseModel => {
-      //  baseModels.put(fragment.name, fragment)
+    val modelElement = typeHandle.getModelElement
+    modelElement match {
+      //case modelElement: BaseModel => {
+      //  baseModels.put(modelElement.name, modelElement)
       //  Future.successful((): Unit)
       //}
       case _ => setNode(typeHandle)
@@ -77,14 +75,14 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   /**
    * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
    * <p> <strong>Experimental Feature</strong>
-   * <p> In case of a reference-identity Fragment, the Fragment is deleted only. In consequence, children pointing to that Fragment
-   * and other Fragments associating this Fragment become invalid and must be repaired manually.
-   * <p> In case of a singleton-identity Fragment, the whole singleton-fork of the Fragment tree and the corresponding
+   * <p> In case of a reference-identity ModelElement, the ModelElement is deleted only. In consequence, children pointing to that ModelElement
+   * and other ModelElements associating this ModelElement become invalid and must be repaired manually.
+   * <p> In case of a singleton-identity ModelElement, the whole singleton-fork of the ModelElement tree and the corresponding
    * [[DeepInstance DeepInstance]] tree are removed.
    * <p> In case of a user-space identity, nothing happens yet => TODO
    *
-   * @param name     of the [[Fragment Fragment]] trying to remove
-   * @param identity of the [[Fragment Fragment]] trying to remove
+   * @param name     of the [[ModelElement ModelElement]] trying to remove
+   * @param identity of the [[ModelElement ModelElement]] trying to remove
    * @return
    */
   def autoRemove(name: String, SINGLETON_IDENTITY: String): Future[Any]

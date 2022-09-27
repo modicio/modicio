@@ -17,13 +17,13 @@ package modicio.codi
 
 import scala.collection.mutable.ListBuffer
 
-class TypeIterator(private[modicio] val initialFragment: Fragment) {
+class TypeIterator(private[modicio] val initialModelElement: ModelElement) {
 
-  private val _currentBuffer: ListBuffer[Fragment] = ListBuffer(initialFragment)
+  private val _currentBuffer: ListBuffer[ModelElement] = ListBuffer(initialModelElement)
 
   def name: String = current.get.name
 
-  private def current: Option[Fragment] = {
+  private def current: Option[ModelElement] = {
     if(_currentBuffer.isEmpty){
       None
     }else {

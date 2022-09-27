@@ -15,7 +15,7 @@
  */
 package modicio.codi.rules
 
-import modicio.codi.{Fragment, Rule}
+import modicio.codi.{ModelElement, Rule}
 import modicio.codi.datamappings.RuleData
 
 /**
@@ -25,8 +25,8 @@ import modicio.codi.datamappings.RuleData
  * <br />
  * <p> <strong>String format: "ID:PARENT_IDENTITY:PARENT_NAME"</strong>
  * <P> where ID is the unique technical identifier of the [[Rule Rule]]
- * <p> where PARENT_IDENTITY is the identity value of the parent [[Fragment Fragment]]
- * <p> where TARGET_NAME is the name of the parent [[Fragment Fragment]]
+ * <p> where PARENT_IDENTITY is the identity value of the parent [[ModelElement ModelElement]]
+ * <p> where TARGET_NAME is the name of the parent [[ModelElement ModelElement]]
  *
  * @see [[Rule]]<p>[[RuleData]]
  * @param nativeValue the string representation in the native-language format
@@ -86,7 +86,7 @@ class ExtensionRule(nativeValue: String) extends Rule(nativeValue) {
    * <p> In this case of an ExtensionRule, especially the parent identity (which is in the reference case set to the reference identity)
    * is replaced by the provided new identity of the instantiation.
    *
-   * @param identity the identity of an instantiated [[Fragment Fragment]]
+   * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
   override def fork(identity: String): Rule = ExtensionRule.create(parentName, identity, Some(Rule.UNKNOWN_ID))
@@ -108,8 +108,8 @@ object ExtensionRule {
    * <p> If an empty idOption is provided, the id is set to [[Rule#UNKNOWN_ID UNKNOWN_ID]] and must be
    * changed manually.
    *
-   * @param parentName     name of the parent [[Fragment Fragment]]
-   * @param parentIdentity identity of the parent [[Fragment Fragment]]
+   * @param parentName     name of the parent [[ModelElement ModelElement]]
+   * @param parentIdentity identity of the parent [[ModelElement ModelElement]]
    * @param idOption       id value if known, set to default otherwise
    * @return ExtensionRule created from provided values
    */

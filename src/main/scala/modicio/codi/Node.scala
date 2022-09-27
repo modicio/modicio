@@ -15,15 +15,15 @@
  */
 package modicio.codi
 
-import modicio.codi.datamappings.{FragmentData, RuleData}
+import modicio.codi.datamappings.{ModelElementData, RuleData}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
- * @param name       name of the Fragment, name and identity form a unique pair.
- * @param identity   identity of the Fragment
+ * @param name       name of the ModelElement, name and identity form a unique pair.
+ * @param identity   identity of the ModelElement
  * @param isTemplate if the template can be instantiated directly or only used as part of an extension hierarchy / isAbstract
  */
 class Node
@@ -31,13 +31,13 @@ class Node
   name: String,
   identity: String,
   isTemplate: Boolean
-) extends Fragment(name, identity, isTemplate) {
+) extends ModelElement(name, identity, isTemplate) {
 
   override final def isNode: Boolean = true
 
-  protected val extensions: mutable.Set[Fragment] = mutable.Set()
+  protected val extensions: mutable.Set[ModelElement] = mutable.Set()
 
-  override def getParents: Set[Fragment] = Set.from(extensions)
+  override def getParents: Set[ModelElement] = Set.from(extensions)
 
   override def unfold(): Future[Unit] = {
     fold()
@@ -50,7 +50,7 @@ class Node
         Future.sequence(extensionRules.map(extensionRule => {
           registry.getType(extensionRule.parentName, extensionRule.parentIdentity)
         })) map (handleOptions => {
-          extensions.addAll(handleOptions.filter(_.isDefined).map(_.get.getFragment))
+          extensions.addAll(handleOptions.filter(_.isDefined).map(_.get.getModelElement))
         }) flatMap (_ => {
           unfoldExtensions()
         })
@@ -67,10 +67,10 @@ class Node
     extensions.clear()
   }
 
-  override private[modicio] def toData: (FragmentData, Set[RuleData]) = {
-    val fragmentData = FragmentData(name, identity, isTemplate, isNode = true)
+  override private[modicio] def toData: (ModelElementData, Set[RuleData]) = {
+    val modelElementData = ModelElementData(name, identity, isTemplate, isNode = true)
     val ruleData = definition.toData(name, identity)
-    (fragmentData, ruleData)
+    (modelElementData, ruleData)
   }
 
   /**
@@ -79,7 +79,7 @@ class Node
    * @param identity
    * @return
    */
-  override def fork(identity: String): Fragment = {
+  override def fork(identity: String): ModelElement = {
     extensions.foreach(extension => extension.fork(identity))
     super.fork(identity)
   }

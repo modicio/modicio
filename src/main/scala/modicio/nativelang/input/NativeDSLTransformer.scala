@@ -65,7 +65,7 @@ class NativeDSLTransformer(registry: Registry,
             deepInstance.getExtensionClosure.foreach(i => {
               val data = i.toData
               configuration.add(data)
-              val frag = i.getTypeHandle.getFragment
+              val frag = i.getTypeHandle.getModelElement
               val childOf = frag.definition.getExtensionRules.map(_.serialise()).toSeq
               val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
               val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq

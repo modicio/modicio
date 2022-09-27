@@ -15,12 +15,12 @@
  */
 package modicio.codi.api
 
-import modicio.codi.{Fragment, TypeIterator}
+import modicio.codi.{ModelElement, TypeIterator}
 import modicio.api.JavaAPIConversions._
 
 import java.util.Optional
 
-class TypeIteratorJ(initialFragment: Fragment) extends TypeIterator(initialFragment) {
+class TypeIteratorJ(initialModelElement: ModelElement) extends TypeIterator(initialModelElement) {
 
   def nameJ: java.lang.String = super.name
 

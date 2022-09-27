@@ -16,12 +16,12 @@
 package modicio.codi.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.codi.{Fragment, TypeIterator}
+import modicio.codi.{ModelElement, TypeIterator}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
 
-class TypeHandleJ(fragment: Fragment, static: Boolean) extends modicio.codi.TypeHandle(fragment, static) {
+class TypeHandleJ(modelElement: ModelElement, static: Boolean) extends modicio.codi.TypeHandle(modelElement, static) {
 
   override def getTypeName: String = super.getTypeName
 
