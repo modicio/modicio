@@ -26,4 +26,4 @@ import modicio.core.ModelElement
  * @param identity   identity value
  * @param isTemplate flag if the ModelElement describes a template-type or instantiable-type
  */
-case class ModelElementData(name: String, identity: String, isTemplate: Boolean, isNode: Boolean)
+case class ModelElementData(name: String, identity: String, isTemplate: Boolean, isNode: Boolean, timeIdentity: Long)

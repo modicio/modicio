@@ -30,8 +30,9 @@ class Node
 (
   name: String,
   identity: String,
-  isTemplate: Boolean
-) extends ModelElement(name, identity, isTemplate) {
+  isTemplate: Boolean,
+  timeIdentity: TimeIdentity
+) extends ModelElement(name, identity, isTemplate, timeIdentity) {
 
   override final def isNode: Boolean = true
 
@@ -67,10 +68,10 @@ class Node
     extensions.clear()
   }
 
-  override private[modicio] def toData: (ModelElementData, Set[RuleData]) = {
-    val modelElementData = ModelElementData(name, identity, isTemplate, isNode = true)
+  override private[modicio] def toData: (ModelElementData, Set[RuleData], TimeIdentity) = {
+    val modelElementData = ModelElementData(name, identity, isTemplate, isNode = true, timeIdentity.localId)
     val ruleData = definition.toData(name, identity)
-    (modelElementData, ruleData)
+    (modelElementData, ruleData, timeIdentity)
   }
 
   /**
@@ -96,6 +97,16 @@ class Node
     definition.removeRule(rule)
     fold()
     Future.successful((): Unit)
+  }
+
+  /**
+   * <p> Trigger the persistence process for this ModelElement. Child classes may overwrite the behaviour of this method.
+   * <p> See overwriting implementations for more information.
+   *
+   * @return Future[Unit] - after the persistence process was completed
+   */
+  override def commit(): Future[Any] = {
+    super.commit() flatMap (_ => Future.sequence(extensions.map(_.commit())))
   }
 
 }

@@ -26,18 +26,19 @@ import io.circe.generic.JsonCodec
  * @param values
  */
 @JsonCodec
-case class Statement(name: String,
-                     template: Boolean,
-                     childOf: Seq[String],
-                     associations: Seq[String],
-                     attributes: Seq[String],
-                     values: Seq[String])
+case class NativeModelElement(name: String,
+                              template: Boolean,
+                              timeDescriptor: NativeTimeIdentity,
+                              childOf: Seq[String],
+                              associations: Seq[String],
+                              attributes: Seq[String],
+                              values: Seq[String])
 
 /**
  * TODO documentation
  */
-object Statement {
-  def parseIdentity(statement: Statement): String = statement.name.split(":").head
+object NativeModelElement {
+  def parseIdentity(statement: NativeModelElement): String = statement.name.split(":").head
 
-  def parseName(statement: Statement): String = statement.name.split(":").reverse.head
+  def parseName(statement: NativeModelElement): String = statement.name.split(":").reverse.head
 }

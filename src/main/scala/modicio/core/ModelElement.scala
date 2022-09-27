@@ -38,8 +38,10 @@ import scala.concurrent.Future
  * @param name       name of the ModelElement, name and identity form a unique pair.
  * @param identity   identity of the ModelElement
  * @param isTemplate if the template can be instantiated directly or only used as part of an extension hierarchy / isAbstract
+ * @param timeIdentity TODO documentation
  */
-abstract class ModelElement(val name: String, val identity: String, val isTemplate: Boolean) {
+abstract class ModelElement(val name: String, val identity: String, val isTemplate: Boolean, protected var timeIdentity: TimeIdentity) {
+
 
   private final var definitionOption: Option[Definition] = None
   private final var registryOption: Option[Registry] = None
@@ -101,11 +103,12 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    * <p> Abstract framework-private method to produce a data representation of this ModelElement.
    * <p> See the concrete implementations for more information.
    * <p> A concrete implementation may require the ModelElement to be unfolded!
+   * FIXME doc
    *
    * @return (ModelElementData, Set[RuleData]) - tuple of [[ModelElementData ModelElementData]] and
    *         [[RuleData RuleData]]
    */
-  private[modicio] def toData: (ModelElementData, Set[RuleData])
+  private[modicio] def toData: (ModelElementData, Set[RuleData], TimeIdentity)
 
   /**
    * <p> Trigger the persistence process for this ModelElement. Child classes may overwrite the behaviour of this method.
@@ -114,9 +117,21 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    *
    * @return Future[Unit] - after the persistence process was completed
    */
-  def commit(): Future[Unit] = {
-    registry.setType(this.createHandle)
+  def commit(): Future[Any] = {
+    if(definition.isVolatile) {
+      registry.setType(this.createHandle) map (
+        newTimeIdentity => timeIdentity = newTimeIdentity) map (_ =>
+        definition.cleanVolatile())
+    } else {
+      Future.successful()
+    }
   }
+
+  /**
+   * TODO documentation
+   * @return
+   */
+  def getTimeIdentity: TimeIdentity = timeIdentity
 
   /**
    * <p> Fork this ModelElement. This operation creates a copy of ModelElement and [[Definition Definition]] with
@@ -131,7 +146,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    * @return ModelElement - the forked ModelElement
    */
   def fork(identity: String): ModelElement = {
-    val newNode = new Node(name, identity, isTemplate)
+    val newNode = new Node(name, identity, isTemplate, TimeIdentity.fork(timeIdentity))
     newNode.setRegistry(registry)
     newNode.setDefinition(definition.fork(identity))
     registry.setType(newNode.createHandle)
@@ -287,6 +302,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    *
    * @return Definition if available or Exception
    */
+  @Deprecated
   protected def getDefinition: Definition = definition
 
   /**

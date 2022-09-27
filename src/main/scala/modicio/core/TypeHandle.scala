@@ -33,6 +33,8 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
   def isConcrete: Boolean = modelElement.isConcrete
 
+  def getTimeIdentity: TimeIdentity = modelElement.getTimeIdentity
+
   def hasSingleton: Future[Boolean] = modelElement.hasSingleton
 
   def hasSingletonRoot: Future[Boolean] = modelElement.hasSingletonRoot
@@ -43,7 +45,7 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
   def unfold(): Future[TypeHandle] = modelElement.unfold() map (_ => this)
 
-  def commit(): Future[Unit] = modelElement.commit()
+  def commit(): Future[Any] = modelElement.commit()
 
   def iterator: TypeIterator = new TypeIterator(modelElement)
 

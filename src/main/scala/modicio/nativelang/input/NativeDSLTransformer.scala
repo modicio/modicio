@@ -32,7 +32,7 @@ import scala.concurrent.Future
 class NativeDSLTransformer(registry: Registry,
                            definitionVerifier: DefinitionVerifier,
                            modelVerifier: ModelVerifier) extends
-  Transformer[NativeDSL, ExtendedNativeDSL](registry, definitionVerifier, modelVerifier) {
+  Transformer[NativeDSL, NativeCompartment](registry, definitionVerifier, modelVerifier) {
 
   override def extend(input: NativeDSL): Future[Unit] = {
     input.model.foreach(statement => evaluateStatement(statement))
@@ -40,8 +40,8 @@ class NativeDSLTransformer(registry: Registry,
   }
 
   def evaluateStatement(statement: Statement): Unit = {
-    val name = Statement.parseName(statement)
-    val identity = Statement.parseIdentity(statement)
+    val name = NativeModelElement.parseName(statement)
+    val identity = NativeModelElement.parseIdentity(statement)
     val typeHandle = typeFactory.newType(name, identity, statement.template)
     registry.setType(typeHandle)
 
@@ -54,7 +54,7 @@ class NativeDSLTransformer(registry: Registry,
     statement.values.foreach(concreteValue => typeHandle.applyRule(new ConcreteValue(concreteValue)))
   }
 
-  override def decompose(input: Option[String]): Future[ExtendedNativeDSL] = {
+  override def decompose(input: Option[String]): Future[NativeCompartment] = {
     if(input.isDefined){
       val statements = mutable.Set[Statement]()
       val configuration = mutable.Set[ImmutableShape]()
@@ -70,10 +70,10 @@ class NativeDSLTransformer(registry: Registry,
               val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
               val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq
               val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
-              val s = Statement(frag.name+":"+frag.identity, frag.isTemplate, childOf, associations, attributes, values)
+              val s = ModelDescription(frag.name+":"+frag.identity, frag.isTemplate, childOf, associations, attributes, values)
               statements.add(s)
             })
-            ExtendedNativeDSL(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
+            NativeCompartment(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
               (s.instanceData, s.extensions, s.attributes, s.associations)))
           })
         }else{

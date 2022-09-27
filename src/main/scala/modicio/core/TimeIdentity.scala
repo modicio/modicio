@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package modicio.core
 
 import modicio.core.util.IdentityProvider
@@ -21,6 +20,16 @@ import modicio.core.util.IdentityProvider
 case class TimeIdentity(localId: Long, variantTime: Long, runningTime: Long, versionTime: Long, variantId: String, runningId: String, versionId: String)
 
 object TimeIdentity {
+
+  def fork(reference: TimeIdentity): TimeIdentity = TimeIdentity(
+    localId = 0,
+    reference.variantTime,
+    reference.runningTime,
+    reference.versionTime,
+    reference.variantId,
+    reference.runningId,
+    reference.versionId
+  )
 
   def create: TimeIdentity = {
     val randomPart = IdentityProvider.newRandomId()

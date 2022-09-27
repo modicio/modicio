@@ -33,6 +33,20 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     this.instanceRegistry.addAll(registry.instanceRegistry)
   }
 
+
+  override def getReferenceTimeIdentity: Future[TimeIdentity] = {
+    //TODO
+  }
+
+  override def incrementVariant: Future[Any] = {
+    //TODO
+  }
+
+  override def containsRoot: Future[Boolean] = {
+    //TODO
+  }
+
+
   override def getDynamicType(name: String, identity: String): Future[Option[TypeHandle]] = {
     val typeGroup = typeRegistry.get(name)
     if (typeGroup.isEmpty) {
@@ -53,7 +67,10 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle): Future[Unit] = {
+  override protected def setNode(typeHandle: TypeHandle): Future[TimeIdentity] = {
+
+    //TODO TIME IDENTITY
+
     val name = typeHandle.getTypeName
     val identity = typeHandle.getTypeIdentity
     if (!typeRegistry.contains(name)) {
@@ -106,6 +123,8 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
     if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
+
+      //TODO TIME IDENTITY
 
       val typeGroupOption = typeRegistry.get(name)
       if (typeGroupOption.isDefined) {

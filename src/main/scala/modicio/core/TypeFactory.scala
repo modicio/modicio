@@ -20,6 +20,9 @@ import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule, RuleDa
 import modicio.core.values.ConcreteValue
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 /**
  * @param definitionVerifier
  * @param modelVerifier
@@ -31,15 +34,18 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
 
   def setRegistry(registry: Registry): Unit = this.registry = registry
 
-  def newType(name: String, identity: String, isTemplate: Boolean): TypeHandle = {
+  def newType(name: String, identity: String, isTemplate: Boolean): Future[TypeHandle] = {
     val definition = new Definition(definitionVerifier)
-    val modelElement = new Node(name, identity, isTemplate /*, modelVerifier*/)
+    registry.getReferenceTimeIdentity map (timeIdentity => {
 
-    modelElement.setRegistry(registry)
-    modelElement.setDefinition(definition)
-    modelElement.setVerifiers(definitionVerifier, modelVerifier)
+      val modelElement = new Node(name, identity, isTemplate, timeIdentity)
 
-    modelElement.createHandle
+      modelElement.setRegistry(registry)
+      modelElement.setDefinition(definition)
+      modelElement.setVerifiers(definitionVerifier, modelVerifier)
+
+      modelElement.createHandle
+    })
   }
 
   def loadType(modelElementData: ModelElementData, ruleData: Set[RuleData]): TypeHandle = {
@@ -50,6 +56,7 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
 
     modelElement.setRegistry(registry)
     modelElement.setDefinition(definition)
+    definition.cleanVolatile()
     modelElement.setVerifiers(definitionVerifier, modelVerifier)
 
     modelElement.createHandle

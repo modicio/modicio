@@ -47,6 +47,12 @@ class Definition
 
   private val values: mutable.Set[ConcreteValue] = mutable.Set()
 
+
+  private var volatile: Boolean = false
+
+  def isVolatile: Boolean = volatile
+  def cleanVolatile(): Unit = volatile = false
+
   /**
    * <p> Get all [[Rule Rules]] part of this Definition.
    *
@@ -96,6 +102,7 @@ class Definition
    * @param rule the new [[Rule Rule]] to add
    */
   private[modicio] def applyRule(rule: Rule): Unit = {
+    volatile = true
     val isValid = definitionVerifier.verify(getRules + rule)
     if (isValid) {
       rule match {
@@ -120,6 +127,7 @@ class Definition
    * @param rule the [[Rule Rule]] to remove
    */
   private[modicio] def removeRule(rule: Rule): Unit = {
+    volatile = true
     val rules = getRules
     val newRuleset = rules.filter(_.id != rule.id)
     if (definitionVerifier.verify(newRuleset)) {
@@ -142,6 +150,7 @@ class Definition
    * @param ruleID id of the [[Rule Rule]] to remove
    */
   private[modicio] def removeRuleByID(ruleID: String): Unit = {
+    volatile = true
     val rule = getRules.find(_.id == ruleID)
     if (rule.isDefined) removeRule(rule.get)
   }
