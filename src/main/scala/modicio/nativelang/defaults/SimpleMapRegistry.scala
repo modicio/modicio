@@ -28,7 +28,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
   private[modicio] val instanceRegistry = mutable.Map[String, DeepInstance]()
 
   private[modicio] def load(registry: SimpleMapRegistry): Unit = {
-    baseModels = registry.baseModels
+    //baseModels = registry.baseModels
     this.typeRegistry.addAll(registry.typeRegistry)
     this.instanceRegistry.addAll(registry.instanceRegistry)
   }

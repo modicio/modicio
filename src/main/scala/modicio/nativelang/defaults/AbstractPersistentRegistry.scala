@@ -98,7 +98,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
         val (fragmentData, ruleDataOption) = modelTuple
         val ruleData: Set[RuleData] = ruleDataOption.getOrElse(Set())
         typeFactory.loadType(fragmentData, ruleData)
-      }) ++ baseModels.values.map(_.createHandle).toSet
+      }) //++ baseModels.values.map(_.createHandle).toSet
     }
   }
 

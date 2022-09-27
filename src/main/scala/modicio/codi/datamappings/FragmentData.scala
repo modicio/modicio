@@ -15,7 +15,7 @@
  */
 package modicio.codi.datamappings
 
-import modicio.codi.{BaseModel, Fragment, Node}
+import modicio.codi.{Fragment, Node}
 
 /**
  * <p>Tuple to represent a [[Fragment Fragment]] for serialisation.

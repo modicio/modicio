@@ -139,7 +139,7 @@ object JavaAPIConversions {
 
   implicit def convertBase(value: Base): BaseJ = value match {
     case j: BaseJ => j
-    case model: BaseModel => throw new IllegalArgumentException()
+    //case model: BaseModel => throw new IllegalArgumentException()
     case definition: Definition => convert(definition)
     case _ => throw new IllegalArgumentException()
   }
