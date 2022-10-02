@@ -15,8 +15,8 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, ModelElementData, InstanceData, RuleData}
-import modicio.core.{DeepInstance, ModelElement, ImmutableShape, InstanceFactory, Registry, Shape, TypeFactory, TypeHandle}
+import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData, ModelElementData, RuleData}
+import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, TimeIdentity, TypeFactory, TypeHandle}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,7 +57,6 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
-
   protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
 
   protected def removeInstanceWithData(instanceId: String): Future[Any]
@@ -68,6 +67,15 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * Implementation of abstract members
    * ***********************************************************
    */
+
+  override def getReferenceTimeIdentity: Future[TimeIdentity] = ???
+
+  override def incrementVariant: Future[Any] = ???
+
+  override def containsRoot: Future[Boolean] = ???
+
+  override def getSingletonTypes(name: String): Future[Set[TypeHandle]] = ???
+
 
   override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     for {
@@ -104,7 +112,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   override protected def setNode(typeHandle: TypeHandle): Future[Unit] = {
     fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
-      val (modelElementData, ruleData) = typeHandle.getModelElement.toData
+      val (modelElementData, ruleData, timeIdentity) = typeHandle.getModelElement.toData
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
         _ <- writeModelElementData(modelElementData)

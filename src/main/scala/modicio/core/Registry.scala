@@ -15,6 +15,7 @@
  */
 package modicio.core
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -31,22 +32,9 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def containsRoot: Future[Boolean]
 
-  def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
-    //if(identity == ModelElement.REFERENCE_IDENTITY && baseModels.contains(name)){
-    //  Future.successful(Some(baseModels(name).createHandle))
-    //}else{
-      getDynamicType(name, identity)
-    //}
-  }
+  def getType(name: String, identity: String): Future[Option[TypeHandle]]
 
-  protected def getDynamicType(name: String, identity: String): Future[Option[TypeHandle]]
-
-  def getReferences: Future[Set[TypeHandle]] = {
-    //getDynamicReferences map (refs => refs ++ baseModels.values.map(_.createHandle))
-    getDynamicReferences
-  }
-
-  protected def getDynamicReferences: Future[Set[TypeHandle]]
+  def getReferences: Future[Set[TypeHandle]]
 
   def getSingletonTypes(name: String): Future[Set[TypeHandle]]
 
@@ -66,13 +54,13 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    */
   def setType(typeHandle: TypeHandle): Future[TimeIdentity] = {
     val modelElement = typeHandle.getModelElement
-    modelElement match {
-      //case modelElement: BaseModel => {
-      //  baseModels.put(modelElement.name, modelElement)
-      //  Future.successful((): Unit)
-      //}
-      case _ => setNode(typeHandle)
-    }
+    containsRoot flatMap (root => {
+      if(root || (modelElement.name == ModelElement.ROOT_NAME && modelElement.identity == ModelElement.REFERENCE_IDENTITY)){
+        setNode(typeHandle)
+      }else{
+        Future.failed(throw new IllegalArgumentException("Registry must contain ROOT element"))
+      }
+    })
   }
 
   /**

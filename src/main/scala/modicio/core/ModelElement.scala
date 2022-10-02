@@ -134,6 +134,12 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
   def getTimeIdentity: TimeIdentity = timeIdentity
 
   /**
+   * TODO documentation
+   * @param timeIdentity
+   */
+  def setTimeIdentity(timeIdentity: TimeIdentity): Unit = this.timeIdentity = timeIdentity
+
+  /**
    * <p> Fork this ModelElement. This operation creates a copy of ModelElement and [[Definition Definition]] with
    * a new identity propagated through the model.
    * <p> Note: this operations does only work for this particular ModelElement in general case. If called on a Node,
@@ -454,6 +460,8 @@ object ModelElement {
    * that can and must exist only once in a registry-context.
    */
   val SINGLETON_IDENTITY = "$"
+
+  val ROOT_NAME = "ROOT"
 
   def composeSingletonIdentity(typeName: String): String = SINGLETON_IDENTITY + "_" + typeName
 

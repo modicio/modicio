@@ -16,6 +16,7 @@
 package modicio.nativelang.defaults
 
 import modicio.core._
+import modicio.core.util.IdentityProvider
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,30 +25,50 @@ import scala.concurrent.Future
 class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory)
   extends Registry(typeFactory, instanceFactory) {
 
+  // name -> (identity -> model)
   private[modicio] val typeRegistry = mutable.Map[String, mutable.Map[String, TypeHandle]]()
+
+  // instanceID -> instance
   private[modicio] val instanceRegistry = mutable.Map[String, DeepInstance]()
 
   private[modicio] def load(registry: SimpleMapRegistry): Unit = {
-    //baseModels = registry.baseModels
     this.typeRegistry.addAll(registry.typeRegistry)
     this.instanceRegistry.addAll(registry.instanceRegistry)
   }
 
 
   override def getReferenceTimeIdentity: Future[TimeIdentity] = {
-    //TODO
+    val rootGroup = typeRegistry.get(ModelElement.ROOT_NAME)
+    if(rootGroup.nonEmpty && rootGroup.get.nonEmpty){
+      val root = rootGroup.get.get(ModelElement.REFERENCE_IDENTITY)
+        if(root.isEmpty) {
+          Future.failed(new IllegalAccessException("No ROOT reference element present"))
+        }else {
+          Future.successful(root.get.getTimeIdentity)
+        }
+    }else{
+     Future.failed(new IllegalAccessException("No ROOT reference element present"))
+    }
   }
 
   override def incrementVariant: Future[Any] = {
-    //TODO
+      val variantTime = IdentityProvider.newTimestampId()
+      val variantId = IdentityProvider.newRandomId()
+      getReferences map (references => references.map(element =>
+        element.getModelElement.setTimeIdentity(TimeIdentity.incrementVariant(element.getTimeIdentity, variantTime, variantId))))
   }
 
   override def containsRoot: Future[Boolean] = {
-    //TODO
+    if(typeRegistry.contains(ModelElement.ROOT_NAME) &&
+      typeRegistry(ModelElement.ROOT_NAME).contains(ModelElement.REFERENCE_IDENTITY)) {
+      Future.successful(true)
+    }else{
+      Future.successful(false)
+    }
   }
 
 
-  override def getDynamicType(name: String, identity: String): Future[Option[TypeHandle]] = {
+  override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     val typeGroup = typeRegistry.get(name)
     if (typeGroup.isEmpty) {
       Future.successful(None)
@@ -68,9 +89,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
   }
 
   override protected def setNode(typeHandle: TypeHandle): Future[TimeIdentity] = {
-
-    //TODO TIME IDENTITY
-
     val name = typeHandle.getTypeName
     val identity = typeHandle.getTypeIdentity
     if (!typeRegistry.contains(name)) {
@@ -80,10 +98,11 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     if (typeGroup.contains(identity)) {
       typeGroup.remove(identity)
     }
-    Future.successful(typeGroup.addOne(identity, typeHandle))
+    typeGroup.addOne(identity, typeHandle)
+    Future.successful(typeHandle.getTimeIdentity)
   }
 
-  override def getDynamicReferences: Future[Set[TypeHandle]] = {
+  override def getReferences: Future[Set[TypeHandle]] = {
     Future.successful(typeRegistry.values.flatMap(_.values).filter(_.getTypeIdentity == ModelElement.REFERENCE_IDENTITY).toSet)
   }
 
