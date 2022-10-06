@@ -28,7 +28,7 @@ import io.circe.generic.JsonCodec
 @JsonCodec
 case class NativeModelElement(name: String,
                               template: Boolean,
-                              timeDescriptor: NativeTimeIdentity,
+                              timeDescriptor: Option[NativeTimeIdentity],
                               childOf: Seq[String],
                               associations: Seq[String],
                               attributes: Seq[String],

@@ -26,7 +26,7 @@ abstract class Transformer[IN, OUT](protected val registry: Registry,
   protected val typeFactory = new TypeFactory(definitionVerifier, modelVerifier)
   typeFactory.setRegistry(registry)
 
-  def extend(input: IN): Future[Unit]
+  def extend(input: IN): Future[Any]
 
   def decompose(input: Option[String]): Future[OUT]
 

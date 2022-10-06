@@ -68,10 +68,11 @@ class Node
     extensions.clear()
   }
 
-  override private[modicio] def toData: (ModelElementData, Set[RuleData], TimeIdentity) = {
-    val modelElementData = ModelElementData(name, identity, isTemplate, isNode = true, timeIdentity.localId)
+  override private[modicio] def toData: (ModelElementData, Set[RuleData]) = {
+    val modelElementData = ModelElementData(name, identity, isTemplate, isNode = true, timeIdentity.variantTime,
+      timeIdentity.runningTime, timeIdentity.versionTime, timeIdentity.variantId, timeIdentity.runningId, timeIdentity.versionId)
     val ruleData = definition.toData(name, identity)
-    (modelElementData, ruleData, timeIdentity)
+    (modelElementData, ruleData)
   }
 
   /**

@@ -58,6 +58,13 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
         element.getModelElement.setTimeIdentity(TimeIdentity.incrementVariant(element.getTimeIdentity, variantTime, variantId))))
   }
 
+  override def incrementRunning: Future[Any] = {
+    val runningTime = IdentityProvider.newTimestampId()
+    val runningId = IdentityProvider.newRandomId()
+    getReferences map (references => references.map(element =>
+      element.getModelElement.setTimeIdentity(TimeIdentity.incrementRunning(element.getTimeIdentity, runningTime, runningId))))
+  }
+
   override def containsRoot: Future[Boolean] = {
     if(typeRegistry.contains(ModelElement.ROOT_NAME) &&
       typeRegistry(ModelElement.ROOT_NAME).contains(ModelElement.REFERENCE_IDENTITY)) {
@@ -99,7 +106,12 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       typeGroup.remove(identity)
     }
     typeGroup.addOne(identity, typeHandle)
-    Future.successful(typeHandle.getTimeIdentity)
+    if(identity == ModelElement.REFERENCE_IDENTITY){
+      incrementRunning map (_ => typeHandle.getTimeIdentity)
+    }else{
+      Future.successful(typeHandle.getTimeIdentity)
+    }
+
   }
 
   override def getReferences: Future[Set[TypeHandle]] = {
@@ -143,11 +155,10 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
 
-      //TODO TIME IDENTITY
-
       val typeGroupOption = typeRegistry.get(name)
       if (typeGroupOption.isDefined) {
-        Future.successful(typeGroupOption.get.remove(identity))
+        typeGroupOption.get.remove(identity)
+        incrementRunning
       } else {
         Future.failed(new IllegalArgumentException("AUTO DELETE: No type group found"))
       }
@@ -187,4 +198,5 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       Future.successful((): Unit)
     }
   }
+
 }

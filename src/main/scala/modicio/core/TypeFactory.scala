@@ -38,8 +38,8 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
     val definition = new Definition(definitionVerifier)
     registry.getReferenceTimeIdentity map (timeIdentity => {
 
-      val modelElement = new Node(name, identity, isTemplate, timeIdentity)
-
+      val modelElement = new Node(name, identity, isTemplate, TimeIdentity.createFrom(timeIdentity))
+      
       modelElement.setRegistry(registry)
       modelElement.setDefinition(definition)
       modelElement.setVerifiers(definitionVerifier, modelVerifier)
@@ -52,7 +52,8 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
     val definition = new Definition(definitionVerifier)
     ruleData.foreach(data => definition.applyRule(loadRule(data)))
 
-    val modelElement = new Node(modelElementData.name, modelElementData.identity, modelElementData.isTemplate)
+    val timeIdentity = TimeIdentity.fromModelElementData(modelElementData)
+    val modelElement = new Node(modelElementData.name, modelElementData.identity, modelElementData.isTemplate, timeIdentity)
 
     modelElement.setRegistry(registry)
     modelElement.setDefinition(definition)

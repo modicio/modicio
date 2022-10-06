@@ -15,14 +15,14 @@
  */
 package modicio.core
 
+import modicio.core.datamappings.ModelElementData
 import modicio.core.util.IdentityProvider
 
-case class TimeIdentity(localId: Long, variantTime: Long, runningTime: Long, versionTime: Long, variantId: String, runningId: String, versionId: String)
+case class TimeIdentity(variantTime: Long, runningTime: Long, versionTime: Long, variantId: String, runningId: String, versionId: String)
 
 object TimeIdentity {
 
   def fork(reference: TimeIdentity): TimeIdentity = TimeIdentity(
-    localId = 0,
     reference.variantTime,
     reference.runningTime,
     reference.versionTime,
@@ -34,12 +34,15 @@ object TimeIdentity {
   def create: TimeIdentity = {
     val randomPart = IdentityProvider.newRandomId()
     val timePart = IdentityProvider.newTimestampId()
-    TimeIdentity(localId = 0, timePart, timePart, timePart, randomPart, randomPart, randomPart)
+    TimeIdentity(timePart, timePart, timePart, randomPart, randomPart, randomPart)
   }
+
+  def fromModelElementData(med: ModelElementData): TimeIdentity =
+    TimeIdentity(med.variantTime, med.runningTime, med.versionTime, med.variantId, med.runningId, med.versionId)
+
 
   def createFrom(reference: TimeIdentity): TimeIdentity = {
     TimeIdentity(
-      localId = 0,
       reference.variantTime,
       reference.runningTime,
       IdentityProvider.newTimestampId(),
@@ -49,21 +52,19 @@ object TimeIdentity {
     )
   }
 
-  def incrementVersion(reference: TimeIdentity, runningTime: Long, runningId: String): TimeIdentity = {
+  def incrementVersion(reference: TimeIdentity): TimeIdentity = {
     TimeIdentity(
-      reference.localId,
       reference.variantTime,
-      runningTime,
+      reference.runningTime,
       IdentityProvider.newTimestampId(),
       reference.variantId,
-      runningId,
+      reference.runningId,
       IdentityProvider.newRandomId()
     )
   }
 
   def incrementRunning(reference: TimeIdentity, runningTime: Long, runningId: String): TimeIdentity = {
     TimeIdentity(
-      reference.localId,
       reference.variantTime,
       runningTime,
       reference.versionTime,
@@ -75,7 +76,6 @@ object TimeIdentity {
 
   def incrementVariant(reference: TimeIdentity, variantTime: Long, variantId: String): TimeIdentity = {
     TimeIdentity(
-      reference.localId,
       variantTime,
       reference.runningTime,
       reference.versionTime,

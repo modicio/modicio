@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import ModelElement.composeSingletonIdentity
+import modicio.core.ModelElement.composeSingletonIdentity
 import modicio.core.datamappings.{ModelElementData, RuleData}
 import modicio.core.rules.{AssociationRule, AttributeRule}
 import modicio.core.util.Observer
@@ -108,7 +108,13 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    * @return (ModelElementData, Set[RuleData]) - tuple of [[ModelElementData ModelElementData]] and
    *         [[RuleData RuleData]]
    */
-  private[modicio] def toData: (ModelElementData, Set[RuleData], TimeIdentity)
+  private[modicio] def toData: (ModelElementData, Set[RuleData])
+
+  private[modicio] def incrementVersion(): Unit = timeIdentity = TimeIdentity.incrementVersion(timeIdentity)
+
+  private[modicio] def incrementVariant(time: Long, id: String): Unit = timeIdentity = TimeIdentity.incrementVariant(timeIdentity, time, id)
+
+  private[modicio] def incrementRunning(time: Long, id: String): Unit = timeIdentity = TimeIdentity.incrementRunning(timeIdentity, time, id)
 
   /**
    * <p> Trigger the persistence process for this ModelElement. Child classes may overwrite the behaviour of this method.
@@ -119,9 +125,8 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    */
   def commit(): Future[Any] = {
     if(definition.isVolatile) {
-      registry.setType(this.createHandle) map (
-        newTimeIdentity => timeIdentity = newTimeIdentity) map (_ =>
-        definition.cleanVolatile())
+      incrementVersion()
+      registry.setType(this.createHandle) map (_ => definition.cleanVolatile())
     } else {
       Future.successful()
     }

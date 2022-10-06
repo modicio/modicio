@@ -16,6 +16,7 @@
 package modicio.nativelang.defaults
 
 import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData, ModelElementData, RuleData}
+import modicio.core.util.IdentityProvider
 import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, TimeIdentity, TypeFactory, TypeHandle}
 
 import scala.collection.mutable
@@ -57,6 +58,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
+
   protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
 
   protected def removeInstanceWithData(instanceId: String): Future[Any]
@@ -68,12 +70,42 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * ***********************************************************
    */
 
-  override def getReferenceTimeIdentity: Future[TimeIdentity] = ???
+  override def getReferenceTimeIdentity: Future[TimeIdentity] = {
+    getRoot flatMap (rootOption => {
+      if(rootOption.isDefined){
+        Future.successful(rootOption.get.getTimeIdentity)
+      }else{
+        Future.failed(new IllegalAccessException("No ROOT reference element present"))
+      }
+    })
+  }
 
-  override def incrementVariant: Future[Any] = ???
+  override def incrementVariant: Future[Any] = {
+    val variantTime = IdentityProvider.newTimestampId()
+    val variantId = IdentityProvider.newRandomId()
+    getReferences map (referenceHandles => {
+      referenceHandles.foreach(_.getModelElement.incrementVariant(variantTime, variantId))
+      Future.successful(referenceHandles.map(_.commit()))
+    })
+  }
 
-  override def containsRoot: Future[Boolean] = ???
 
+  override def incrementRunning: Future[Any] = {
+    val runningTime = IdentityProvider.newTimestampId()
+    val runningId = IdentityProvider.newRandomId()
+    getReferences map (referenceHandles => {
+      referenceHandles.foreach(_.getModelElement.incrementRunning(runningTime, runningId))
+      Future.successful(referenceHandles.map(_.commit()))
+    })
+  }
+
+  override def containsRoot: Future[Boolean] = {
+    getRoot map (_.isDefined)
+  }
+
+  def getRoot: Future[Option[TypeHandle]] = getType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY)
+
+  //FIXME
   override def getSingletonTypes(name: String): Future[Set[TypeHandle]] = ???
 
 
@@ -110,12 +142,13 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle): Future[Unit] = {
+  override protected def setNode(typeHandle: TypeHandle): Future[Any] = {
     fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
-      val (modelElementData, ruleData, timeIdentity) = typeHandle.getModelElement.toData
+      val (modelElementData, ruleData) = typeHandle.getModelElement.toData
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
         _ <- writeModelElementData(modelElementData)
+        _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY
       } yield {}
     })
   }

@@ -30,6 +30,8 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def incrementVariant: Future[Any]
 
+  def incrementRunning: Future[Any]
+
   def containsRoot: Future[Boolean]
 
   def getType(name: String, identity: String): Future[Option[TypeHandle]]
@@ -52,11 +54,14 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    * @param typeHandle [[TypeHandle TypeHandle]] of the model-element to store/register
    * @return TODO doc
    */
-  def setType(typeHandle: TypeHandle): Future[TimeIdentity] = {
+  def setType(typeHandle: TypeHandle): Future[Any] = {
     val modelElement = typeHandle.getModelElement
     containsRoot flatMap (root => {
       if(root || (modelElement.name == ModelElement.ROOT_NAME && modelElement.identity == ModelElement.REFERENCE_IDENTITY)){
-        setNode(typeHandle)
+        for{
+          timeIdentity <- setNode(typeHandle)
+          _ <- incrementRunning
+        } yield timeIdentity
       }else{
         Future.failed(throw new IllegalArgumentException("Registry must contain ROOT element"))
       }
@@ -72,7 +77,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    * @param typeHandle [[TypeHandle TypeHandle]] of a dynamic or forked model-element to store/register
    * @return TODO doc
    */
-  protected def setNode(typeHandle: TypeHandle): Future[TimeIdentity]
+  protected def setNode(typeHandle: TypeHandle): Future[Any]
 
   /**
    * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity

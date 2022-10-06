@@ -20,12 +20,15 @@ import modicio.core.datamappings.api.{ModelElementDataJ, RuleDataJ}
 import modicio.core.{Rule, TypeFactory}
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
 
+import java.util.concurrent.CompletableFuture
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class TypeFactoryJ(definitionVerifier: DefinitionVerifierJ, modelVerifier: ModelVerifierJ)
   extends TypeFactory(definitionVerifier, modelVerifier) {
 
   def setRegistryJ(registry: RegistryJ): Unit = super.setRegistry(registry)
 
-  def newTypeJ(name: java.lang.String, identity: java.lang.String, isTemplate: Boolean): TypeHandleJ = super.newType(name, identity, isTemplate)
+  def newTypeJ(name: java.lang.String, identity: java.lang.String, isTemplate: Boolean): CompletableFuture[TypeHandleJ] = super.newType(name, identity, isTemplate) map convert
 
   def loadTypeJ(modelElementData: ModelElementDataJ, ruleData: java.util.Set[RuleDataJ]): TypeHandleJ = super.loadType(modelElementData, ruleData.map(convert))
 

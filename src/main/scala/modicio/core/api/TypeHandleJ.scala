@@ -35,7 +35,7 @@ class TypeHandleJ(modelElement: ModelElement, static: Boolean) extends modicio.c
 
   def unfoldJ(): java.util.concurrent.CompletableFuture[TypeHandleJ] = super.unfold() map (convert)
 
-  def commitJ(): java.util.concurrent.CompletableFuture[Unit] = super.commit()
+  def commitJ(): java.util.concurrent.CompletableFuture[Any] = super.commit()
 
   def applyRuleJ(ruleJ: RuleJ): Unit = {
     super.applyRule(ruleJ.getRule)

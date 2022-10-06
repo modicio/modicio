@@ -16,7 +16,7 @@
 package modicio.core.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.core.Registry
+import modicio.core.{Registry, TimeIdentity}
 
 import java.util
 import java.util.Optional
@@ -26,6 +26,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 trait RegistryJ {
 
   def getRegistry: Registry
+
+  def getReferenceTimeIdentityJ: CompletableFuture[TimeIdentity] = getRegistry.getReferenceTimeIdentity
+
+  def incrementVariantJ: CompletableFuture[Any] = getRegistry.incrementVariant
+
+  def incrementRunningJ: CompletableFuture[Any] = getRegistry.incrementRunning
+
+  def containsRootJ: CompletableFuture[Boolean] = getRegistry.containsRoot
 
   def getSingletonTypesJ(name: String): java.util.concurrent.CompletableFuture[util.Set[TypeHandleJ]] =
     getRegistry.getSingletonTypes(name) map (s => convert(s.map(t => convert(t))))
