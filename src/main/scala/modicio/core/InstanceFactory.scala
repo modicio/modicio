@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ParentRelationData}
 import modicio.core.util.IdentityProvider
 import modicio.core.values.ConcreteValue
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
@@ -47,16 +47,18 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
         } else {
           val identity: String = newIdentity
           val deepValueSet: Set[ConcreteValue] = referenceTypeHandle.getModelElement.deepValueSet
-          val unfoldedReferenceModelElement: ModelElement = referenceTypeHandle.getModelElement.fork(identity)
 
-          unfoldedReferenceModelElement.setVerifiers(definitionVerifier, modelVerifier)
-          unfoldedReferenceModelElement.createHandle.unfold() flatMap (unfoldedTypeHandle => {
+          referenceTypeHandle.getModelElement.fork(identity) flatMap (forkedModelElement => {
+          forkedModelElement.setVerifiers(definitionVerifier, modelVerifier)
+
+          forkedModelElement.createHandle.unfold() flatMap (unfoldedTypeHandle => {
             val instanceBuffer: mutable.Set[DeepInstance] = mutable.Set[DeepInstance]()
             val rootInstanceId = deriveInstance(unfoldedTypeHandle, identity, deepValueSet, instanceBuffer).getInstanceId
             Future.sequence(instanceBuffer.map(registry.setInstance)) map (_ => instanceBuffer.find(_.getInstanceId == rootInstanceId).get)
           })
-        }
-      }))
+
+        })
+      }}))
   }
 
   /**
