@@ -20,7 +20,6 @@ import scala.beans.BeanProperty
 case class ModelElementDataJ(@BeanProperty name: java.lang.String,
                              @BeanProperty identity: java.lang.String,
                              @BeanProperty isTemplate: Boolean,
-                             @BeanProperty isNode: Boolean,
                              @BeanProperty variantTime: Long,
                              @BeanProperty runningTime: Long,
                              @BeanProperty versionTime: Long,

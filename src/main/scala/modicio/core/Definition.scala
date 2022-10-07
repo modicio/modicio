@@ -16,7 +16,7 @@
 package modicio.core
 
 import modicio.core.datamappings.RuleData
-import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.util.Observable
 import modicio.core.values.ConcreteValue
 import modicio.verification.DefinitionVerifier
@@ -26,7 +26,7 @@ import scala.collection.mutable
  * <p> The Definition class is a concrete [[Base Base]] implementation representing the set of
  * [[Rule Rules]] a [[ModelElement ModelElement]] possesses.
  * <p> The Definition encapsulates the Rules in individual sets and provides an api to edit the rule-set. Note that the
- * Definition class itself does not ensure validity of the resulting model, especially in an extension-hierarchy. If a new Rule is
+ * Definition class itself does not ensure validity of the resulting model, especially in an parentRelation-hierarchy. If a new Rule is
  * added or an old Rule is removed, the provided [[DefinitionVerifier DefinitionVerifier]] is called with
  * the temporary altered rule-set. If the DefinitionVerifier accepts accepts the rule-set as valid, the changes are applied.
  *
@@ -42,7 +42,7 @@ class Definition
 ) extends Observable with Base {
 
   private val attributes: mutable.Set[AttributeRule] = mutable.Set()
-  private val extensions: mutable.Set[ExtensionRule] = mutable.Set()
+  private val parentRelations: mutable.Set[ParentRelationRule] = mutable.Set()
   private val associations: mutable.Set[AssociationRule] = mutable.Set()
 
   private val values: mutable.Set[ConcreteValue] = mutable.Set()
@@ -58,7 +58,7 @@ class Definition
    *
    * @return Set[codi.Rule] - all Rules part of the Definition
    */
-  def getRules: Set[Rule] = Set.from(attributes ++ extensions ++ associations ++ values)
+  def getRules: Set[Rule] = Set.from(attributes ++ parentRelations ++ associations ++ values)
 
   /**
    * <p> Generates the set of [[RuleData RuleData]] which contains all [[Rule Rules]] of
@@ -77,7 +77,7 @@ class Definition
   /**
    * <p> Fork this Definition according to the overall fork specification. This operation produces a deep copy
    * of the Definition and all its [[Rule Rules]].
-   * <p> This operation takes the identity parameter because [[ExtensionRule ExtensionRules]] target a
+   * <p> This operation takes the identity parameter because [[ParentRelationRule ParentRelationRules]] target a
    * specified identity which must be exchanged during the fork.
    * <p> This operation calls [[Rule#fork Rule.fork(identity)]] on each rule.
    *
@@ -95,7 +95,7 @@ class Definition
    * <p> This operation creates a temporary copy of the rule-set and the provided [[DefinitionVerifier DefinitionVerifier]]
    * decides if the new rule is allowed. If true, thr rule is added to the rule-set and all observers are notified.
    * <p> <strong>Note as of right now, only [[AttributeRule AttributeRules]], [[AssociationRule AssociationRules]]
-   * and [[ExtensionRule ExtensionRules]] are supported.</strong>
+   * and [[ParentRelationRule ParentRelationRules]] are supported.</strong>
    *
    * TODO provide feedback by returning a success criteria
    *
@@ -107,7 +107,7 @@ class Definition
     if (isValid) {
       rule match {
         case rule: AttributeRule => attributes.add(rule)
-        case rule: ExtensionRule => extensions.add(rule)
+        case rule: ParentRelationRule => parentRelations.add(rule)
         case rule: AssociationRule => associations.add(rule)
         case rule: ConcreteValue => values.add(rule)
       }
@@ -120,7 +120,7 @@ class Definition
    * <p> This operation creates a temporary copy of the rule-set and the provided [[DefinitionVerifier DefinitionVerifier]]
    * decides if the deletion is allowed. If true, thr rule is removed from the rule-set and all observers are notified.
    * <p> <strong>Note as of right now, only [[AttributeRule AttributeRules]], [[AssociationRule AssociationRules]]
-   * and [[ExtensionRule ExtensionRules]] are supported.</strong>
+   * and [[ParentRelationRule ParentRelationRules]] are supported.</strong>
    *
    * TODO provide feedback by returning a success criteria
    *
@@ -133,7 +133,7 @@ class Definition
     if (definitionVerifier.verify(newRuleset)) {
       rule match {
         case rule: AttributeRule => attributes.remove(rule)
-        case rule: ExtensionRule => extensions.remove(rule)
+        case rule: ParentRelationRule => parentRelations.remove(rule)
         case rule: AssociationRule => associations.remove(rule)
         case rule: ConcreteValue => values.remove(rule)
       }
@@ -172,12 +172,12 @@ class Definition
   override def getAssociationRules: Set[AssociationRule] = Set.from(associations)
 
   /**
-   * <p> Get all [[ExtensionRule ExtensionRules]] part of this Definition.
+   * <p> Get all [[ParentRelationRule ParentRelationRules]] part of this Definition.
    * <p> The provided result is deep-immutable and safe.
    *
-   * @return Set[ExtensionRule] - immutable set of all [[ExtensionRule ExtensionRules]]
+   * @return Set[ParentRelationRule] - immutable set of all [[ParentRelationRule ParentRelationRules]]
    */
-  override def getExtensionRules: Set[ExtensionRule] = Set.from(extensions)
+  override def getParentRelationRules: Set[ParentRelationRule] = Set.from(parentRelations)
 
   /**
    * <p> Get all [[ConcreteValue ConcreteValues]] part of this Definition.

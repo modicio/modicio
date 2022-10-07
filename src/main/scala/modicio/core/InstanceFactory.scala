@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ParentRelationData}
 import modicio.core.util.IdentityProvider
 import modicio.core.values.ConcreteValue
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
@@ -47,16 +47,18 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
         } else {
           val identity: String = newIdentity
           val deepValueSet: Set[ConcreteValue] = referenceTypeHandle.getModelElement.deepValueSet
-          val unfoldedReferenceModelElement: ModelElement = referenceTypeHandle.getModelElement.fork(identity)
 
-          unfoldedReferenceModelElement.setVerifiers(definitionVerifier, modelVerifier)
-          unfoldedReferenceModelElement.createHandle.unfold() flatMap (unfoldedTypeHandle => {
+          referenceTypeHandle.getModelElement.fork(identity) flatMap (forkedModelElement => {
+          forkedModelElement.setVerifiers(definitionVerifier, modelVerifier)
+
+          forkedModelElement.createHandle.unfold() flatMap (unfoldedTypeHandle => {
             val instanceBuffer: mutable.Set[DeepInstance] = mutable.Set[DeepInstance]()
             val rootInstanceId = deriveInstance(unfoldedTypeHandle, identity, deepValueSet, instanceBuffer).getInstanceId
             Future.sequence(instanceBuffer.map(registry.setInstance)) map (_ => instanceBuffer.find(_.getInstanceId == rootInstanceId).get)
           })
-        }
-      }))
+
+        })
+      }}))
   }
 
   /**
@@ -67,13 +69,13 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
    * @param instanceBuffer
    * @return
    */
-  private def createExtensions(typeHandle: TypeHandle,
+  private def createParentRelations(typeHandle: TypeHandle,
                                identity: String, rootInstanceId: String,
                                deepValueSet: Set[ConcreteValue],
-                               instanceBuffer: mutable.Set[DeepInstance]): Set[ExtensionData] = {
+                               instanceBuffer: mutable.Set[DeepInstance]): Set[ParentRelationData] = {
     val modelElement = typeHandle.getModelElement
-    val extensions = modelElement.getParents
-    extensions.map(extensionModelElement => deriveInstance(extensionModelElement.createHandle, identity, deepValueSet, instanceBuffer)).map(newInstance => ExtensionData(0, rootInstanceId, newInstance.getInstanceId))
+    val parentRelations = modelElement.getParents
+    parentRelations.map(parentRelationModelElement => deriveInstance(parentRelationModelElement.createHandle, identity, deepValueSet, instanceBuffer)).map(newInstance => ParentRelationData(0, rootInstanceId, newInstance.getInstanceId))
   }
 
   /**
@@ -95,11 +97,11 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
         IdentityProvider.newRandomId()
       }
     }
-    val extensions = createExtensions(typeHandle, identity, instanceId, deepValueSet, instanceBuffer)
+    val parentRelations = createParentRelations(typeHandle, identity, instanceId, deepValueSet, instanceBuffer)
     val shape = new Shape(
       deriveAttributes(typeHandle, instanceId, deepValueSet),
       mutable.Set.from(deriveAssociations(typeHandle, instanceId, deepValueSet)),
-      extensions)
+      parentRelations)
     val deepInstance = new DeepInstance(instanceId, identity, shape, typeHandle, registry)
     instanceBuffer.add(deepInstance)
     deepInstance
@@ -150,7 +152,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
   }
 
   //TODO construct Instance from a lot of stuff here #
-  // extensions do not need to be considered :D, they are loaded only on unfold
+  // parentRelations do not need to be considered :D, they are loaded only on unfold
 
   /**
    * Load and construct the DeepInstance of a given TypeHandle.

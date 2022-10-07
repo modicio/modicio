@@ -16,7 +16,7 @@
 
 package modicio.core
 
-import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
 
 /**
@@ -44,11 +44,11 @@ trait Base {
   def getAssociationRules: Set[AssociationRule]
 
   /**
-   * <p>Get all [[ExtensionRule ExtensionRules]] of the target.
+   * <p>Get all [[ParentRelationRule ParentRelationRules]] of the target.
    *
-   * @return Set[ExtensionRule]
+   * @return Set[ParentRelationRule]
    */
-  def getExtensionRules: Set[ExtensionRule]
+  def getParentRelationRules: Set[ParentRelationRule]
 
   /**
    * <p> Get all [[ConcreteValue ConcreteValues]] of the target

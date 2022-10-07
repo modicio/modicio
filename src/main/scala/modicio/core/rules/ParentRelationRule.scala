@@ -19,8 +19,8 @@ import modicio.core.{ModelElement, Rule}
 import modicio.core.datamappings.RuleData
 
 /**
- * <p> A concrete [[Rule Rule]] implementation to represent extensions in the native unlinked model.
- * This Rule does not logically distinguish between reference extensions and instantiated extensions.
+ * <p> A concrete [[Rule Rule]] implementation to represent parentRelations in the native unlinked model.
+ * This Rule does not logically distinguish between reference parentRelations and instantiated parentRelations.
  * <br />
  * <br />
  * <p> <strong>String format: "ID:PARENT_IDENTITY:PARENT_NAME"</strong>
@@ -31,7 +31,7 @@ import modicio.core.datamappings.RuleData
  * @see [[Rule]]<p>[[RuleData]]
  * @param nativeValue the string representation in the native-language format
  */
-class ExtensionRule(nativeValue: String) extends Rule(nativeValue) {
+class ParentRelationRule(nativeValue: String) extends Rule(nativeValue) {
 
   val parentName: String = parseParentName(nativeValue)
   val parentIdentity: String = parseParentIdentity(nativeValue)
@@ -83,39 +83,39 @@ class ExtensionRule(nativeValue: String) extends Rule(nativeValue) {
 
   /**
    * <p>Implementation of [[Rule#fork Rule.fork()]].
-   * <p> In this case of an ExtensionRule, especially the parent identity (which is in the reference case set to the reference identity)
+   * <p> In this case of an ParentRelationRule, especially the parent identity (which is in the reference case set to the reference identity)
    * is replaced by the provided new identity of the instantiation.
    *
    * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
-  override def fork(identity: String): Rule = ExtensionRule.create(parentName, identity, Some(Rule.UNKNOWN_ID))
+  override def fork(identity: String): Rule = ParentRelationRule.create(parentName, identity, Some(Rule.UNKNOWN_ID))
 
   override def getDataType: Int = RuleDataType.EXTENSION
 
 }
 
 /**
- * <p> ExtensionRule companion object for the static factory creator.
+ * <p> ParentRelationRule companion object for the static factory creator.
  *
- * @see [[ExtensionRule ExtensionRule]]
+ * @see [[ParentRelationRule ParentRelationRule]]
  */
-object ExtensionRule {
+object ParentRelationRule {
 
   /**
-   * <p> Create a new [[ExtensionRule ExtensionRule]] from raw data.
-   * <p> This serves as a factory method for the ExtensionRule.
+   * <p> Create a new [[ParentRelationRule ParentRelationRule]] from raw data.
+   * <p> This serves as a factory method for the ParentRelationRule.
    * <p> If an empty idOption is provided, the id is set to [[Rule#UNKNOWN_ID UNKNOWN_ID]] and must be
    * changed manually.
    *
    * @param parentName     name of the parent [[ModelElement ModelElement]]
    * @param parentIdentity identity of the parent [[ModelElement ModelElement]]
    * @param idOption       id value if known, set to default otherwise
-   * @return ExtensionRule created from provided values
+   * @return ParentRelationRule created from provided values
    */
-  def create(parentName: String, parentIdentity: String, idOption: Option[String] = None): ExtensionRule = {
+  def create(parentName: String, parentIdentity: String, idOption: Option[String] = None): ParentRelationRule = {
     var id = Rule.UNKNOWN_ID
     if (idOption.isDefined) id = idOption.get
-    new ExtensionRule(id + ":" + parentIdentity + ":" + parentName)
+    new ParentRelationRule(id + ":" + parentIdentity + ":" + parentName)
   }
 }

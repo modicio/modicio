@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.input
 
-import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
 import modicio.core.{ImmutableShape, Registry, TimeIdentity, Transformer}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
@@ -58,7 +58,7 @@ class NativeDSLTransformer(registry: Registry,
     typeFactory.newType(name, identity, statement.template, Some(timeIdentity)) map (typeHandle => {
     registry.setType(typeHandle)
 
-    statement.childOf.foreach(extensionRule => typeHandle.applyRule(new ExtensionRule(extensionRule)))
+    statement.childOf.foreach(parentRelationRule => typeHandle.applyRule(new ParentRelationRule(parentRelationRule)))
 
     statement.attributes.foreach(propertyRule => typeHandle.applyRule(new AttributeRule(propertyRule)))
 
@@ -76,11 +76,11 @@ class NativeDSLTransformer(registry: Registry,
       registry.get(input.get) flatMap (flatInstance => {
         if(flatInstance.isDefined){
           flatInstance.get.unfold() map (deepInstance => {
-            deepInstance.getExtensionClosure.foreach(i => {
+            deepInstance.getParentRelationClosure.foreach(i => {
               val data = i.toData
               configuration.add(data)
               val frag = i.getTypeHandle.getModelElement
-              val childOf = frag.definition.getExtensionRules.map(_.serialise()).toSeq
+              val childOf = frag.definition.getParentRelationRules.map(_.serialise()).toSeq
               val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
               val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq
               val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
@@ -90,7 +90,7 @@ class NativeDSLTransformer(registry: Registry,
               statements.add(s)
             })
             NativeCompartment(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
-              (s.instanceData, s.extensions, s.attributes, s.associations)))
+              (s.instanceData, s.parentRelations, s.attributes, s.associations)))
           })
         }else{
           Future.failed(new IllegalArgumentException("Invalid instanceId in decompose()"))

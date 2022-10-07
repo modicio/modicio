@@ -174,12 +174,12 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
         //unfold the singleton deep-instance
 
         deepInstanceOption.get.unfold() flatMap (unfoldedInstance => {
-          val extensions = unfoldedInstance.getTypeHandle.getModelElement.getParents
+          val parentRelations = unfoldedInstance.getTypeHandle.getModelElement.getParents
           //delete all parent model-elements of the singleton deep-instance
 
           //delete the actual deep-instance and trigger deletion of its parents
           instanceRegistry.remove(singletonInstanceId)
-          val mapOfFutures = extensions.map(extension => autoRemove(extension.name, ModelElement.SINGLETON_IDENTITY))
+          val mapOfFutures = parentRelations.map(parentRelation => autoRemove(parentRelation.name, ModelElement.SINGLETON_IDENTITY))
           Future.sequence(mapOfFutures)
 
         }) map (_ => {

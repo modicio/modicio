@@ -15,16 +15,16 @@
  */
 package modicio.core.api
 
-import modicio.core.datamappings.api.{AssociationDataJ, AttributeDataJ, ExtensionDataJ, InstanceDataJ}
+import modicio.core.datamappings.api.{AssociationDataJ, AttributeDataJ, ParentRelationDataJ, InstanceDataJ}
 
 import scala.beans.BeanProperty
 
 /**
  * @param attributes
  * @param associations
- * @param extensions
+ * @param parentRelations
  */
 case class ImmutableShapeJ(@BeanProperty instanceData: InstanceDataJ,
                            @BeanProperty attributes: java.util.Set[AttributeDataJ],
                            @BeanProperty associations: java.util.Set[AssociationDataJ],
-                           @BeanProperty extensions: java.util.Set[ExtensionDataJ])
+                           @BeanProperty parentRelations: java.util.Set[ParentRelationDataJ])

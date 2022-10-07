@@ -28,19 +28,17 @@ import scala.concurrent.Future
 
 /**
  * <p> The ModelElement is the central class of the CoDI type-hierarchy. It forms the component of the type-composite tree.
- * <p> The abstract ModelElement contains all concrete functionality to handle associations and rules. Methods regarding extensions
- * are abstract and must be implemented by the [[Node Node]]. Other abstract members must be extended or overwritten by
- * its child class [[Node Node]].
+ * <p> The ModelElement contains all concrete functionality to handle associations, rules and  parentRelations.
  * <p> Apart from the constructor arguments, the ModelElement possess a [[Definition Definition]], a [[Registry Registry]], a
  * [[DefinitionVerifier DefinitionVerifier]] and a [[ModelVerifier ModelVerifier]].Those classes are
  * not always required but should be set directly after object construction using their respective set-methods.
  *
  * @param name       name of the ModelElement, name and identity form a unique pair.
  * @param identity   identity of the ModelElement
- * @param isTemplate if the template can be instantiated directly or only used as part of an extension hierarchy / isAbstract
+ * @param isTemplate if the template can be instantiated directly or only used as part of an parentRelation hierarchy / isAbstract
  * @param timeIdentity TODO documentation
  */
-abstract class ModelElement(val name: String, val identity: String, val isTemplate: Boolean, protected var timeIdentity: TimeIdentity) {
+class ModelElement(val name: String, val identity: String, val isTemplate: Boolean, protected var timeIdentity: TimeIdentity) {
 
 
   private final var definitionOption: Option[Definition] = None
@@ -50,6 +48,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
   protected final var definitionVerifier: Option[DefinitionVerifier] = None
 
   private[modicio] val associations: mutable.Set[TypeHandle] = mutable.Set()
+  private[modicio] val parentRelations: mutable.Set[ModelElement] = mutable.Set()
 
   /**
    * <p> Private observer object representing a callback that is called if the [[Definition Definition]]
@@ -63,21 +62,12 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
   }
 
   /**
-   * <p>Abstract method to get if the concrete implementation is a [[Node Node]].
-   * Present in case of later other ModelElement extensions.
-   *
-   * @return Boolean- true if Node
-   */
-  def isNode: Boolean
-
-  /**
-   * <p> Abstract method to get the set of parents i.e. the set of extensions.
-   * <p> See the concrete implementations for more information.
-   * <p> A concrete implementation may require the ModelElement to be unfolded!
+   * <p> Get the set of parents i.e. the set of parentRelations.
+   * <p> A concrete usage may require the ModelElement to be unfolded!
    *
    * @return Set[ModelElement] - set of parent/extended ModelElements
    */
-  def getParents: Set[ModelElement]
+  def getParents: Set[ModelElement] = Set.from(parentRelations)
 
   /**
    * <p> Add a [[Rule Rule]] to this ModelElement.
@@ -87,7 +77,13 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    *
    * @param rule the Rule to add
    */
-  def applyRule(rule: Rule): Unit
+  def applyRule(rule: Rule): Unit = {
+    //TODO verify here
+    definition.applyRule(rule)
+    fold()
+    Future.successful((): Unit)
+  }
+
 
   /**
    * <p> Remove a [[Rule Rule]] from this ModelElement.
@@ -97,24 +93,37 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    *
    * @param rule the Rule to remove
    */
-  def removeRule(rule: Rule): Unit
+  def removeRule(rule: Rule): Unit = {
+    //TODO verify here
+    definition.removeRule(rule)
+    fold()
+    Future.successful((): Unit)
+  }
 
   /**
-   * <p> Abstract framework-private method to produce a data representation of this ModelElement.
-   * <p> See the concrete implementations for more information.
-   * <p> A concrete implementation may require the ModelElement to be unfolded!
+   * <p> framework-private method to produce a data representation of this ModelElement.
+   * <p> A concrete usage may require the ModelElement to be unfolded!
    * FIXME doc
    *
    * @return (ModelElementData, Set[RuleData]) - tuple of [[ModelElementData ModelElementData]] and
    *         [[RuleData RuleData]]
    */
-  private[modicio] def toData: (ModelElementData, Set[RuleData])
+  private[modicio] def toData: (ModelElementData, Set[RuleData]) = {
+    val modelElementData = ModelElementData(name, identity, isTemplate, timeIdentity.variantTime,
+      timeIdentity.runningTime, timeIdentity.versionTime, timeIdentity.variantId, timeIdentity.runningId, timeIdentity.versionId)
+    val ruleData = definition.toData(name, identity)
+    (modelElementData, ruleData)
+  }
 
   private[modicio] def incrementVersion(): Unit = timeIdentity = TimeIdentity.incrementVersion(timeIdentity)
 
   private[modicio] def incrementVariant(time: Long, id: String): Unit = timeIdentity = TimeIdentity.incrementVariant(timeIdentity, time, id)
 
   private[modicio] def incrementRunning(time: Long, id: String): Unit = timeIdentity = TimeIdentity.incrementRunning(timeIdentity, time, id)
+
+  private def unfoldParentRelations(): Future[Unit] = {
+    Future.sequence(parentRelations.map(_.unfold())) flatMap (_ => Future.unit)
+  }
 
   /**
    * <p> Trigger the persistence process for this ModelElement. Child classes may overwrite the behaviour of this method.
@@ -124,12 +133,15 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    * @return Future[Unit] - after the persistence process was completed
    */
   def commit(): Future[Any] = {
-    if(definition.isVolatile) {
-      incrementVersion()
-      registry.setType(this.createHandle) map (_ => definition.cleanVolatile())
-    } else {
-      Future.successful()
+    val commitLocal = {
+      if(definition.isVolatile) {
+        incrementVersion()
+        registry.setType(this.createHandle) map (_ => definition.cleanVolatile())
+      } else {
+        Future.successful()
+      }
     }
+    commitLocal flatMap (_ => Future.sequence(parentRelations.map(_.commit())))
   }
 
   /**
@@ -147,21 +159,18 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
   /**
    * <p> Fork this ModelElement. This operation creates a copy of ModelElement and [[Definition Definition]] with
    * a new identity propagated through the model.
-   * <p> Note: this operations does only work for this particular ModelElement in general case. If called on a Node,
-   * the refined implementation can change this behaviour.
    * <p> The forked ModelElement is added to the registry immediately.
-   * <p> TODO this operation is lazy, it returns before the ModelElement is stored in the registry.
-   *      This operation should return a Future instead.
    *
    * @param identity the new identity the forked ModelElement receives
    * @return ModelElement - the forked ModelElement
    */
-  def fork(identity: String): ModelElement = {
-    val newNode = new Node(name, identity, isTemplate, TimeIdentity.fork(timeIdentity))
-    newNode.setRegistry(registry)
-    newNode.setDefinition(definition.fork(identity))
-    registry.setType(newNode.createHandle)
-    newNode
+  def fork(identity: String): Future[ModelElement] = {
+    val newModelElement = new ModelElement(name, identity, isTemplate, TimeIdentity.fork(timeIdentity))
+    Future.sequence(parentRelations.map(parentRelation => parentRelation.fork(identity))) flatMap (_ => {
+      newModelElement.setRegistry(registry)
+      newModelElement.setDefinition(definition.fork(identity))
+      registry.setType(newModelElement.createHandle) map (_ => newModelElement)
+    })
   }
 
   /**
@@ -177,8 +186,10 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
    */
   def unfold(): Future[Any] = {
     associations.clear()
+    parentRelations.clear()
+
     // resolve associations
-    val associationRules: Set[AssociationRule] = definition.getAssociationRules
+    val associationFuture = {val associationRules: Set[AssociationRule] = definition.getAssociationRules
     if (associationRules.isEmpty) {
       Future.successful((): Unit)
     } else {
@@ -192,7 +203,23 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
         //FIXME here we do nothing if a target is not found
         associations.addAll(handleOptions.filter(_.isDefined).map(_.get))
       })
-    }
+    }}
+
+    associationFuture flatMap (_ => {
+      //resolve parentRelations
+      val parentRelationRules = definition.getParentRelationRules
+      if (parentRelationRules.isEmpty) {
+        Future.successful((): Unit)
+      } else {
+        Future.sequence(parentRelationRules.map(parentRelationRule => {
+          registry.getType(parentRelationRule.parentName, parentRelationRule.parentIdentity)
+        })) map (handleOptions => {
+          parentRelations.addAll(handleOptions.filter(_.isDefined).map(_.get.getModelElement))
+        }) flatMap (_ => {
+          unfoldParentRelations()
+        })
+      }
+    })
   }
 
   /**
@@ -351,7 +378,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
   }
 
   /**
-   * <p> Predefined query-method. Gets the set of all type-names the ModelElement has in its extension hierarchy.
+   * <p> Predefined query-method. Gets the set of all type-names the ModelElement has in its parentRelation hierarchy.
    * <p> <strong>The ModelElement needs to be unfolded to perform this operation.</strong>
    *
    * @return Set[String] - of polymorph type-names
@@ -409,11 +436,11 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
 
   /**
    * <p> The same as [[ModelElement#getAssociationRulesOfType ModelElement.getAssociationRulesOfType()]] but considers
-   * the complete extension hierarchy.
+   * the complete parentRelation hierarchy.
    * <p> <strong>The ModelElement needs to be unfolded to perform this operation.</strong>
    *
    * @param typeName of the related ModelElement
-   * @return Set[AssociationRule] - between this (and extensions) and the related ModelElement
+   * @return Set[AssociationRule] - between this (and parentRelations) and the related ModelElement
    */
   def getDeepAssociationRulesOfType(typeName: String): Set[AssociationRule] = {
     val results = mutable.Set[AssociationRule]()
@@ -435,7 +462,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
 
   /**
    * <p> The same as [[ModelElement#getAssociationRulesOfRelation ModelElement.getAssociationRulesOfRelation()]] but considers
-   * the complete extension hierarchy.
+   * the complete parentRelation hierarchy.
    * <p> <strong>The ModelElement needs to be unfolded to perform this operation.</strong>
    *
    * @param relationName of the association relation to query

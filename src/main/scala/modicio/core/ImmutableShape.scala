@@ -15,14 +15,14 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData}
 
 /**
  * @param attributes
  * @param associations
- * @param extensions
+ * @param parentRelations
  */
 case class ImmutableShape(instanceData: InstanceData,
                           attributes: Set[AttributeData],
                           associations: Set[AssociationData],
-                          extensions: Set[ExtensionData])
+                          parentRelations: Set[ParentRelationData])

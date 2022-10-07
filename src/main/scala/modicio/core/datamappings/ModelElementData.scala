@@ -29,7 +29,6 @@ import modicio.core.ModelElement
 case class ModelElementData(name: String,
                             identity: String,
                             isTemplate: Boolean,
-                            isNode: Boolean,
                             variantTime: Long,
                             runningTime: Long,
                             versionTime: Long,

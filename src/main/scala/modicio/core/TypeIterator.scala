@@ -32,7 +32,7 @@ class TypeIterator(private[modicio] val initialModelElement: ModelElement) {
     }
   }
 
-  def isDynamic: Boolean = current.get.isInstanceOf[Node]
+  def isDynamic: Boolean = current.get.isInstanceOf[ModelElement]
 
   def get: Option[Base] = {
     if(current.isEmpty){

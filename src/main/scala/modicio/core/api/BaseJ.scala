@@ -16,7 +16,7 @@
 package modicio.core.api
 
 import modicio.core.Base
-import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
+import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ParentRelationRuleJ}
 import modicio.api.JavaAPIConversions._
 import modicio.core.values.api.ConcreteValueJ
 
@@ -25,7 +25,7 @@ trait BaseJ extends Base{
 
   def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(getAssociationRules)
 
-  def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(getExtensionRules)
+  def getParentRelationRulesJ: java.util.Set[ParentRelationRuleJ] = convert(getParentRelationRules)
 
   def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(getConcreteValues)
 
