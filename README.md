@@ -13,6 +13,10 @@ In its current version, this framework is realised as a prototypical implementat
 
 >:bulb: If any remarks or questions, file an issue or contact KKegel directly
 
+## contributing 
+
+Please read the [contribution guide](https://github.com/modicio/modicio/edit/main/README.md).
+
 ## release notes
 
 Newer commits which are not yet part of a release may fix minor bugs or enhance documentation. We recommend to use the latest commit for exploration.
