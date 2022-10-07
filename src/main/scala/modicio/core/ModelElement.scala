@@ -28,7 +28,7 @@ import scala.concurrent.Future
 
 /**
  * <p> The ModelElement is the central class of the CoDI type-hierarchy. It forms the component of the type-composite tree.
- * <p> The abstract ModelElement contains all concrete functionality to handle associations and rules. Methods regarding extensions
+ * <p> The abstract ModelElement contains all concrete functionality to handle associations and rules. Methods regarding parentRelations
  * are abstract and must be implemented by the [[Node Node]]. Other abstract members must be extended or overwritten by
  * its child class [[Node Node]].
  * <p> Apart from the constructor arguments, the ModelElement possess a [[Definition Definition]], a [[Registry Registry]], a
@@ -37,7 +37,7 @@ import scala.concurrent.Future
  *
  * @param name       name of the ModelElement, name and identity form a unique pair.
  * @param identity   identity of the ModelElement
- * @param isTemplate if the template can be instantiated directly or only used as part of an extension hierarchy / isAbstract
+ * @param isTemplate if the template can be instantiated directly or only used as part of an parentRelation hierarchy / isAbstract
  * @param timeIdentity TODO documentation
  */
 abstract class ModelElement(val name: String, val identity: String, val isTemplate: Boolean, protected var timeIdentity: TimeIdentity) {
@@ -64,14 +64,14 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
 
   /**
    * <p>Abstract method to get if the concrete implementation is a [[Node Node]].
-   * Present in case of later other ModelElement extensions.
+   * Present in case of later other ModelElement parentRelations.
    *
    * @return Boolean- true if Node
    */
   def isNode: Boolean
 
   /**
-   * <p> Abstract method to get the set of parents i.e. the set of extensions.
+   * <p> Abstract method to get the set of parents i.e. the set of parentRelations.
    * <p> See the concrete implementations for more information.
    * <p> A concrete implementation may require the ModelElement to be unfolded!
    *
@@ -351,7 +351,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
   }
 
   /**
-   * <p> Predefined query-method. Gets the set of all type-names the ModelElement has in its extension hierarchy.
+   * <p> Predefined query-method. Gets the set of all type-names the ModelElement has in its parentRelation hierarchy.
    * <p> <strong>The ModelElement needs to be unfolded to perform this operation.</strong>
    *
    * @return Set[String] - of polymorph type-names
@@ -409,11 +409,11 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
 
   /**
    * <p> The same as [[ModelElement#getAssociationRulesOfType ModelElement.getAssociationRulesOfType()]] but considers
-   * the complete extension hierarchy.
+   * the complete parentRelation hierarchy.
    * <p> <strong>The ModelElement needs to be unfolded to perform this operation.</strong>
    *
    * @param typeName of the related ModelElement
-   * @return Set[AssociationRule] - between this (and extensions) and the related ModelElement
+   * @return Set[AssociationRule] - between this (and parentRelations) and the related ModelElement
    */
   def getDeepAssociationRulesOfType(typeName: String): Set[AssociationRule] = {
     val results = mutable.Set[AssociationRule]()
@@ -435,7 +435,7 @@ abstract class ModelElement(val name: String, val identity: String, val isTempla
 
   /**
    * <p> The same as [[ModelElement#getAssociationRulesOfRelation ModelElement.getAssociationRulesOfRelation()]] but considers
-   * the complete extension hierarchy.
+   * the complete parentRelation hierarchy.
    * <p> <strong>The ModelElement needs to be unfolded to perform this operation.</strong>
    *
    * @param relationName of the association relation to query

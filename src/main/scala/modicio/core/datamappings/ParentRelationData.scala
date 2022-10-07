@@ -16,14 +16,14 @@
 package modicio.core.datamappings
 
 import modicio.core.{DeepInstance, Shape}
-import modicio.core.rules.ExtensionRule
+import modicio.core.rules.ParentRelationRule
 
 /**
- * <p>Tuple to represent the instantiated data following an [[ExtensionRule ExtensionRule]] as part of a
+ * <p>Tuple to represent the instantiated data following an [[ParentRelationRule ParentRelationRule]] as part of a
  * concrete [[Shape Shape]].
  *
  * @param id               unique technical id of this data tuple, initialised with 0
- * @param instanceId       id of the [[DeepInstance DeepInstance]] this extension is part of
- * @param parentInstanceId id of the [[DeepInstance DeepInstance]] this extension refers to (the parent)
+ * @param instanceId       id of the [[DeepInstance DeepInstance]] this parentRelation is part of
+ * @param parentInstanceId id of the [[DeepInstance DeepInstance]] this parentRelation refers to (the parent)
  */
-case class ExtensionData(id: Long, instanceId: String, parentInstanceId: String)
+case class ParentRelationData(id: Long, instanceId: String, parentInstanceId: String)

@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData}
 import modicio.core.rules.{AssociationRule, AttributeRule}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
@@ -36,15 +36,15 @@ import scala.concurrent.Future
  * <br />
  * <br />
  * <p> A DeepInstance is a foldable entity. If the DeepInstance is loaded from the Registry or constructed by the InstanceFactory,
- * their extensions are only available as [[ExtensionData ExtensionData]] part of the Shape.
+ * their parentRelations are only available as [[ParentRelationData ParentRelationData]] part of the Shape.
  * <strong>The client must call unfold() if deep queries and operations should be performed.</strong> Only by calling unfold(),
- * the extension hierarchy is loaded from the Registry and wired in form of unfoldedExtensions.
+ * the parentRelation hierarchy is loaded from the Registry and wired in form of unfoldedParentRelations.
  *
  * @see [[InstanceFactory]]<p>[[InstanceData]]<p>[[Shape]]
  * @param instanceId unique technical identifier, must be specified during deep-instantiation
  * @param identity   unique identity of the overall clabject
  * @param shape      contains all objectified values such as [[AssociationData AssociationData]],
- *                   [[ExtensionData ExtensionData]] and [[AttributeData AttributeData]]
+ *                   [[ParentRelationData ParentRelationData]] and [[AttributeData AttributeData]]
  * @param typeHandle the instantiated [[ModelElement ModelElement]] type, represented by its [[TypeHandle TypeHandle]]
  * @param registry   the [[Registry Registry]] of the runtime-environment
  */
@@ -55,9 +55,9 @@ class DeepInstance(private[modicio] val instanceId: String,
                    private[modicio] val registry: Registry) {
 
   /**
-   * <p>Contains the concrete extensions after unfold() was called.
+   * <p>Contains the concrete parentRelations after unfold() was called.
    */
-  private val unfoldedExtensions: mutable.Set[DeepInstance] = mutable.Set[DeepInstance]()
+  private val unfoldedParentRelations: mutable.Set[DeepInstance] = mutable.Set[DeepInstance]()
 
   /**
    * <p> Produces the [[TypeHandle TypeHandle]] of the associated [[ModelElement ModelElement]] type.
@@ -76,12 +76,12 @@ class DeepInstance(private[modicio] val instanceId: String,
 
   /**
    * <p> Unfold the given DeepInstance asynchronously. This operation loads all DeepInstances specified by
-   * [[ExtensionData ExtensionData]] from the provided [[Registry Registry]] and adds
-   * them to the concreteExtensions Set. The unfold call is propagated to the loaded extensions as well. The unfold call
+   * [[ParentRelationData ParentRelationData]] from the provided [[Registry Registry]] and adds
+   * them to the concreteParentRelations Set. The unfold call is propagated to the loaded parentRelations as well. The unfold call
    * is also propagated to the [[ModelElement ModelElement]] calling [[ModelElement#unfold ModelElement.unfold()]]
    * <p> <strong>This method must be called before deep queries and operations such as deepAttributeMap() and similar methods
    * starting with deep...() are used. They will produce local-only results otherwise.</strong>
-   * <p> If an already unfolded DeepInstance is unfolded again, the wired extensions are cleared and this method recreates
+   * <p> If an already unfolded DeepInstance is unfolded again, the wired parentRelations are cleared and this method recreates
    * the hierarchy from scratch. Consequently, a client should avoid unnecessary repeated unfold() calls.
    * <p> <strong>This operation MUTATES the called DeepInstance and returns the this-pointer afterwards. Usage of the return value
    * is not required!</strong>
@@ -90,10 +90,10 @@ class DeepInstance(private[modicio] val instanceId: String,
    */
   def unfold(): Future[DeepInstance] = {
     typeHandle.unfold() flatMap (_ => {
-      Future.sequence(shape.getExtensions.map(_.parentInstanceId).map(registry.get)) flatMap (extensionOptions => {
-        unfoldedExtensions.clear()
-        unfoldedExtensions.addAll(extensionOptions.filter(_.isDefined).map(_.get))
-        Future.sequence(unfoldedExtensions.map(_.unfold())) map (_ => this)
+      Future.sequence(shape.getParentRelations.map(_.parentInstanceId).map(registry.get)) flatMap (parentRelationOptions => {
+        unfoldedParentRelations.clear()
+        unfoldedParentRelations.addAll(parentRelationOptions.filter(_.isDefined).map(_.get))
+        Future.sequence(unfoldedParentRelations.map(_.unfold())) map (_ => this)
       })
     })
   }
@@ -121,7 +121,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * @return Future[Any] - asynchronous response after storing the DeepInstance
    */
   def commit: Future[Any] = {
-    registry.setInstance(this) flatMap (_ => Future.sequence(unfoldedExtensions.map(_.commit)))
+    registry.setInstance(this) flatMap (_ => Future.sequence(unfoldedParentRelations.map(_.commit)))
   }
 
   /**
@@ -139,7 +139,7 @@ class DeepInstance(private[modicio] val instanceId: String,
       return Some(this)
     }
     if (getTypeClosure.contains(typeName)) {
-      unfoldedExtensions.map(_.getPolymorphSubtype(typeName)).filter(_.isDefined).head
+      unfoldedParentRelations.map(_.getPolymorphSubtype(typeName)).filter(_.isDefined).head
     } else {
       None
     }
@@ -157,7 +157,7 @@ class DeepInstance(private[modicio] val instanceId: String,
       InstanceData(instanceId, typeHandle.getTypeName, identity),
       shape.getAttributes,
       shape.getAssociations,
-      shape.getExtensions
+      shape.getParentRelations
     )
   }
 
@@ -179,8 +179,8 @@ class DeepInstance(private[modicio] val instanceId: String,
    * <p> Get the deep map of concrete [[AttributeData AttributeData]] together with their respective
    * [[AttributeRule AttributeRules]].
    * <p> Duplicate attribute keys on the same level are handled by [[DeepInstance#attributeMap DeepInstance.attributeMap()]].
-   * Duplicate keys of higher levels are resolved as follows: Extensions are sorted by their typeName alphabetically. Out of
-   * those, the attribute of the alphabetical prior extension is taken. In between levels, attributes of children override
+   * Duplicate keys of higher levels are resolved as follows: ParentRelations are sorted by their typeName alphabetically. Out of
+   * those, the attribute of the alphabetical prior parentRelation is taken. In between levels, attributes of children override
    * parent specifications ignoring the datatype.
    * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
    *
@@ -188,10 +188,10 @@ class DeepInstance(private[modicio] val instanceId: String,
    */
   def deepAttributeMap(): Map[AttributeData, AttributeRule] = {
     val baseMap: mutable.Map[AttributeData, AttributeRule] = mutable.Map.from(attributeMap())
-    unfoldedExtensions.toSeq.sortBy(_.getTypeHandle.getTypeName).foreach(extension => {
+    unfoldedParentRelations.toSeq.sortBy(_.getTypeHandle.getTypeName).foreach(parentRelation => {
 
-      val extensionPropertyMap = extension.deepAttributeMap()
-      extensionPropertyMap.foreach(entry => {
+      val parentRelationPropertyMap = parentRelation.deepAttributeMap()
+      parentRelationPropertyMap.foreach(entry => {
 
         val (property, _) = entry
         if (!baseMap.exists(_._1.key == property.key)) {
@@ -212,7 +212,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * @return Set[String] - (deep) possible associations
    */
   def associationTypes: Set[String] = {
-    unfoldedExtensions.flatMap(_.associationTypes).toSet ++ typeHandle.getAssociated.map(_.getTypeName)
+    unfoldedParentRelations.flatMap(_.associationTypes).toSet ++ typeHandle.getAssociated.map(_.getTypeName)
   }
 
   /**
@@ -246,7 +246,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    */
   def deepAssociationRuleMap: Map[String, mutable.Set[String]] = {
     val results: mutable.Map[String, mutable.Set[String]] = mutable.Map.from(associationRuleMap)
-    unfoldedExtensions.foreach(parent => {
+    unfoldedParentRelations.foreach(parent => {
       val parentResults = parent.deepAssociationRuleMap
       parentResults.foreach(res => {
         val (key, values) = res
@@ -335,23 +335,23 @@ class DeepInstance(private[modicio] val instanceId: String,
 
   /**
    * <p> Get all plain [[AssociationData AssociationData]] provided by the
-   * [[Shape Shapes]] of this DeepInstance and its extension hierarchy.
+   * [[Shape Shapes]] of this DeepInstance and its parentRelation hierarchy.
    * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
    *
    * @return Set[AssociationData] (deep immutable)
    */
-  def getDeepAssociations: Set[AssociationData] = shape.getAssociations ++ unfoldedExtensions.flatMap(_.getDeepAssociations)
+  def getDeepAssociations: Set[AssociationData] = shape.getAssociations ++ unfoldedParentRelations.flatMap(_.getDeepAssociations)
 
   /**
    * <p> Remove a concrete [[AssociationData AssociationData]] from the
    * [[Shape Shapes]] of this DeepInstance. If the instance is unfolded, this call is propagated throughout
-   * the extension hierarchy.
+   * the parentRelation hierarchy.
    *
    * @param associationId id of the [[AssociationData AssociationData]] to remove
    */
   def removeAssociation(associationId: Long): Unit = {
     shape.removeAssociation(associationId)
-    unfoldedExtensions.foreach(_.removeAssociation(associationId))
+    unfoldedParentRelations.foreach(_.removeAssociation(associationId))
   }
 
   /**
@@ -367,10 +367,10 @@ class DeepInstance(private[modicio] val instanceId: String,
   }
 
   //TODO doc
-  def getExtensionClosure: Set[DeepInstance] = {
+  def getParentRelationClosure: Set[DeepInstance] = {
     val closure = mutable.Set[DeepInstance]()
     closure.add(this)
-    closure.addAll(unfoldedExtensions.flatMap(_.getExtensionClosure))
+    closure.addAll(unfoldedParentRelations.flatMap(_.getParentRelationClosure))
     closure.toSet
   }
 

@@ -17,6 +17,6 @@ package modicio.core.datamappings.api
 
 import scala.beans.BeanProperty
 
-case class ExtensionDataJ(@BeanProperty id: Long,
+case class ParentRelationDataJ(@BeanProperty id: Long,
                           @BeanProperty instanceId: java.lang.String,
                           @BeanProperty parentInstanceId: java.lang.String)

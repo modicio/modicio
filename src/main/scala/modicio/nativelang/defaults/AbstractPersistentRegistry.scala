@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData, ModelElementData, RuleData}
+import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData, ModelElementData, RuleData}
 import modicio.core.util.IdentityProvider
 import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, TimeIdentity, TypeFactory, TypeHandle}
 
@@ -41,7 +41,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]]
 
-  protected def fetchExtensionData(instanceId: String): Future[Set[ExtensionData]]
+  protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]]
 
   protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]]
 
@@ -54,7 +54,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]]
 
-  protected def writeExtensionData(diff: IODiff[ExtensionData]): Future[Set[ExtensionData]]
+  protected def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]]
 
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
@@ -159,14 +159,14 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
         val instanceData = instanceDataOption.get
         for {
           attributeData <- fetchAttributeData(instanceId)
-          extensionData <- fetchExtensionData(instanceId)
+          parentRelationData <- fetchParentRelationData(instanceId)
           associationData <- fetchAssociationData(instanceId)
           typeOption <- getType(instanceData.instanceOf, instanceData.identity)
         } yield {
           if(typeOption.isDefined){
             val associations = mutable.Set[AssociationData]()
             associations.addAll(associationData)
-            val shape = new Shape(attributeData,  associations, extensionData)
+            val shape = new Shape(attributeData,  associations, parentRelationData)
             instanceFactory.loadInstance(instanceData, shape, typeOption.get)
           }else{
             None
@@ -192,18 +192,18 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    */
   override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
     val data = deepInstance.toData
-    val (instanceData, attributeData, associationData, extensionData) = (ImmutableShape unapply data).get
+    val (instanceData, attributeData, associationData, parentRelationData) = (ImmutableShape unapply data).get
     get(deepInstance.getInstanceId) flatMap (oldInstanceOption => {
-      val (_, oldExtensionData: Set[ExtensionData], oldAttributeData: Set[AttributeData], oldAssociationData: Set[AssociationData]) = {
+      val (_, oldParentRelationData: Set[ParentRelationData], oldAttributeData: Set[AttributeData], oldAssociationData: Set[AssociationData]) = {
         if(oldInstanceOption.isDefined){
           oldInstanceOption.get.toData
         }else{
-          (null, Set[ExtensionData](), Set[AttributeData](), Set[AssociationData]())
+          (null, Set[ParentRelationData](), Set[AttributeData](), Set[AssociationData]())
         }
       }
       for {
         _ <- writeInstanceData(instanceData)
-        _ <- writeExtensionData(applyUpdate[ExtensionData](oldExtensionData, extensionData, _.id == 0))
+        _ <- writeParentRelationData(applyUpdate[ParentRelationData](oldParentRelationData, parentRelationData, _.id == 0))
         _ <- writeAssociationData(applyUpdate[AssociationData](oldAssociationData, associationData, _.id == 0))
         _ <- writeAttributeData(applyUpdate[AttributeData](oldAttributeData, attributeData, _.id == 0))
       } yield {}
@@ -240,13 +240,13 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
           //unfold the singleton deep-instance
 
           deepInstanceOption.get.unfold() flatMap (unfoldedInstance => {
-            val extensions = unfoldedInstance.getTypeHandle.getModelElement.getParents
+            val parentRelations = unfoldedInstance.getTypeHandle.getModelElement.getParents
 
             //delete all parent model-elements of the singleton deep-instance
             //delete the actual deep-instance and trigger deletion of its parents
             for {
               _ <- removeInstanceWithData(singletonInstanceId)
-              _ <- Future.sequence(extensions.map(extension => autoRemove(extension.name, ModelElement.SINGLETON_IDENTITY)))
+              _ <- Future.sequence(parentRelations.map(parentRelation => autoRemove(parentRelation.name, ModelElement.SINGLETON_IDENTITY)))
               _ <- removeModelElementWithRules(name, identity)
             } yield {}
           })

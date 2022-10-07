@@ -24,7 +24,7 @@ import scala.concurrent.Future
 /**
  * @param name       name of the ModelElement, name and identity form a unique pair.
  * @param identity   identity of the ModelElement
- * @param isTemplate if the template can be instantiated directly or only used as part of an extension hierarchy / isAbstract
+ * @param isTemplate if the template can be instantiated directly or only used as part of an parentRelation hierarchy / isAbstract
  */
 class Node
 (
@@ -36,36 +36,36 @@ class Node
 
   override final def isNode: Boolean = true
 
-  protected val extensions: mutable.Set[ModelElement] = mutable.Set()
+  protected val parentRelations: mutable.Set[ModelElement] = mutable.Set()
 
-  override def getParents: Set[ModelElement] = Set.from(extensions)
+  override def getParents: Set[ModelElement] = Set.from(parentRelations)
 
   override def unfold(): Future[Unit] = {
     fold()
     super.unfold() flatMap (_ => {
-      //resolve extensions
-      val extensionRules = definition.getExtensionRules
-      if (extensionRules.isEmpty) {
+      //resolve parentRelations
+      val parentRelationRules = definition.getParentRelationRules
+      if (parentRelationRules.isEmpty) {
         Future.successful((): Unit)
       }else{
-        Future.sequence(extensionRules.map(extensionRule => {
-          registry.getType(extensionRule.parentName, extensionRule.parentIdentity)
+        Future.sequence(parentRelationRules.map(parentRelationRule => {
+          registry.getType(parentRelationRule.parentName, parentRelationRule.parentIdentity)
         })) map (handleOptions => {
-          extensions.addAll(handleOptions.filter(_.isDefined).map(_.get.getModelElement))
+          parentRelations.addAll(handleOptions.filter(_.isDefined).map(_.get.getModelElement))
         }) flatMap (_ => {
-          unfoldExtensions()
+          unfoldParentRelations()
         })
       }
     })
   }
 
-  private def unfoldExtensions(): Future[Unit] = {
-    Future.sequence(extensions.map(_.unfold())) flatMap (_ => Future.unit)
+  private def unfoldParentRelations(): Future[Unit] = {
+    Future.sequence(parentRelations.map(_.unfold())) flatMap (_ => Future.unit)
   }
 
   override def fold(): Unit = {
     super.fold()
-    extensions.clear()
+    parentRelations.clear()
   }
 
   override private[modicio] def toData: (ModelElementData, Set[RuleData]) = {
@@ -82,7 +82,7 @@ class Node
    * @return
    */
   override def fork(identity: String): ModelElement = {
-    extensions.foreach(extension => extension.fork(identity))
+    parentRelations.foreach(parentRelation => parentRelation.fork(identity))
     super.fork(identity)
   }
 
@@ -107,7 +107,7 @@ class Node
    * @return Future[Unit] - after the persistence process was completed
    */
   override def commit(): Future[Any] = {
-    super.commit() flatMap (_ => Future.sequence(extensions.map(_.commit())))
+    super.commit() flatMap (_ => Future.sequence(parentRelations.map(_.commit())))
   }
 
 }

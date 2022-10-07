@@ -66,7 +66,7 @@ class DeepInstanceJ(instanceId: java.lang.String, identity: java.lang.String, sh
 
   def getTypeClosureJ: java.util.Set[java.lang.String] = super.getTypeClosure
 
-  def getExtensionClosureJ: java.util.Set[DeepInstanceJ] = convert(super.getExtensionClosure)
+  def getParentRelationClosureJ: java.util.Set[DeepInstanceJ] = convert(super.getParentRelationClosure)
 
   def associateJ(deepInstance: DeepInstanceJ, associateAs: java.lang.String, byRelation: java.lang.String): Boolean =
     super.associate(deepInstance, associateAs, byRelation)

@@ -16,7 +16,7 @@
 package modicio.core
 
 import modicio.core.datamappings.{ModelElementData, RuleData}
-import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule, RuleDataType}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule, RuleDataType}
 import modicio.core.values.ConcreteValue
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
@@ -78,7 +78,7 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
       case RuleDataType.ATTRIBUTE => new AttributeRule(ruleData.nativeValue)
       case RuleDataType.VALUE => new ConcreteValue(ruleData.nativeValue)
       case RuleDataType.ASSOCIATION => new AssociationRule(ruleData.nativeValue)
-      case RuleDataType.EXTENSION => new ExtensionRule(ruleData.nativeValue)
+      case RuleDataType.EXTENSION => new ParentRelationRule(ruleData.nativeValue)
       case _ => throw new IllegalArgumentException("Cannot determine RuleData typeOf")
     }
   }

@@ -49,8 +49,8 @@ abstract class AbstractPersistentRegistryJ(typeFactory: TypeFactoryJ, instanceFa
   override protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]] =
     fetchAttributeDataJ(instanceId)
 
-  override protected def fetchExtensionData(instanceId: String): Future[Set[ExtensionData]] =
-    fetchExtensionDataJ(instanceId)
+  override protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]] =
+    fetchParentRelationDataJ(instanceId)
 
   override protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]] =
     fetchAssociationDataJ(instanceId)
@@ -67,8 +67,8 @@ abstract class AbstractPersistentRegistryJ(typeFactory: TypeFactoryJ, instanceFa
   override protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] =
     writeAttributeDataJ(convertDiff(diff))
 
-  override protected def writeExtensionData(diff: IODiff[ExtensionData]): Future[Set[ExtensionData]] =
-    writeExtensionDataJ(convertDiff(diff))
+  override protected def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]] =
+    writeParentRelationDataJ(convertDiff(diff))
 
   override protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]] =
     writeAssociationDataJ(convertDiff(diff))
@@ -84,13 +84,13 @@ abstract class AbstractPersistentRegistryJ(typeFactory: TypeFactoryJ, instanceFa
   protected def fetchInstanceDataJ(instanceId: java.lang.String): CompletableFuture[Optional[InstanceDataJ]]
   protected def fetchRuleDataJ(modelElementName: java.lang.String, identity: java.lang.String): CompletableFuture[java.util.Set[RuleDataJ]]
   protected def fetchAttributeDataJ(instanceId: java.lang.String): CompletableFuture[java.util.Set[AttributeDataJ]]
-  protected def fetchExtensionDataJ(instanceId: java.lang.String): CompletableFuture[java.util.Set[ExtensionDataJ]]
+  protected def fetchParentRelationDataJ(instanceId: java.lang.String): CompletableFuture[java.util.Set[ParentRelationDataJ]]
   protected def fetchAssociationDataJ(instanceId: java.lang.String): CompletableFuture[java.util.Set[AssociationDataJ]]
   protected def writeModelElementDataJ(modelElementData: ModelElementDataJ): CompletableFuture[ModelElementDataJ]
   protected def writeInstanceDataJ(instanceData: InstanceDataJ): CompletableFuture[InstanceDataJ]
   protected def writeRuleDataJ(diff: IODiffJ[RuleDataJ]): CompletableFuture[java.util.Set[RuleDataJ]]
   protected def writeAttributeDataJ(diff: IODiffJ[AttributeDataJ]): CompletableFuture[java.util.Set[AttributeDataJ]]
-  protected def writeExtensionDataJ(diff: IODiffJ[ExtensionDataJ]): CompletableFuture[java.util.Set[ExtensionDataJ]]
+  protected def writeParentRelationDataJ(diff: IODiffJ[ParentRelationDataJ]): CompletableFuture[java.util.Set[ParentRelationDataJ]]
   protected def writeAssociationDataJ(diff: IODiffJ[AssociationDataJ]): CompletableFuture[java.util.Set[AssociationDataJ]]
   protected def removeModelElementWithRulesJ(modelElementName: java.lang.String, identity: java.lang.String): CompletableFuture[Any]
   protected def removeInstanceWithDataJ(instanceId: java.lang.String): CompletableFuture[Any]

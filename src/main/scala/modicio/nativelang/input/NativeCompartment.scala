@@ -16,6 +16,6 @@
 package modicio.nativelang.input
 
 import io.circe.syntax._
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData}
 
-case class NativeCompartment(definition: NativeDSL, configuration: Seq[(InstanceData, Set[ExtensionData], Set[AttributeData], Set[AssociationData])])
+case class NativeCompartment(definition: NativeDSL, configuration: Seq[(InstanceData, Set[ParentRelationData], Set[AttributeData], Set[AssociationData])])

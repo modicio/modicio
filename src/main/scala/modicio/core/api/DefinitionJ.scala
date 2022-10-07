@@ -16,11 +16,11 @@
 package modicio.core.api
 
 import modicio.core.datamappings.api.RuleDataJ
-import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
+import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ParentRelationRuleJ}
 import modicio.core.values.api.ConcreteValueJ
 import modicio.core.{Definition, Rule}
 import modicio.api.JavaAPIConversions._
-import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
 
 class DefinitionJ(val definition: Definition) extends BaseJ {
@@ -35,7 +35,7 @@ class DefinitionJ(val definition: Definition) extends BaseJ {
 
   override def getAssociationRulesJ: java.util.Set[AssociationRuleJ] = convert(definition.getAssociationRules)
 
-  override def getExtensionRulesJ: java.util.Set[ExtensionRuleJ] = convert(definition.getExtensionRules)
+  override def getParentRelationRulesJ: java.util.Set[ParentRelationRuleJ] = convert(definition.getParentRelationRules)
 
   override def getConcreteValuesJ: java.util.Set[ConcreteValueJ] = convert(definition.getConcreteValues)
 
@@ -43,7 +43,7 @@ class DefinitionJ(val definition: Definition) extends BaseJ {
 
   override def getAssociationRules: Set[AssociationRule] = definition.getAssociationRules
 
-  override def getExtensionRules: Set[ExtensionRule] = definition.getExtensionRules
+  override def getParentRelationRules: Set[ParentRelationRule] = definition.getParentRelationRules
 
   override def getConcreteValues: Set[ConcreteValue] = definition.getConcreteValues
 

@@ -15,16 +15,16 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ExtensionData}
+import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData}
 
 import scala.collection.mutable
 
 /**
  * @param attributes
  * @param associations
- * @param extensions
+ * @param parentRelations
  */
-class Shape(attributes: Set[AttributeData], associations: mutable.Set[AssociationData], extensions: Set[ExtensionData]){
+class Shape(attributes: Set[AttributeData], associations: mutable.Set[AssociationData], parentRelations: Set[ParentRelationData]){
 
   def getAttribute(key: String): Option[AttributeData] = attributes.find(_.key == key)
 
@@ -41,6 +41,6 @@ class Shape(attributes: Set[AttributeData], associations: mutable.Set[Associatio
 
   def addAssociation(association: AssociationData): Unit = associations.add(association)
 
-  def getExtensions: Set[ExtensionData] = extensions
+  def getParentRelations: Set[ParentRelationData] = parentRelations
 
 }

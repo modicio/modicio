@@ -17,12 +17,12 @@ package modicio.core.rules.api
 
 import modicio.core.Rule
 import modicio.core.api.RuleJ
-import modicio.core.rules.ExtensionRule
+import modicio.core.rules.ParentRelationRule
 
-class ExtensionRuleJ(nativeValue: java.lang.String) extends ExtensionRule(nativeValue) with RuleJ {
+class ParentRelationRuleJ(nativeValue: java.lang.String) extends ParentRelationRule(nativeValue) with RuleJ {
 
   override def getRule: Rule = this
 
-  override def forkJ(identity: String): RuleJ = new ExtensionRuleJ(super.fork(identity).nativeValue)
+  override def forkJ(identity: String): RuleJ = new ParentRelationRuleJ(super.fork(identity).nativeValue)
 
 }

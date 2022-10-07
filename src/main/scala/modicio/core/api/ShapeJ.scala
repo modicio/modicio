@@ -17,16 +17,16 @@ package modicio.core.api
 
 import modicio.api.JavaAPIConversions._
 import modicio.core.Shape
-import modicio.core.datamappings.api.{AssociationDataJ, AttributeDataJ, ExtensionDataJ}
+import modicio.core.datamappings.api.{AssociationDataJ, AttributeDataJ, ParentRelationDataJ}
 
 import java.util.Optional
 import scala.collection.mutable
 
 class ShapeJ(attributes: java.util.Set[AttributeDataJ],
              associations: java.util.Set[AssociationDataJ],
-             extensions: java.util.Set[ExtensionDataJ])
+             parentRelations: java.util.Set[ParentRelationDataJ])
 
-  extends Shape(attributes map convert, mutable.Set.from(convert(associations)), extensions map convert){
+  extends Shape(attributes map convert, mutable.Set.from(convert(associations)), parentRelations map convert){
   def getAttributeJ(key: java.lang.String): Optional[AttributeDataJ] = convert(super.getAttribute(key))
 
   def getAttributesJ: java.util.Set[AttributeDataJ] = convert(super.getAttributes)
@@ -37,5 +37,5 @@ class ShapeJ(attributes: java.util.Set[AttributeDataJ],
 
   def addAssociationJ(association: AssociationDataJ): Unit = super.addAssociation(association)
 
-  def getExtensionsJ: java.util.Set[ExtensionDataJ] = convert(super.getExtensions)
+  def getParentRelationsJ: java.util.Set[ParentRelationDataJ] = convert(super.getParentRelations)
 }
