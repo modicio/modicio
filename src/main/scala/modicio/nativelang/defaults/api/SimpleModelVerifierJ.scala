@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.defaults.api
 
-import modicio.codi.api.TypeHandleJ
+import modicio.core.api.TypeHandleJ
 import modicio.verification.api.ModelVerifierJ
 
 class SimpleModelVerifierJ extends ModelVerifierJ {

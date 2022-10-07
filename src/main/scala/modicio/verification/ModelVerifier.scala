@@ -15,7 +15,7 @@
  */
 package modicio.verification
 
-import modicio.codi.TypeHandle
+import modicio.core.TypeHandle
 
 trait ModelVerifier {
 

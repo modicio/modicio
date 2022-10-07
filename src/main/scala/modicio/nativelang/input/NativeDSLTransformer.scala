@@ -15,9 +15,9 @@
  */
 package modicio.nativelang.input
 
-import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
-import modicio.codi.values.ConcreteValue
-import modicio.codi.{ImmutableShape, Registry, Transformer}
+import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
+import modicio.core.values.ConcreteValue
+import modicio.core.{ImmutableShape, Registry, TimeIdentity, Transformer}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
@@ -32,17 +32,30 @@ import scala.concurrent.Future
 class NativeDSLTransformer(registry: Registry,
                            definitionVerifier: DefinitionVerifier,
                            modelVerifier: ModelVerifier) extends
-  Transformer[NativeDSL, ExtendedNativeDSL](registry, definitionVerifier, modelVerifier) {
+  Transformer[NativeDSL, NativeCompartment](registry, definitionVerifier, modelVerifier) {
 
-  override def extend(input: NativeDSL): Future[Unit] = {
-    input.model.foreach(statement => evaluateStatement(statement))
+  override def extend(input: NativeDSL): Future[Any] = {
+
+    val defaultTimeIdentity = TimeIdentity.create
+
+    input.model.foreach(statement => evaluateModelElement(statement, defaultTimeIdentity))
     Future.successful((): Unit)
   }
 
-  def evaluateStatement(statement: Statement): Unit = {
-    val name = Statement.parseName(statement)
-    val identity = Statement.parseIdentity(statement)
-    val typeHandle = typeFactory.newType(name, identity, statement.template)
+  def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity): Future[Any] = {
+    val name = NativeModelElement.parseName(statement)
+    val identity = NativeModelElement.parseIdentity(statement)
+
+    val timeIdentity = {
+      if(statement.timeDescriptor.isDefined){
+        val desc = statement.timeDescriptor.get
+        TimeIdentity(desc.variantTime, desc.runningTime, desc.versionTime, desc.variantId, desc.runningId, desc.versionId)
+      }else{
+        defaultTimeIdentity
+      }
+    }
+
+    typeFactory.newType(name, identity, statement.template, Some(timeIdentity)) map (typeHandle => {
     registry.setType(typeHandle)
 
     statement.childOf.foreach(extensionRule => typeHandle.applyRule(new ExtensionRule(extensionRule)))
@@ -52,11 +65,12 @@ class NativeDSLTransformer(registry: Registry,
     statement.associations.foreach(associationRule => typeHandle.applyRule(new AssociationRule(associationRule)))
 
     statement.values.foreach(concreteValue => typeHandle.applyRule(new ConcreteValue(concreteValue)))
+    })
   }
 
-  override def decompose(input: Option[String]): Future[ExtendedNativeDSL] = {
+  override def decompose(input: Option[String]): Future[NativeCompartment] = {
     if(input.isDefined){
-      val statements = mutable.Set[Statement]()
+      val statements = mutable.Set[NativeModelElement]()
       val configuration = mutable.Set[ImmutableShape]()
 
       registry.get(input.get) flatMap (flatInstance => {
@@ -65,15 +79,17 @@ class NativeDSLTransformer(registry: Registry,
             deepInstance.getExtensionClosure.foreach(i => {
               val data = i.toData
               configuration.add(data)
-              val frag = i.getTypeHandle.getFragment
+              val frag = i.getTypeHandle.getModelElement
               val childOf = frag.definition.getExtensionRules.map(_.serialise()).toSeq
               val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
               val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq
               val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
-              val s = Statement(frag.name+":"+frag.identity, frag.isTemplate, childOf, associations, attributes, values)
+              val ti = frag.getTimeIdentity
+              val timeIdentity = NativeTimeIdentity(ti.variantTime, ti.runningTime, ti.versionTime, ti.variantId, ti.runningId, ti.versionId)
+              val s = NativeModelElement(frag.name+":"+frag.identity, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
               statements.add(s)
             })
-            ExtendedNativeDSL(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
+            NativeCompartment(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
               (s.instanceData, s.extensions, s.attributes, s.associations)))
           })
         }else{
