@@ -15,7 +15,7 @@ In its current version, this framework is realised as a prototypical implementat
 
 ## contributing 
 
-Please read the [contribution guide](https://github.com/modicio/modicio/edit/main/README.md).
+Please read the [contribution guide](https://github.com/modicio/modicio/blob/main/CONTRIBUTING.md).
 
 ## release notes
 
