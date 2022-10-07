@@ -17,7 +17,7 @@ package modicio.nativelang.input
 
 import modicio.core.rules.{AssociationRule, AttributeRule, ExtensionRule}
 import modicio.core.values.ConcreteValue
-import modicio.core.{ImmutableShape, Registry, Transformer}
+import modicio.core.{ImmutableShape, Registry, TimeIdentity, Transformer}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
@@ -35,18 +35,27 @@ class NativeDSLTransformer(registry: Registry,
   Transformer[NativeDSL, NativeCompartment](registry, definitionVerifier, modelVerifier) {
 
   override def extend(input: NativeDSL): Future[Any] = {
-    input.model.foreach(statement => evaluateModelElement(statement))
+
+    val defaultTimeIdentity = TimeIdentity.create
+
+    input.model.foreach(statement => evaluateModelElement(statement, defaultTimeIdentity))
     Future.successful((): Unit)
   }
 
-  def evaluateModelElement(statement: NativeModelElement): Future[Any] = {
+  def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity): Future[Any] = {
     val name = NativeModelElement.parseName(statement)
     val identity = NativeModelElement.parseIdentity(statement)
 
-    //FIXME
-    // Preload existing TimeDescriptor
+    val timeIdentity = {
+      if(statement.timeDescriptor.isDefined){
+        val desc = statement.timeDescriptor.get
+        TimeIdentity(desc.variantTime, desc.runningTime, desc.versionTime, desc.variantId, desc.runningId, desc.versionId)
+      }else{
+        defaultTimeIdentity
+      }
+    }
 
-    typeFactory.newType(name, identity, statement.template) map (typeHandle => {
+    typeFactory.newType(name, identity, statement.template, Some(timeIdentity)) map (typeHandle => {
     registry.setType(typeHandle)
 
     statement.childOf.foreach(extensionRule => typeHandle.applyRule(new ExtensionRule(extensionRule)))

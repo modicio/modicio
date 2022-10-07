@@ -34,10 +34,20 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
 
   def setRegistry(registry: Registry): Unit = this.registry = registry
 
-  def newType(name: String, identity: String, isTemplate: Boolean): Future[TypeHandle] = {
-    val definition = new Definition(definitionVerifier)
-    registry.getReferenceTimeIdentity map (timeIdentity => {
+  def newType(name: String, identity: String, isTemplate: Boolean, defaultTimeIdentity: Option[TimeIdentity] = None):
+  Future[TypeHandle] = {
 
+    val definition = new Definition(definitionVerifier)
+
+    val time = {
+      if(defaultTimeIdentity.isDefined) {
+        Future.successful(defaultTimeIdentity.get)
+      }else {
+        registry.getReferenceTimeIdentity
+      }
+    }
+
+    time map (timeIdentity => {
       val modelElement = new Node(name, identity, isTemplate, TimeIdentity.createFrom(timeIdentity))
       
       modelElement.setRegistry(registry)
