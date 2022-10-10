@@ -16,4 +16,4 @@
 package modicio.nativelang.input
 
 
-case class NativeDSL(model: Seq[Statement])
+case class NativeDSL(model: Seq[NativeModelElement])

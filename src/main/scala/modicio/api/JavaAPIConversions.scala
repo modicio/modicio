@@ -15,14 +15,14 @@
  */
 package modicio.api
 
-import modicio.codi._
-import modicio.codi.api._
-import modicio.codi.datamappings._
-import modicio.codi.datamappings.api._
-import modicio.codi.rules.api.{AssociationRuleJ, AttributeRuleJ, ExtensionRuleJ}
-import modicio.codi.rules.{AssociationRule, AttributeRule, ExtensionRule}
-import modicio.codi.values.api.{ConcreteAssociationJ, ConcreteAttributeJ, ConcreteValueJ, ValueDescriptorJ}
-import modicio.codi.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
+import modicio.core._
+import modicio.core.api._
+import modicio.core.datamappings._
+import modicio.core.datamappings.api._
+import modicio.core.rules.api.{AssociationRuleJ, AttributeRuleJ, ParentRelationRuleJ}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
+import modicio.core.values.api.{ConcreteAssociationJ, ConcreteAttributeJ, ConcreteValueJ, ValueDescriptorJ}
+import modicio.core.values.{ConcreteAssociation, ConcreteAttribute, ConcreteValue, ValueDescriptor}
 import modicio.nativelang.defaults.SimpleMapRegistry
 import modicio.nativelang.defaults.api.SimpleMapRegistryJ
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
@@ -100,7 +100,7 @@ object JavaAPIConversions {
 
   implicit def convert[T, K](value: java.util.Map[T, K]): Map[T, K] = value.asScala.toMap
 
-  implicit def convert(value: TypeHandle): TypeHandleJ = new TypeHandleJ(value.getFragment, value.getIsStatic)
+  implicit def convert(value: TypeHandle): TypeHandleJ = new TypeHandleJ(value.getModelElement, value.getIsStatic)
 
   implicit def convert(value: DeepInstance): DeepInstanceJ = new DeepInstanceJ(value.instanceId, value.identity, value.shape, value.typeHandle, value.registry)
 
@@ -117,7 +117,7 @@ object JavaAPIConversions {
     res
   }
 
-  implicit def convert(instanceFactory: modicio.codi.InstanceFactory): InstanceFactoryJ = {
+  implicit def convert(instanceFactory: modicio.core.InstanceFactory): InstanceFactoryJ = {
     new InstanceFactoryJ(instanceFactory.definitionVerifier, instanceFactory.modelVerifier)
   }
 
@@ -133,13 +133,13 @@ object JavaAPIConversions {
     case rule: AssociationRule => rule
     case rule: AttributeRule => rule
     case value: ConcreteValue => value
-    case rule: ExtensionRule => rule
+    case rule: ParentRelationRule => rule
     case _ => throw new IllegalArgumentException()
   }
 
   implicit def convertBase(value: Base): BaseJ = value match {
     case j: BaseJ => j
-    case model: BaseModel => throw new IllegalArgumentException()
+    //case model: BaseModel => throw new IllegalArgumentException()
     case definition: Definition => convert(definition)
     case _ => throw new IllegalArgumentException()
   }
@@ -156,7 +156,7 @@ object JavaAPIConversions {
 
   implicit def convert(value: AssociationRule): AssociationRuleJ = new AssociationRuleJ(value.nativeValue)
 
-  implicit def convert(value: ExtensionRule): ExtensionRuleJ = new ExtensionRuleJ(value.nativeValue)
+  implicit def convert(value: ParentRelationRule): ParentRelationRuleJ = new ParentRelationRuleJ(value.nativeValue)
 
   implicit def convert(value: ConcreteValue): ConcreteValueJ = new ConcreteValueJ(value.nativeValue)
 
@@ -164,9 +164,9 @@ object JavaAPIConversions {
 
   implicit def convert(value: ConcreteAttribute): ConcreteAttributeJ = new ConcreteAttributeJ(value.nativeValue)
 
-  implicit def convert(value: FragmentData): FragmentDataJ = FragmentDataJ tupled FragmentData.unapply(value).get
+  implicit def convert(value: ModelElementData): ModelElementDataJ = ModelElementDataJ tupled ModelElementData.unapply(value).get
 
-  implicit def convert(value: FragmentDataJ): FragmentData = FragmentData tupled FragmentDataJ.unapply(value).get
+  implicit def convert(value: ModelElementDataJ): ModelElementData = ModelElementData tupled ModelElementDataJ.unapply(value).get
 
   implicit def convert(value: AssociationData): AssociationDataJ =
     AssociationDataJ tupled AssociationData.unapply(value).get
@@ -178,16 +178,16 @@ object JavaAPIConversions {
 
   implicit def convert(value: AttributeDataJ): AttributeData = AttributeData tupled AttributeDataJ.unapply(value).get
 
-  implicit def convert(value: ExtensionData): ExtensionDataJ = ExtensionDataJ tupled ExtensionData.unapply(value).get
+  implicit def convert(value: ParentRelationData): ParentRelationDataJ = ParentRelationDataJ tupled ParentRelationData.unapply(value).get
 
-  implicit def convert(value: ExtensionDataJ): ExtensionData = ExtensionData tupled ExtensionDataJ.unapply(value).get
+  implicit def convert(value: ParentRelationDataJ): ParentRelationData = ParentRelationData tupled ParentRelationDataJ.unapply(value).get
 
   implicit def convert(value: InstanceData): InstanceDataJ = InstanceDataJ tupled InstanceData.unapply(value).get
 
   implicit def convert(value: InstanceDataJ): InstanceData = InstanceData tupled InstanceDataJ.unapply(value).get
 
   implicit def convert(value: ImmutableShape): ImmutableShapeJ =
-    ImmutableShapeJ(value.instanceData, convert(value.attributes), convert(value.associations), convert(value.extensions))
+    ImmutableShapeJ(value.instanceData, convert(value.attributes), convert(value.associations), convert(value.parentRelations))
 
   implicit def convert(value: DefinitionVerifier): DefinitionVerifierJ = {
     new DefinitionVerifierJ {
@@ -202,8 +202,8 @@ object JavaAPIConversions {
   }
 
   implicit def convert(value: Shape): ShapeJ =
-    new ShapeJ(convert(value.getAttributes), convert(value.getAssociations), convert(value.getExtensions))
+    new ShapeJ(convert(value.getAttributes), convert(value.getAssociations), convert(value.getParentRelations))
 
 
-  implicit def convert(value: TypeIterator): TypeIteratorJ = new TypeIteratorJ(value.initialFragment)
+  implicit def convert(value: TypeIterator): TypeIteratorJ = new TypeIteratorJ(value.initialModelElement)
 }

@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.codi.Rule
+import modicio.core.Rule
 import modicio.verification.DefinitionVerifier
 
 class SimpleDefinitionVerifier extends DefinitionVerifier {

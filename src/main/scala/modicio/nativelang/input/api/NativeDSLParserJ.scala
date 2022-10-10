@@ -15,12 +15,12 @@
  */
 package modicio.nativelang.input.api
 
-import modicio.nativelang.input.{ExtendedNativeDSL, NativeDSL, NativeDSLParser}
+import modicio.nativelang.input.{NativeCompartment, NativeDSL, NativeDSLParser}
 
 object NativeDSLParserJ {
 
   def parse(nativeInput: java.lang.String): NativeDSL = NativeDSLParser.parse(nativeInput)
 
-  def produceJsonString(extendedNativeDSL: ExtendedNativeDSL): String = NativeDSLParser.produceString(extendedNativeDSL)
+  def produceJsonString(extendedNativeDSL: NativeCompartment): String = NativeDSLParser.produceString(extendedNativeDSL)
 
 }

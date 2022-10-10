@@ -15,8 +15,8 @@
  */
 package modicio.verification.api
 
-import modicio.codi.Rule
-import modicio.codi.api.RuleJ
+import modicio.core.Rule
+import modicio.core.api.RuleJ
 import modicio.verification.DefinitionVerifier
 
 import modicio.api.JavaAPIConversions._

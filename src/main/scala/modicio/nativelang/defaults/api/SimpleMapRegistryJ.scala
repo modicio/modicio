@@ -15,8 +15,8 @@
  */
 package modicio.nativelang.defaults.api
 
-import modicio.codi.Registry
-import modicio.codi.api.{InstanceFactoryJ, RegistryJ, TypeFactoryJ}
+import modicio.core.Registry
+import modicio.core.api.{InstanceFactoryJ, RegistryJ, TypeFactoryJ}
 import modicio.nativelang.defaults.SimpleMapRegistry
 
 import scala.language.implicitConversions
