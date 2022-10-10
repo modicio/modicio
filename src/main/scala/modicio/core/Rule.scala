@@ -129,4 +129,6 @@ object Rule {
    */
   def enableAutoID(): Unit = isAutoID = true
 
+  def disableAutoID(): Unit = isAutoID = false
+
 }
