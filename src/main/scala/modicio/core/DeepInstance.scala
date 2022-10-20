@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData}
+import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ParentRelationData}
 import modicio.core.rules.{AssociationRule, AttributeRule}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
@@ -397,15 +397,22 @@ class DeepInstance(private[modicio] val instanceId: String,
    */
   def associate(deepInstance: DeepInstance, associateAs: String, byRelation: String): Boolean = {
     //check first if the instance has a type in their composite hierarchy that can be associated by any rule
+
     val instanceTypes: Set[String] = deepInstance.getTypeClosure
+    val instanceTimeIdentity = deepInstance.getTypeHandle.getTimeIdentity
+
     println("Association Candidate: " + instanceTypes)
     println("Association Target: " + getTypeClosure)
     println("byRelation: " + byRelation)
     println("associateAs: " + associateAs)
+
     if (instanceTypes.contains(associateAs)) {
       //check if the proposed relation is defined on top of a type which is in the instance type hierarchy
-      val allowedAssociationTypes = typeHandle.getModelElement.getDeepAssociationRulesOfRelation(byRelation).map(_.targetName)
-      if (instanceTypes.intersect(allowedAssociationTypes).nonEmpty) {
+      val relationAssociationRules = typeHandle.getModelElement.getDeepAssociationRulesOfRelation(byRelation)
+
+      val matchesSlot = relationAssociationRules.exists(rule => instanceTypes.exists(iType => rule.getInterface.canConnect(iType, instanceTimeIdentity.variantTime)))
+
+      if (matchesSlot) {
         shape.addAssociation(AssociationData(0, byRelation, instanceId, deepInstance.getPolymorphSubtype(associateAs).get.getInstanceId, isFinal = false))
         true
       } else {

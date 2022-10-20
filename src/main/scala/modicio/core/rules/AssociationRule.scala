@@ -15,8 +15,8 @@
  */
 package modicio.core.rules
 
-import modicio.core.{ModelElement, Rule}
 import modicio.core.datamappings.RuleData
+import modicio.core.{ModelElement, Rule}
 
 /**
  * <p> A concrete [[Rule Rule]] implementation to represent associations in the native unlinked model.
@@ -30,12 +30,35 @@ import modicio.core.datamappings.RuleData
  *
  * @see [[Rule]]<p>[[RuleData]]
  * @param nativeValue the string representation in the native-language format
+ * @param interface TODO doc
  */
-class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
+class AssociationRule(nativeValue: String, private var interface: Option[ConnectionInterface] = None) extends Rule(nativeValue) {
 
-  val associationName: String = parseName(nativeValue)
-  val targetName: String = parseTarget(nativeValue)
-  val multiplicity: String = parseMultiplicity(nativeValue)
+  val associationName: String = parseName
+  val targetName: String = parseTarget
+  val multiplicity: String = parseMultiplicity
+
+  if(interface.isEmpty){
+    interface = Some(ConnectionInterface.parseInterface(nativeValue.split(":")(4), targetName))
+  }
+
+  /**
+   * TODO doc
+   * @param interface
+   */
+  def setInterface(interface: ConnectionInterface): Unit = this.interface = Some(interface)
+
+  /**
+   * TODO doc
+   * @return
+   */
+  def interfaceInitialized: Boolean = interface.isDefined
+
+  /**
+   * TODO doc
+   * @return
+   */
+  def getInterface: ConnectionInterface = interface.get
 
   /**
    * <p>Helper to retrieve the association name from the serialised value
@@ -43,7 +66,7 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
    * @param nativeValue serialised rule representation
    * @return String of association name
    */
-  private def parseName(nativeValue: String): String = nativeValue.split(":")(1)
+  private def parseName: String = nativeValue.split(":")(1)
 
   /**
    * <p>Helper to retrieve the target name from the serialised value
@@ -51,7 +74,7 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
    * @param nativeValue serialised rule representation
    * @return String of target name
    */
-  private def parseTarget(nativeValue: String): String = nativeValue.split(":")(2)
+  private def parseTarget: String = nativeValue.split(":")(2)
 
   /**
    * <p>Helper to retrieve the multiplicity from the serialised value
@@ -60,7 +83,8 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
    * @param nativeValue serialised rule representation
    * @return String of multiplicity
    */
-  private def parseMultiplicity(nativeValue: String): String = nativeValue.split(":")(3)
+  private def parseMultiplicity: String = nativeValue.split(":")(3)
+
 
   /**
    * <p>Implementation of [[Rule#serialise Rule.serialise()]]
@@ -68,7 +92,7 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
    * @return String of serialised rule
    */
   override def serialise(): String = {
-    id + ":" + associationName + ":" + targetName + ":" + multiplicity
+    id + ":" + associationName + ":" + targetName + ":" + multiplicity + ":" + ConnectionInterface.serialise(interface.get)
   }
 
   /**
@@ -97,7 +121,7 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
    * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
-  override def fork(identity: String): Rule = AssociationRule.create(associationName, targetName, multiplicity, Some(Rule.UNKNOWN_ID))
+  override def fork(identity: String): Rule = AssociationRule.create(associationName, targetName, multiplicity, interface.get, Some(Rule.UNKNOWN_ID))
 
   /**
    *
@@ -128,9 +152,9 @@ class AssociationRule(nativeValue: String) extends Rule(nativeValue) {
    * @return
    */
   def getIntMultiplicity: Int = {
-    if(!hasIntMultiplicity){
+    if (!hasIntMultiplicity) {
       throw new UnsupportedOperationException("Cannot convert non-int multiplicity to int")
-    }else{
+    } else {
       multiplicity.toIntOption.get
     }
   }
@@ -156,9 +180,9 @@ object AssociationRule {
    * @param idOption        id value if known, set to default otherwise
    * @return AssociationRule created from provided values
    */
-  def create(associationName: String, target: String, multiplicity: String, idOption: Option[String] = None): AssociationRule = {
+  def create(associationName: String, target: String, multiplicity: String, interface: ConnectionInterface, idOption: Option[String] = None): AssociationRule = {
     var id = Rule.UNKNOWN_ID
     if (idOption.isDefined) id = idOption.get
-    new AssociationRule(id + ":" + associationName + ":" + target + ":" + multiplicity)
+    new AssociationRule(id + ":" + associationName + ":" + target + ":" + multiplicity + ":" + ConnectionInterface.serialise(interface))
   }
 }
