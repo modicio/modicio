@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package modicio.codi.rules
+package modicio
 
-import modicio.core.Rule
-import modicio.core.rules.ParentRelationRule
+import modicio.core.{InstanceFactory, TypeFactory}
+import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
-class ParentRelationRuleSpec extends AnyFlatSpec with should.Matchers {
+class AbstractIntegrationSpec extends AnyFlatSpec with should.Matchers {
 
-  val nativeStringNoId = ":#:Project"
+  val modelVerifier = new SimpleModelVerifier()
+  val definitionVerifier = new SimpleDefinitionVerifier()
 
-  "An ExtensionRule" must "be correctly constructed from a (native value) DSL string with empty id" in {
-    val extensionRule = new ParentRelationRule(nativeStringNoId)
-    extensionRule.parentName should equal ("Project")
-    extensionRule.parentIdentity should equal ("#")
-    extensionRule.id should be (Rule.UNKNOWN_ID)
-  }
+  val typeFactory = new TypeFactory(definitionVerifier, modelVerifier)
+  val instanceFactory = new InstanceFactory(definitionVerifier, modelVerifier)
+
+  val registry = new SimpleMapRegistry(typeFactory, instanceFactory)
+  typeFactory.setRegistry(registry)
+  instanceFactory.setRegistry(registry)
 
 }
