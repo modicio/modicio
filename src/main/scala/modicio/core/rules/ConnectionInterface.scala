@@ -45,7 +45,7 @@ object ConnectionInterface {
     interface.slots.toSeq.zipWithIndex.foreach(elem => {
       val (slot, idx) = elem
       result = result.concat(slot.targetVariantTime.toString)
-      if(idx < maxIdx) {
+      if(idx < maxIdx-1) {
         result = result.concat("&")
       }
     })
