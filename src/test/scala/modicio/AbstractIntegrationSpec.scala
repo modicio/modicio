@@ -16,12 +16,15 @@
 
 package modicio
 
-import modicio.core.{InstanceFactory, TypeFactory}
+import modicio.core.rules.AssociationRule
+import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
 import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier}
-import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should
 
-class AbstractIntegrationSpec extends AnyFlatSpec with should.Matchers {
+import scala.concurrent.Future
+
+class AbstractIntegrationSpec extends AsyncFlatSpec with should.Matchers {
 
   val modelVerifier = new SimpleModelVerifier()
   val definitionVerifier = new SimpleDefinitionVerifier()
@@ -32,5 +35,23 @@ class AbstractIntegrationSpec extends AnyFlatSpec with should.Matchers {
   val registry = new SimpleMapRegistry(typeFactory, instanceFactory)
   typeFactory.setRegistry(registry)
   instanceFactory.setRegistry(registry)
+
+  protected val TODO: String = "TODO"
+  protected val PROJECT: String = "Project"
+  protected val PROJECT_CONTAINS_TODO: String = "contains"
+  protected val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
+
+  def initProjectSetup(): Future[Any] = {
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      project <- typeFactory.newType(PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
+      todo <- typeFactory.newType(TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- registry.setType(project)
+      _ <- registry.setType(todo)
+    } yield {
+      project.applyRule(new AssociationRule(":"+PROJECT_CONTAINS_TODO+":"+TODO+":*:"+TIME_IDENTITY.variantTime.toString))
+    }
+  }
 
 }
