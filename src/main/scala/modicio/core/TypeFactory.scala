@@ -37,25 +37,28 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
   def newType(name: String, identity: String, isTemplate: Boolean, defaultTimeIdentity: Option[TimeIdentity] = None):
   Future[TypeHandle] = {
 
+    println("CREATE NEW TYPE")
+    println(name, identity, isTemplate, defaultTimeIdentity)
+
     val definition = new Definition(definitionVerifier)
 
-    val time = {
-      if(defaultTimeIdentity.isDefined) {
-        Future.successful(defaultTimeIdentity.get)
-      }else {
-        registry.getReferenceTimeIdentity
+    for {
+      time <- {
+        if (defaultTimeIdentity.isDefined) {
+          Future.successful(defaultTimeIdentity.get)
+        } else {
+          registry.getReferenceTimeIdentity
+        }
       }
-    }
+      typeHandle <- {
+        val modelElement = new ModelElement(name, identity, isTemplate, TimeIdentity.createFrom(time))
+        modelElement.setRegistry(registry)
+        modelElement.setDefinition(definition)
+        modelElement.setVerifiers(definitionVerifier, modelVerifier)
+        Future.successful(modelElement.createHandle)
+      }
+    } yield typeHandle
 
-    time map (timeIdentity => {
-      val modelElement = new ModelElement(name, identity, isTemplate, TimeIdentity.createFrom(timeIdentity))
-      
-      modelElement.setRegistry(registry)
-      modelElement.setDefinition(definition)
-      modelElement.setVerifiers(definitionVerifier, modelVerifier)
-
-      modelElement.createHandle
-    })
   }
 
   def loadType(modelElementData: ModelElementData, ruleData: Set[RuleData]): TypeHandle = {
