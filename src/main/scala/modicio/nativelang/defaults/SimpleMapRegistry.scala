@@ -73,7 +73,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       Future.successful(false)
     }
   }
-  
+
   override def getTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
 
   override def getVariants: Future[Seq[(Long, String)]] = {

@@ -36,12 +36,16 @@ class NativeDSLTransformer(registry: Registry,
 
   override def extend(input: NativeDSL): Future[Any] = {
     val defaultTimeIdentity = TimeIdentity.create
-    Future.successful(Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity))))
+    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity)))
   }
 
   def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity): Future[TypeHandle] = {
     val name = NativeModelElement.parseName(statement)
     val identity = NativeModelElement.parseIdentity(statement)
+
+    println("EVALUATE MODEL ELEMENT")
+    println(statement)
+    println(defaultTimeIdentity)
 
     val timeIdentity = {
       if (statement.timeDescriptor.isDefined) {
@@ -52,13 +56,16 @@ class NativeDSLTransformer(registry: Registry,
       }
     }
 
-    typeFactory.newType(name, identity, statement.template, Some(timeIdentity)) flatMap (typeHandle => {
+    for {
+      typeHandle <- typeFactory.newType(name, identity, statement.template, Some(timeIdentity))
+      _ <- registry.setType(typeHandle)
+    } yield {
       statement.childOf.foreach(parentRelationRule => typeHandle.applyRule(new ParentRelationRule(parentRelationRule)))
       statement.attributes.foreach(propertyRule => typeHandle.applyRule(new AttributeRule(propertyRule)))
       statement.associations.foreach(associationRule => typeHandle.applyRule(new AssociationRule(associationRule)))
       statement.values.foreach(concreteValue => typeHandle.applyRule(new ConcreteValue(concreteValue)))
-      registry.setType(typeHandle) map (_ => typeHandle)
-    })
+      typeHandle
+    }
 
   }
 
