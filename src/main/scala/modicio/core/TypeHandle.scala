@@ -73,6 +73,14 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
     }
   }
 
+  def applySlot(ruleID: String, variantTime: Long): Unit = {
+    //TODO
+  }
+
+  def removeSlot(ruleID: String, variantTime: Long): Unit = {
+    //TODO
+  }
+
   def getAssociated: Set[TypeHandle] = {
     modelElement.associations.toSet
   }
