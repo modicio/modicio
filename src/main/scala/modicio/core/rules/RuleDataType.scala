@@ -20,7 +20,7 @@ object RuleDataType {
   val ATTRIBUTE = 0
   val VALUE = 1
   val ASSOCIATION = 2
-  val EXTENSION = 3
+  val PARENT_RELATION = 3
   val BEHAVIOUR = 4
   val CONSTRAINT = 5
 }

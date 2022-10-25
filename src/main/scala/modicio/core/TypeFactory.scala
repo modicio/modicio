@@ -81,7 +81,7 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
       case RuleDataType.ATTRIBUTE => new AttributeRule(ruleData.nativeValue)
       case RuleDataType.VALUE => new ConcreteValue(ruleData.nativeValue)
       case RuleDataType.ASSOCIATION => new AssociationRule(ruleData.nativeValue)
-      case RuleDataType.EXTENSION => new ParentRelationRule(ruleData.nativeValue)
+      case RuleDataType.PARENT_RELATION => new ParentRelationRule(ruleData.nativeValue)
       case _ => throw new IllegalArgumentException("Cannot determine RuleData typeOf")
     }
   }
