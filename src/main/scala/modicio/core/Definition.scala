@@ -53,6 +53,8 @@ class Definition
   def isVolatile: Boolean = volatile
   def cleanVolatile(): Unit = volatile = false
 
+  def setVolatile(): Unit = volatile = true
+
   /**
    * <p> Get all [[Rule Rules]] part of this Definition.
    *
