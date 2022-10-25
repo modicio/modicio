@@ -99,6 +99,14 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
+  override def getTypes: Future[Set[String]] = ??? //TODO
+
+  override def getInstanceVariants: Future[Seq[(Long, String)]] = ??? //TODO
+
+  override def getModelVariants: Future[Seq[(Long, String)]] = ??? //TODO
+
+  override def getVariantMap: Future[Map[(Long, String), Int]] = ??? //TODO
+
   override def containsRoot: Future[Boolean] = {
     getRoot map (_.isDefined)
   }
