@@ -43,7 +43,7 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
   if(interface.isEmpty){
     val parts = nativeValue.split(":")
     if(parts.length < 5) {
-      interface = Some(new ConnectionInterface(mutable.Set[Slot]()))
+      interface = Some(new ConnectionInterface(mutable.Buffer[Slot]()))
     }else{
       interface = Some(ConnectionInterface.parseInterface(parts(4), targetName))
     }
