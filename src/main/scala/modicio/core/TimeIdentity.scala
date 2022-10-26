@@ -18,9 +18,15 @@ package modicio.core
 import modicio.core.datamappings.ModelElementData
 import modicio.core.util.IdentityProvider
 
+import java.time.Instant
+
 case class TimeIdentity(variantTime: Long, runningTime: Long, versionTime: Long, variantId: String, runningId: String, versionId: String)
 
 object TimeIdentity {
+
+  def prettyPrint(time: Long): String = Instant.ofEpochMilli(time).toString
+
+  def prettyPrintExtended(time: Long): String = time + " (" + prettyPrint(time) + ")"
 
   def fork(reference: TimeIdentity): TimeIdentity = TimeIdentity(
     reference.variantTime,

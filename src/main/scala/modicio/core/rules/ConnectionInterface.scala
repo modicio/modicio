@@ -17,13 +17,17 @@ package modicio.core.rules
 
 import scala.collection.mutable
 
-class ConnectionInterface(private val slots: mutable.Set[Slot]) {
+class ConnectionInterface(private val slots: mutable.Buffer[Slot]) {
 
-  def getSlots: Set[Slot] = slots.toSet
+  def getSlots: Seq[Slot] = slots.toSeq
 
-  def addSlot(slot: Slot): Unit = slots.add(slot)
+  def addSlot(slot: Slot): Unit = {
+    if(!slots.contains(slot)) {
+      slots.addOne(slot)
+    }
+  }
 
-  def removeSlot(slot: Slot): Boolean = slots.remove(slot)
+  def removeSlot(slot: Slot): Slot = slots.remove(slots.indexOf(slot))
 
   def canConnect(name: String, variantTime: Long): Boolean =
     slots.exists(slot => slot.targetName == name && slot.targetVariantTime == variantTime)
@@ -36,7 +40,7 @@ object ConnectionInterface {
 
   def parseInterface(nativeValue: String, targetName: String): ConnectionInterface = {
     val timestamps = nativeValue.split("&").map(_.toLong)
-    new ConnectionInterface(mutable.Set.from(timestamps.map(t => Slot(targetName, t)).toSet))
+    new ConnectionInterface(mutable.Buffer.from(timestamps.map(t => Slot(targetName, t))))
   }
 
   def serialise(interface: ConnectionInterface): String = {

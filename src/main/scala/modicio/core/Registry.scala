@@ -38,6 +38,12 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def getReferences: Future[Set[TypeHandle]]
 
+  def getTypes: Future[Set[String]]
+
+  def getInstanceVariants: Future[Seq[(Long, String)]]
+  def getModelVariants: Future[Seq[(Long, String)]]
+  def getVariantMap: Future[Map[(Long, String), Int]]
+
   def getSingletonTypes(name: String): Future[Set[TypeHandle]]
 
   /**
@@ -58,11 +64,15 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
     val modelElement = typeHandle.getModelElement
     containsRoot flatMap (root => {
       if(root || (modelElement.name == ModelElement.ROOT_NAME && modelElement.identity == ModelElement.REFERENCE_IDENTITY)){
+        println("SET TYPE")
+        println(typeHandle.getTypeName, typeHandle.getTypeIdentity)
         for{
           timeIdentity <- setNode(typeHandle)
           _ <- incrementRunning
         } yield timeIdentity
       }else{
+        println("SET TYPE")
+        println("failed for",typeHandle.getTypeName, typeHandle.getTypeIdentity)
         Future.failed(throw new IllegalArgumentException("Registry must contain ROOT element"))
       }
     })

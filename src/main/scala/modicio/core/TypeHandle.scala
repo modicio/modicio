@@ -15,6 +15,8 @@
  */
 package modicio.core
 
+import modicio.core.rules.Slot
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -70,6 +72,31 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
       modelElement.definition.removeRuleByID(ruleID)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")
+    }
+  }
+
+  def applySlot(ruleID: String, variantTime: Long): Boolean = {
+    val ruleOption = modelElement.definition.getAssociationRules.find(_.id == ruleID)
+    if(ruleOption.isDefined){
+      val rule = ruleOption.get
+      val target = rule.targetName
+      rule.getInterface.addSlot(Slot(target, variantTime))
+        true
+    } else {
+      false
+    }
+  }
+
+  def removeSlot(ruleID: String, variantTime: Long): Boolean = {
+    val ruleOption = modelElement.definition.getAssociationRules.find(_.id == ruleID)
+    if (ruleOption.isDefined) {
+      val rule = ruleOption.get
+      val interface = rule.getInterface
+      val slots = interface.getSlots.filter(_.targetVariantTime == variantTime)
+      slots.foreach(interface.removeSlot)
+      true
+    } else {
+      false
     }
   }
 

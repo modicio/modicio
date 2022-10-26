@@ -132,7 +132,7 @@ class ConcreteValue(nativeValue: String) extends Rule(nativeValue) {
 object ConcreteValue {
 
   val ATTRIBUTE_VALUE = "ATTRIBUTE"
-  val ASSOCIATION_VALUE = "LINK"
+  val ASSOCIATION_VALUE = "ASSOCIATION"
 
   /**
    * TODO add documentation

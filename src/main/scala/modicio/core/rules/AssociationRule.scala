@@ -18,6 +18,8 @@ package modicio.core.rules
 import modicio.core.datamappings.RuleData
 import modicio.core.{ModelElement, Rule}
 
+import scala.collection.mutable
+
 /**
  * <p> A concrete [[Rule Rule]] implementation to represent associations in the native unlinked model.
  * <br />
@@ -39,7 +41,12 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
   val multiplicity: String = parseMultiplicity
 
   if(interface.isEmpty){
-    interface = Some(ConnectionInterface.parseInterface(nativeValue.split(":")(4), targetName))
+    val parts = nativeValue.split(":")
+    if(parts.length < 5) {
+      interface = Some(new ConnectionInterface(mutable.Buffer[Slot]()))
+    }else{
+      interface = Some(ConnectionInterface.parseInterface(parts(4), targetName))
+    }
   }
 
   /**

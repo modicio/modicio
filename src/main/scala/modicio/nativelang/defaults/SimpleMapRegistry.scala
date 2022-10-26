@@ -74,6 +74,37 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
+  override def getTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
+
+
+  override def getInstanceVariants: Future[Seq[(Long, String)]] = {
+    Future.successful(instanceRegistry.values.map(_.getTypeHandle.getTimeIdentity).map(t =>
+        (t.variantTime, t.variantId)).toSeq.distinct)
+  }
+
+  override def getModelVariants: Future[Seq[(Long, String)]] = {
+    val root = typeRegistry(ModelElement.ROOT_NAME).get(ModelElement.REFERENCE_IDENTITY)
+    val rootTime = root.get.getTimeIdentity
+    val res: Seq[(Long, String)] = instanceRegistry.values.map(i => {
+      val time = i.getTypeHandle.getTimeIdentity
+      (time.variantTime, time.variantId)
+    }).toSeq :+ (rootTime.variantTime, rootTime.variantId)
+    Future.successful(res)
+  }
+
+  override def getVariantMap: Future[Map[(Long, String), Int]] = {
+    getModelVariants map (modelVariants => {
+      val countedInstanceVariants = instanceRegistry.values.map(_.getTypeHandle.getTimeIdentity).map(t =>
+        (t.variantTime, t.variantId)).groupBy(identity).toSeq.map(e => (e._1, e._2.size))
+      val variantMap = mutable.Map.from(countedInstanceVariants)
+      modelVariants.foreach(mv => {
+        if(!variantMap.contains(mv)){
+          variantMap.put(mv, 0)
+        }
+      })
+      variantMap.toMap
+    })
+  }
 
   override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     val typeGroup = typeRegistry.get(name)
