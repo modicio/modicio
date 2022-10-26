@@ -37,12 +37,10 @@ class ConnectionInterfaceSpec extends AnyFlatSpec with should.Matchers {
 
   "A ConnectionInterface" must "be correctly deserialize its serialisation with two slots" in {
     val interface = ConnectionInterface.parseInterface(time1.toString + "&" + time2.toString, targetName)
-    interface.getSlots.size should be(2)
-    val slots = interface.getSlots.toArray
-    val slot1 = slots(0)
-    val slot2 = slots(1)
-    slot1.targetVariantTime should equal (time1)
-    slot2.targetVariantTime should equal (time2)
+    val slots = interface.getSlots
+    slots.size should be(2)
+    slots.exists(_.targetVariantTime == time1) should be(true)
+    slots.exists(_.targetVariantTime == time2) should be(true)
   }
 
   "A ConnectionInterface" must "be correctly serialize with one slot" in {
