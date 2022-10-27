@@ -42,7 +42,29 @@ class DeepInstanceEditSpec extends AbstractIntegrationSpec {
       todoInstance <- instanceFactory.newInstance("Todo")
     } yield {
       todoInstance.assignValue("Content", "abc")
-      todoInstance.shape.getAttribute("Content").get.value should be("abc")
+      todoInstance.value("Content").get should be("abc")
+    }
+  }
+
+  "DeepInstance.assignDeepValue" must "change the value of the correspondent key of the parent" in {
+
+    val source = Source.fromResource("model_02.json")
+    val fileContents = source.getLines.mkString
+    println(fileContents)
+    source.close()
+
+    val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
+    val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
+
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- transformer.extend(initialInput)
+      todoInstance <- instanceFactory.newInstance("Todo")
+    } yield {
+      todoInstance.unfold()
+      todoInstance.assignDeepValue("Name", "abc")
+      todoInstance.deepValue("Name").get should be("abc")
     }
   }
 }
