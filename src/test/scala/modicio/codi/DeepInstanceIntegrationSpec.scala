@@ -23,7 +23,7 @@ import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransforme
 import scala.io.Source
 
 
-class DeepInstanceEditIntegrationSpec extends AbstractIntegrationSpec {
+class DeepInstanceIntegrationSpec extends AbstractIntegrationSpec {
 
   "DeepInstance.assignValue" must "change the value of the correspondent key" in {
 
@@ -112,5 +112,50 @@ class DeepInstanceEditIntegrationSpec extends AbstractIntegrationSpec {
       todoInstance1.typeHandle.getTimeIdentity.runningTime should be < todoInstance2.typeHandle.getTimeIdentity.runningTime
     }
   }
-}
 
+  "A DeepInstance edit" must "not change timeIdentity" in {
+
+    val source = Source.fromResource("model_deepInstance_01.json")
+    val fileContents = source.getLines.mkString
+    println(fileContents)
+    source.close()
+
+    val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
+    val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
+
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- transformer.extend(initialInput)
+      todoInstance <- instanceFactory.newInstance("Todo")
+      _ <- todoInstance.unfold()
+    } yield {
+      val pre = todoInstance.typeHandle.getTimeIdentity
+      todoInstance.assignDeepValue("Name", "abc")
+      val post = todoInstance.typeHandle.getTimeIdentity
+      pre should be(post)
+    }
+  }
+
+  "Incrementing variant" must "not change timeIdentity of existing DeepInstances" in {
+
+    val source = Source.fromResource("model_deepInstance_01.json")
+    val fileContents = source.getLines.mkString
+    println(fileContents)
+    source.close()
+
+    val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
+    val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
+
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- transformer.extend(initialInput)
+      todoInstance <- instanceFactory.newInstance("Todo")
+      _ <- registry.incrementVariant
+      post <- registry.getReferenceTimeIdentity
+    } yield {
+      todoInstance.typeHandle.getTimeIdentity.variantTime should be < post.variantTime
+    }
+  }
+}
