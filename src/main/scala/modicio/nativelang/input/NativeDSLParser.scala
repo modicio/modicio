@@ -34,8 +34,18 @@ object NativeDSLParser {
     encodingResult
   }
 
+  def produceJson(nativeDSL: NativeDSL): Json = {
+    implicit val decodeNativeDSL: Decoder[NativeDSL] = deriveDecoder[NativeDSL]
+    val encodingResult = nativeDSL.asJson
+    encodingResult
+  }
+
   def produceString(extendedNativeDSL: NativeCompartment): String = {
     produceJson(extendedNativeDSL).toString()
+  }
+
+  def produceString(nativeDSL: NativeDSL): String = {
+    produceJson(nativeDSL).toString()
   }
 
 }

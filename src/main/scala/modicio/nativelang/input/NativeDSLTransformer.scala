@@ -17,7 +17,7 @@ package modicio.nativelang.input
 
 import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
-import modicio.core.{ImmutableShape, Registry, TimeIdentity, Transformer, TypeHandle}
+import modicio.core.{ImmutableShape, ModelElement, Registry, TimeIdentity, Transformer, TypeHandle}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
@@ -69,26 +69,22 @@ class NativeDSLTransformer(registry: Registry,
 
   }
 
-  override def decompose(input: Option[String]): Future[NativeCompartment] = {
-    if (input.isDefined) {
+  /**
+   * Decomposes a runtime model into its serialised NativeModel
+   * @param deepInstanceId
+   * @return
+   */
+  override def decomposeInstance(deepInstanceId: String): Future[NativeCompartment] = {
       val statements = mutable.Set[NativeModelElement]()
       val configuration = mutable.Set[ImmutableShape]()
-
-      registry.get(input.get) flatMap (flatInstance => {
+      registry.get(deepInstanceId) flatMap (flatInstance => {
         if (flatInstance.isDefined) {
           flatInstance.get.unfold() map (deepInstance => {
             deepInstance.getParentRelationClosure.foreach(i => {
               val data = i.toData
               configuration.add(data)
               val frag = i.getTypeHandle.getModelElement
-              val childOf = frag.definition.getParentRelationRules.map(_.serialise()).toSeq
-              val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
-              val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq
-              val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
-              val ti = frag.getTimeIdentity
-              val timeIdentity = NativeTimeIdentity(ti.variantTime, ti.runningTime, ti.versionTime, ti.variantId, ti.runningId, ti.versionId)
-              val s = NativeModelElement(frag.name + ":" + frag.identity, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
-              statements.add(s)
+              statements.add(buildStatement(frag))
             })
             NativeCompartment(NativeDSL(statements.toSeq), configuration.toSeq.map(s =>
               (s.instanceData, s.parentRelations, s.attributes, s.associations)))
@@ -97,10 +93,22 @@ class NativeDSLTransformer(registry: Registry,
           Future.failed(new IllegalArgumentException("Invalid instanceId in decompose()"))
         }
       })
-
-    } else {
-      Future.failed(new IllegalArgumentException("decompose() currently supports only DeepInstances"))
-    }
   }
 
+  override def decomposeModel(): Future[NativeDSL] = {
+    registry.getReferences map( references => {
+      val statements = references.map(_.getModelElement).map(buildStatement)
+      NativeDSL(statements.toSeq)
+    })
+  }
+
+  private def buildStatement(frag: ModelElement): NativeModelElement = {
+    val childOf = frag.definition.getParentRelationRules.map(_.serialise()).toSeq
+    val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
+    val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq
+    val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
+    val ti = frag.getTimeIdentity
+    val timeIdentity = NativeTimeIdentity(ti.variantTime, ti.runningTime, ti.versionTime, ti.variantId, ti.runningId, ti.versionId)
+    NativeModelElement(frag.name + ":" + frag.identity, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
+  }
 }
