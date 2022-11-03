@@ -23,7 +23,7 @@ import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransforme
 import scala.io.Source
 
 
-class DeepInstanceEditSpec extends AbstractIntegrationSpec {
+class DeepInstanceEditIntegrationSpec extends AbstractIntegrationSpec {
 
   "DeepInstance.assignValue" must "change the value of the correspondent key" in {
 
@@ -31,6 +31,7 @@ class DeepInstanceEditSpec extends AbstractIntegrationSpec {
     val fileContents = source.getLines.mkString
     println(fileContents)
     source.close()
+
 
     val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
     val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
@@ -48,7 +49,7 @@ class DeepInstanceEditSpec extends AbstractIntegrationSpec {
 
   "DeepInstance.assignDeepValue" must "change the value of the correspondent key of the parent" in {
 
-    val source = Source.fromResource("model_02.json")
+    val source = Source.fromResource("model_deepInstance_01.json")
     val fileContents = source.getLines.mkString
     println(fileContents)
     source.close()
@@ -61,10 +62,54 @@ class DeepInstanceEditSpec extends AbstractIntegrationSpec {
       _ <- registry.setType(root)
       _ <- transformer.extend(initialInput)
       todoInstance <- instanceFactory.newInstance("Todo")
+      _ <- todoInstance.unfold()
     } yield {
-      todoInstance.unfold()
       todoInstance.assignDeepValue("Name", "abc")
       todoInstance.deepValue("Name").get should be("abc")
+    }
+  }
+
+  "A new DeepInstance" must "increment the running time of the model" in {
+
+    val source = Source.fromResource("model_deepInstance_01.json")
+    val fileContents = source.getLines.mkString
+    println(fileContents)
+    source.close()
+
+    val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
+    val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
+
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- transformer.extend(initialInput)
+      _ <- instanceFactory.newInstance("Todo")
+      pre_time <- registry.getReferenceTimeIdentity
+      _ <- instanceFactory.newInstance("Todo")
+      post_time <- registry.getReferenceTimeIdentity
+    } yield {
+      pre_time.runningTime should be < post_time.runningTime
+    }
+  }
+
+  "A new DeepInstance" must "not increment the running time of an older deepInstance" in {
+
+    val source = Source.fromResource("model_deepInstance_01.json")
+    val fileContents = source.getLines.mkString
+    println(fileContents)
+    source.close()
+
+    val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
+    val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
+
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- transformer.extend(initialInput)
+      todoInstance1 <- instanceFactory.newInstance("Todo")
+      todoInstance2 <- instanceFactory.newInstance("Todo")
+    } yield {
+      todoInstance1.typeHandle.getTimeIdentity.runningTime should be < todoInstance2.typeHandle.getTimeIdentity.runningTime
     }
   }
 }
