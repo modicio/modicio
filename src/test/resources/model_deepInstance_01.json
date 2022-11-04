@@ -1,0 +1,56 @@
+{
+  "model": [
+    {
+      "name": "#:NamedElement",
+      "template": true,
+      "childOf": [
+        ":#:ROOT"
+      ],
+      "associations": [],
+      "attributes": [],
+      "values": []
+    },
+    {
+      "name": "#:ProjectItem",
+      "template": true,
+      "childOf": [
+        ":#:NamedElement"
+      ],
+      "associations": [
+        ":partOf:Project:1:"
+      ],
+      "attributes": [
+        ":Name:STRING:false"
+      ],
+      "values": []
+    },
+    {
+      "name": "#:Project",
+      "template": false,
+      "childOf": [
+        ":#:NamedElement"
+      ],
+      "associations": [
+        ":hasPart:ProjectItem:*:"
+      ],
+      "attributes": [
+        ":Responsible:STRING:true",
+        ":Deadline:DATETIME:false"
+      ],
+      "values": []
+    },
+    {
+      "name": "#:Todo",
+      "template": false,
+      "childOf": [
+        ":#:ProjectItem"
+      ],
+      "associations": [],
+      "attributes": [
+        ":Content:STRING:false",
+        ":State:BOOLEAN:false"
+      ],
+      "values": []
+    }
+  ]
+}
