@@ -109,6 +109,6 @@ class NativeDSLTransformer(registry: Registry,
     val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
     val ti = frag.getTimeIdentity
     val timeIdentity = NativeTimeIdentity(ti.variantTime, ti.runningTime, ti.versionTime, ti.variantId, ti.runningId, ti.versionId)
-    NativeModelElement(frag.name + ":" + frag.identity, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
+    NativeModelElement(frag.identity + ":" + frag.name, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
   }
 }
