@@ -20,27 +20,31 @@ import modicio.AbstractIntegrationSpec
 
 
 class ConnectionInterfaceIntegrationSpec extends AbstractIntegrationSpec {
-
   "DeepInstance.associate()" must "create correct AssociationData if a matching Slot is found" in { fixture => {
-      for {
-        todoInstance <- fixture.instanceFactory.newInstance(fixture.TODO)
-        projectInstance <- fixture.instanceFactory.newInstance(fixture.PROJECT)
-      } yield {
-        val res = projectInstance.associate(todoInstance, fixture.TODO, fixture.PROJECT_CONTAINS_TODO)
-        res should be(true)
-      }
-  }}
+      fixture.initProjectSetup() flatMap (_ =>
+        for {
+          todoInstance <- fixture.instanceFactory.newInstance(fixture.TODO)
+          projectInstance <- fixture.instanceFactory.newInstance(fixture.PROJECT)
+        } yield {
+          val res = projectInstance.associate(todoInstance, fixture.TODO, fixture.PROJECT_CONTAINS_TODO)
+          res should be(true)
+        }
+      )
+    }
+  }
 
   "DeepInstance.associate()" must "fail if no matching Slot is found by targetName" in {  fixture => {
-      for {
-        todoInstance <- fixture.instanceFactory.newInstance(fixture.TODO)
-        projectInstance <- fixture.instanceFactory.newInstance(fixture.PROJECT)
-      } yield {
-        val thrown = intercept[Exception] {
-          val res = projectInstance.associate(todoInstance, fixture.PROJECT, fixture.PROJECT_CONTAINS_TODO)
+      fixture.initProjectSetup() flatMap (_ =>
+        for {
+          todoInstance <- fixture.instanceFactory.newInstance(fixture.TODO)
+          projectInstance <- fixture.instanceFactory.newInstance(fixture.PROJECT)
+        } yield {
+          val thrown = intercept[Exception] {
+            projectInstance.associate(todoInstance, fixture.PROJECT, fixture.PROJECT_CONTAINS_TODO)
+          }
+          assert(thrown.getMessage === "The proposed relation is not defined on top of a type which is in the instance type hierarchy")
         }
-        assert(thrown.getMessage === "The proposed relation is not defined on top of a type which is in the instance type hierarchy")
-      }
-  }}
-
+      )
+    }
+  }
 }

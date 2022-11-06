@@ -19,19 +19,19 @@ package modicio
 import modicio.core.rules.AssociationRule
 import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
 import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier}
-import org.scalatest.flatspec.{FixtureAsyncFlatSpec}
+import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransformer}
+import org.scalatest.FutureOutcome
+import org.scalatest.flatspec.FixtureAsyncFlatSpec
 import org.scalatest.matchers.should
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
+import scala.concurrent.Future
+import scala.io.Source
 
 class AbstractIntegrationSpec extends FixtureAsyncFlatSpec with should.Matchers{
   type FixtureParam = Fixture
 
-  override def withFixture(test: OneArgAsyncTest) = {
+  override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
     val theFixture = new Fixture()
-
-    Await.result(theFixture.initProjectSetup(), Duration.Inf)
 
     complete {
       super.withFixture(test.toNoArgAsyncTest(theFixture))
@@ -69,6 +69,25 @@ class Fixture {
       _ <- registry.setType (todo)
     } yield {
       project.applyRule (new AssociationRule (":" + PROJECT_CONTAINS_TODO + ":" + TODO + ":*:" + TIME_IDENTITY.variantTime.toString) )
+    }
+  }
+
+  def importProjectSetupFromFile(file: String): Future[Any] = {
+    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
+    val source = Source.fromResource(file)
+    val fileContents = source.getLines.mkString
+    println(fileContents)
+    source.close()
+    val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
+    val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)
+
+    for {
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
+      _ <- transformer.extend(initialInput)
+    } yield {
+
     }
   }
 }
