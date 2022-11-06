@@ -21,8 +21,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: 'sbt'
-    - name: Run tests
-      run: sbt test
     - name: Report coverage
       run: sbt coverage +test +coverageReport
     - name: build doc
