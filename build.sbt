@@ -1,6 +1,7 @@
 name := "modicio"
 version := "0.1.1"
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.1"
+
 
 val circeVersion = "0.14.2"
 
