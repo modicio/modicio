@@ -23,5 +23,9 @@ jobs:
         cache: 'sbt'
     - name: Report coverage
       run: sbt coverage +test +coverageReport
+    - name: "Upload coverage to Codecov"
+      uses: "codecov/codecov-action@v2"
+      with:
+        fail_ci_if_error: true
     - name: build doc
       run: sbt doc
