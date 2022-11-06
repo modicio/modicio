@@ -22,7 +22,9 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Run tests
-      run: sbt clean coverage test coverageReport
+      run: sbt test
+    - name: Report coverage
+      run: sbt coverage +test +coverageReport
     - name: build doc
       run: sbt doc
     - name: make package

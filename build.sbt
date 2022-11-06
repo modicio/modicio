@@ -1,6 +1,7 @@
 name := "modicio"
 version := "0.1.1"
-scalaVersion := "2.12.17"
+scalaVersion := "2.13.1"
+
 
 val circeVersion = "0.14.2"
 
@@ -12,7 +13,6 @@ libraryDependencies ++= Seq(
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.14"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.14" % "test"
-libraryDependencies += "org.scoverage" % "sbt-scoverage_2.12_1.0" % "2.0.6"
 
 scalacOptions ++= Seq(
   "-Ymacro-annotations",
