@@ -1,0 +1,104 @@
+{
+  "model": [
+    {
+      "name": "#:Project",
+      "template": false,
+      "timeDescriptor": {
+        "variantTime": 1668098883284,
+        "runningTime": 1668098883282,
+        "versionTime": 1668098883281,
+        "variantId": "5b7a8933-06ff-4558-9e00-1a714716cfe9",
+        "runningId": "b724f964-cbbf-48d5-bd94-35fe87dfe6b5",
+        "versionId": "2e0650c4-d731-4766-96b8-400c1a6e2b1f"
+      },
+      "childOf": [
+        "9b68ace6-c24f-436d-a046-fee6b07578ef:#:NamedElement"
+      ],
+      "associations": [
+        "10f5d9b7-abce-45d7-8389-870589d37c73:hasPart:ProjectItem:*:"
+      ],
+      "attributes": [
+        "70773245-c214-47b2-929e-6cab9733b563:Responsible:STRING:true",
+        "0468a1e1-7bb5-4668-9fc7-5db07715fe89:Deadline:DATETIME:false"
+      ],
+      "values": []
+    },
+    {
+      "name": "#:Todo",
+      "template": false,
+      "timeDescriptor": {
+        "variantTime": 1668098883284,
+        "runningTime": 1668098883282,
+        "versionTime": 1668098883281,
+        "variantId": "5b7a8933-06ff-4558-9e00-1a714716cfe9",
+        "runningId": "b724f964-cbbf-48d5-bd94-35fe87dfe6b5",
+        "versionId": "b548344c-6a55-44ad-949b-3311022571ce"
+      },
+      "childOf": [
+        "e8fbe003-b122-4d89-8d23-d1dfbb2de038:#:ProjectItem"
+      ],
+      "associations": [],
+      "attributes": [
+        "3f7a0122-fdb8-4de0-920b-9137da368618:State:BOOLEAN:false",
+        "8a27788d-b5ed-4a1c-a93f-73c177a5074c:Content:STRING:false"
+      ],
+      "values": []
+    },
+    {
+      "name": "#:NamedElement",
+      "template": true,
+      "timeDescriptor": {
+        "variantTime": 1668098883284,
+        "runningTime": 1668098883282,
+        "versionTime": 1668098883280,
+        "variantId": "5b7a8933-06ff-4558-9e00-1a714716cfe9",
+        "runningId": "b724f964-cbbf-48d5-bd94-35fe87dfe6b5",
+        "versionId": "c3280599-e7d0-4348-9cc9-e15f8849023d"
+      },
+      "childOf": [
+        "250dd073-1b0b-4837-9dde-5daf6ee70451:#:ROOT"
+      ],
+      "associations": [],
+      "attributes": [],
+      "values": []
+    },
+    {
+      "name": "#:ROOT",
+      "template": true,
+      "timeDescriptor": {
+        "variantTime": 1668098883284,
+        "runningTime": 1668098883282,
+        "versionTime": 1668098883278,
+        "variantId": "5b7a8933-06ff-4558-9e00-1a714716cfe9",
+        "runningId": "b724f964-cbbf-48d5-bd94-35fe87dfe6b5",
+        "versionId": "73f513c0-b9cb-44dd-9556-00d2e29df078"
+      },
+      "childOf": [],
+      "associations": [],
+      "attributes": [],
+      "values": []
+    },
+    {
+      "name": "#:ProjectItem",
+      "template": true,
+      "timeDescriptor": {
+        "variantTime": 1668098883284,
+        "runningTime": 1668098883282,
+        "versionTime": 1668098883281,
+        "variantId": "5b7a8933-06ff-4558-9e00-1a714716cfe9",
+        "runningId": "b724f964-cbbf-48d5-bd94-35fe87dfe6b5",
+        "versionId": "df6cef2d-767e-4e89-aac4-e713dccc1155"
+      },
+      "childOf": [
+        "24806ebe-d102-4b99-956c-d2e59dedb2f3:#:NamedElement"
+      ],
+      "associations": [
+        "53b4a38c-ed3f-45e7-baea-c9942aa2f053:partOf:Project:1:"
+      ],
+      "attributes": [
+        "a3bf5609-64fb-45bc-8765-9721ff7feafd:Title:STRING:true"
+      ],
+      "values": []
+    }
+  ]
+}

@@ -53,8 +53,10 @@ class Fixture {
   instanceFactory.setRegistry (registry)
 
   val TODO: String = "Todo"
+  val PROJECT_ITEM: String = "ProjectItem"
   val PROJECT: String = "Project"
   val PROJECT_CONTAINS_TODO: String = "contains"
+  val PROJECT_HAS_PART: String = "hasPart"
   val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
 
   def initProjectSetup (): Future[Any] = {
