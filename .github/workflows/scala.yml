@@ -26,9 +26,10 @@ jobs:
     - name: Coverage Report
       run: sbt coverageReport
     - name: "Upload coverage to Codecov"
-      uses: "codecov/codecov-action@v2"
+      uses: "codecov/codecov-action@v3"
       with:
         fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
     - name: build doc
       run: sbt doc
     - name: make package
