@@ -74,15 +74,25 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override def getTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
+  override def getReferenceTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
 
+  override def getAllTypes: Future[Set[String]] = Future.successful(typeRegistry.keySet.toSet)
 
+  /**
+   * Get all variants which are used by a known instance
+   * @return
+   */
   override def getInstanceVariants: Future[Seq[(Long, String)]] = {
     Future.successful(instanceRegistry.values.map(_.getTypeHandle.getTimeIdentity).map(t =>
         (t.variantTime, t.variantId)).toSeq.distinct)
   }
 
-  override def getModelVariants: Future[Seq[(Long, String)]] = {
+  /**
+   * Get all variants that are known. This includes all variants that are known by instances and the variant used by
+   * the reference model which does not need to be instantiated.
+   * @return
+   */
+  override def getTypeVariants: Future[Seq[(Long, String)]] = {
     val root = typeRegistry(ModelElement.ROOT_NAME).get(ModelElement.REFERENCE_IDENTITY)
     val rootTime = root.get.getTimeIdentity
     val res: Seq[(Long, String)] = instanceRegistry.values.map(i => {
@@ -92,8 +102,15 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     Future.successful(res)
   }
 
+  /**
+   * Get all known variants from getTypeVariants together with the number of times the variant is references over
+   * all known instances.
+   * Note that if a (deep-)instances consists of n internal types naturally using the same variant, this leads to n
+   * references of the variant although only one root instances (ESI) exists for the type.
+   * @return
+   */
   override def getVariantMap: Future[Map[(Long, String), Int]] = {
-    getModelVariants map (modelVariants => {
+    getTypeVariants map (modelVariants => {
       val countedInstanceVariants = instanceRegistry.values.map(_.getTypeHandle.getTimeIdentity).map(t =>
         (t.variantTime, t.variantId)).groupBy(identity).toSeq.map(e => (e._1, e._2.size))
       val variantMap = mutable.Map.from(countedInstanceVariants)
@@ -116,13 +133,14 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override def getSingletonTypes(name: String): Future[Set[TypeHandle]] = {
+  //FIXME
+  override def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = {
     val typeGroup = typeRegistry.get(name)
     if (typeGroup.isEmpty) {
       Future.successful(Set())
-    }else {
-      val result = typeGroup.get.filter(element => ModelElement.isSingletonIdentity(element._1)).values.toSet
-      Future.successful(result)
+    } else {
+      val identitiesOfSingletons = typeGroup.get.filter(element => ModelElement.isSingletonIdentity(element._1)).values.map(_.getTypeIdentity).toSet
+      Future.successful(identitiesOfSingletons.map(instanceRegistry.get).filter(_.isDefined).map(_.get))
     }
   }
 
@@ -165,6 +183,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
   }
 
   override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
+    setType(deepInstance.getTypeHandle)
     Future.successful(instanceRegistry.addOne(deepInstance.getInstanceId, deepInstance))
   }
 

@@ -28,6 +28,11 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected case class IODiff[T](toDelete: Set[T], toAdd: Set[T], toUpdate: Set[T])
 
+  /*
+   * ***********************************************************
+   * Fetch Methods
+   * ***********************************************************
+   */
 
   protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]]
 
@@ -45,6 +50,11 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]]
 
+  /*
+   * ***********************************************************
+   * Write Methods
+   * ***********************************************************
+   */
 
   protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData]
 
@@ -58,6 +68,11 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
+  /*
+   * ***********************************************************
+   * Remove Methods
+   * ***********************************************************
+   */
 
   protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
 
@@ -66,11 +81,32 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   /*
    * ***********************************************************
+   * Query Methods
+   * ***********************************************************
+   */
+
+  protected def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]]
+
+  /**
+   * Queries all types (ModelElements) present in the repository.
+   * The query follows the following syntax:
+   * "" -> empty query must return all
+   * "identity=VALUE" -> identity must match a value
+   * "name=VALUE" -> name must match a value
+   * "EXPR1 & EXPR2 & ..." -> chain selectors
+   * @param query
+   * @return
+   */
+  protected def queryTypes(query: String): Future[Set[ModelElementData]]
+
+
+  /*
+   * ***********************************************************
    * Implementation of abstract members
    * ***********************************************************
    */
 
-  override def getReferenceTimeIdentity: Future[TimeIdentity] = {
+  override final def getReferenceTimeIdentity: Future[TimeIdentity] = {
     getRoot flatMap (rootOption => {
       if(rootOption.isDefined){
         Future.successful(rootOption.get.getTimeIdentity)
@@ -80,7 +116,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def incrementVariant: Future[Any] = {
+  override final def incrementVariant: Future[Any] = {
     val variantTime = IdentityProvider.newTimestampId()
     val variantId = IdentityProvider.newRandomId()
     getReferences map (referenceHandles => {
@@ -90,7 +126,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   }
 
 
-  override def incrementRunning: Future[Any] = {
+  override final def incrementRunning: Future[Any] = {
     val runningTime = IdentityProvider.newTimestampId()
     val runningId = IdentityProvider.newRandomId()
     getReferences map (referenceHandles => {
@@ -99,25 +135,55 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def getTypes: Future[Set[String]] = ??? //TODO
+  override final def getReferenceTypes: Future[Set[String]] =
+    queryTypes(query = "identity="+ModelElement.REFERENCE_IDENTITY) map (_.map(_.name))
 
-  override def getInstanceVariants: Future[Seq[(Long, String)]] = ??? //TODO
+  override final def getAllTypes: Future[Set[String]] =
+    queryTypes(query = "") map (_.map(_.name))
 
-  override def getModelVariants: Future[Seq[(Long, String)]] = ??? //TODO
+  /**
+   * Get all variants which are used by a known instance
+   *
+   * @return
+   */
+  override final def getInstanceVariants: Future[Seq[(Long, String)]] = {
+    //TODO
+  }
 
-  override def getVariantMap: Future[Map[(Long, String), Int]] = ??? //TODO
+  /**
+   * Get all variants that are known. This includes all variants that are known by instances and the variant used by
+   * the reference model which does not need to be instantiated.
+   *
+   * @return
+   */
+  override final def getTypeVariants: Future[Seq[(Long, String)]] = {
+    //TODO
+  }
 
-  override def containsRoot: Future[Boolean] = {
+  /**
+   * Get all known variants from getTypeVariants together with the number of times the variant is references over
+   * all known instances.
+   * Note that if a (deep-)instances consists of n internal types naturally using the same variant, this leads to n
+   * references of the variant although only one root instances (ESI) exists for the type.
+   *
+   * @return
+   */
+  override final def getVariantMap: Future[Map[(Long, String), Int]] = {
+    //TODO
+  }
+
+  override final def containsRoot: Future[Boolean] = {
     getRoot map (_.isDefined)
   }
 
-  def getRoot: Future[Option[TypeHandle]] = getType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY)
+  final def getRoot: Future[Option[TypeHandle]] = getType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY)
 
-  //FIXME
-  override def getSingletonTypes(name: String): Future[Set[TypeHandle]] = ???
+  override final def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = {
+    queryInstanceDataByIdentityPrefixAndTypeName(ModelElement.SINGLETON_PREFIX, name) flatMap (instanceData =>
+      Future.sequence(instanceData.map(_.instanceId).map(get))) map (results => results.filter(_.isDefined).map(_.get))
+  }
 
-
-  override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
+  override final def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     for {
       modelElementDataOption <- fetchModelElementData(name, identity)
       ruleData <- fetchRuleData(name, identity)
@@ -131,7 +197,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override def getReferences: Future[Set[TypeHandle]] = {
+  override final def getReferences: Future[Set[TypeHandle]] = {
     for {
       modelElementDataSet <- fetchModelElementData(ModelElement.REFERENCE_IDENTITY)
       ruleDataSet <- Future.sequence(modelElementDataSet.map(f => fetchRuleData(f.name, f.identity)))
@@ -150,7 +216,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle): Future[Any] = {
+  override protected final def setNode(typeHandle: TypeHandle): Future[Any] = {
     fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
       val (modelElementData, ruleData) = typeHandle.getModelElement.toData
       for {
@@ -161,7 +227,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def get(instanceId: String): Future[Option[DeepInstance]] = {
+  override final def get(instanceId: String): Future[Option[DeepInstance]] = {
     fetchInstanceData(instanceId) flatMap (instanceDataOption => {
       if(instanceDataOption.isDefined){
         val instanceData = instanceDataOption.get
@@ -186,7 +252,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def getAll(typeName: String): Future[Set[DeepInstance]] = {
+  override final def getAll(typeName: String): Future[Set[DeepInstance]] = {
     fetchInstanceDataOfType(typeName) flatMap (instanceDataSet =>
       Future.sequence(instanceDataSet.map(
         instanceData => get(instanceData.instanceId))) map (results =>
@@ -198,7 +264,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param deepInstance
    * @return
    */
-  override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
+  override final def setInstance(deepInstance: DeepInstance): Future[Unit] = {
     val data = deepInstance.toData
     val (instanceData, attributeData, associationData, parentRelationData) = (ImmutableShape unapply data).get
     get(deepInstance.getInstanceId) flatMap (oldInstanceOption => {
@@ -231,7 +297,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity of the [[ModelElement ModelElement]] trying to remove
    * @return
    */
-  override def autoRemove(name: String, identity: String): Future[Any] = {
+  override final def autoRemove(name: String, identity: String): Future[Any] = {
 
     if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
@@ -271,7 +337,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   }
 
 
-  private def applyRules(old: Set[RuleData], in: Set[RuleData]): IODiff[RuleData] = {
+  private final def applyRules(old: Set[RuleData], in: Set[RuleData]): IODiff[RuleData] = {
     applyUpdate(old, in, e => !old.exists(_.id == e.id))
   }
 
@@ -283,7 +349,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @tparam T
    * @return
    */
-  private def applyUpdate[T](old: Set[T], in: Set[T], isNew: T => Boolean): IODiff[T] = {
+  private final def applyUpdate[T](old: Set[T], in: Set[T], isNew: T => Boolean): IODiff[T] = {
     val toAdd = in.filter(isNew)
     val toChange = in.diff(toAdd)
     val toDelete = old.diff(toChange)

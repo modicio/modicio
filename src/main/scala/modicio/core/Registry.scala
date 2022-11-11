@@ -38,13 +38,20 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def getReferences: Future[Set[TypeHandle]]
 
-  def getTypes: Future[Set[String]]
+  def getReferenceTypes: Future[Set[String]]
+
+  def getAllTypes: Future[Set[String]]
 
   def getInstanceVariants: Future[Seq[(Long, String)]]
-  def getModelVariants: Future[Seq[(Long, String)]]
+  def getTypeVariants: Future[Seq[(Long, String)]]
   def getVariantMap: Future[Map[(Long, String), Int]]
 
-  def getSingletonTypes(name: String): Future[Set[TypeHandle]]
+  /**
+   *
+   * @param name
+   * @return
+   */
+  def getSingletonRefsOf(name: String): Future[Set[DeepInstance]]
 
   /**
    * Add a [[ModelElement ModelElement]] to this Registry.
