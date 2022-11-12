@@ -35,8 +35,8 @@ trait RegistryJ {
 
   def containsRootJ: CompletableFuture[Boolean] = getRegistry.containsRoot
 
-  def getSingletonTypesJ(name: String): java.util.concurrent.CompletableFuture[util.Set[TypeHandleJ]] =
-    getRegistry.getSingletonTypes(name) map (s => convert(s.map(t => convert(t))))
+  def getSingletonTypesJ(name: String): java.util.concurrent.CompletableFuture[util.Set[DeepInstanceJ]] =
+    getRegistry.getSingletonRefsOf(name) map (s => convert(s.map(t => convert(t))))
 
   def setType(typeHandle: TypeHandleJ): CompletableFuture[Any] = getRegistry.setType(typeHandle)
 
