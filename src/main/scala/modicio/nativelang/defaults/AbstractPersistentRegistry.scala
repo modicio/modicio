@@ -28,41 +28,254 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   protected case class IODiff[T](toDelete: Set[T], toAdd: Set[T], toUpdate: Set[T])
 
+  /*
+   * ***********************************************************
+   * Fetch Methods
+   * ***********************************************************
+   */
 
+  /**
+   * Get the [[ModelElementData]] of a type matching the provided parameters.
+   *
+   * @param name name of the [[ModelElement]]
+   * @param identity identity of the [[ModelElement]]
+   * @return Future option of [[ModelElementData]] or None if not found
+   */
   protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]]
 
+  /**
+   * Get the [[ModelElementData]] of a type matching the provided parameters.
+   *
+   * @param identity identity of the [[ModelElement]]
+   * @return Future option of [[ModelElementData]] or None if not found
+   */
   protected def fetchModelElementData(identity: String): Future[Set[ModelElementData]]
 
+  /**
+   * Get the [[InstanceData]] elements instantiation a given type ([[ModelElement]]) specified by its name.
+   * <p> [[InstanceData]] refers to its type by [[InstanceData.instanceOf]]
+   *
+   * @param typeName name of the [[ModelElement]] which instances must be returned
+   * @return Future set of [[InstanceData]] matching the given type name
+   */
   protected def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]]
 
+  /**
+   * Get the exact match of an [[InstanceData]] object by its instanceId.
+   *
+   * @param instanceId the [[InstanceData.instanceId]] of an instance
+   * @return Future option of [[InstanceData]] or None if not found
+   */
   protected def fetchInstanceData(instanceId: String): Future[Option[InstanceData]]
 
+  /**
+   * Get all [[RuleData]] objects associated to a given [[ModelElement]] by its provided parameters.
+   * <p> The [[RuleData]] object refers to its parent ModelElement directly by its attributes
+   * [[RuleData.modelElementName]] and [[RuleData.identity]].
+   *
+   * @param modelElementName name of the parent [[ModelElement]]
+   * @param identity identity of the parent [[ModelElement]]
+   * @return Future set of all [[RuleData]] associated by the given parameters
+   */
   protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]]
 
+  /**
+   * Get all [[AttributeData]] referenced by a given instanceId which is provided by [[AttributeData.instanceId]].
+   *
+   * @param instanceId instanceId of the parent [[DeepInstance]]
+   * @return Future set of all matching [[AttributeData]]
+   */
   protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]]
 
+  /**
+   * Get all [[ParentRelationData]] referenced by a given instanceId which is provided by [[ParentRelationData.instanceId]].
+   *
+   * @param instanceId instanceId of the parent [[DeepInstance]]
+   * @return Future set of all matching [[ParentRelationData]]
+   */
   protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]]
 
+  /**
+   * Get all [[AssociationData]] referenced by a given instanceId which is provided by [[AssociationData.instanceId]].
+   *
+   * @param instanceId instanceId of the parent [[DeepInstance]]
+   * @return Future set of all matching [[AssociationData]]
+   */
   protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]]
 
+  /*
+   * ***********************************************************
+   * Write Methods
+   * ***********************************************************
+   */
 
+  /**
+   * Add [[ModelElementData]] to the storage. [[ModelElementData.name]] and [[ModelElementData.identity]] form the unique
+   * primary key.
+   * <p> Insert if new, replace if present.
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param modelElementData [[ModelElementData]] to write.
+   * @return Future of inserted data on success.
+   */
   protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData]
 
+  /**
+   * Add [[InstanceData]] to the storage. [[InstanceData.instanceId]] serves as the unique primary key.
+   * <p> Insert if new, replace if present.
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param instanceData [[InstanceData]] to write
+   * @return Future of inserted data on success.
+   */
   protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData]
 
+  /**
+   * Add, Update and Delete [[RuleData]] as specified by a provided [[IODiff]].
+   * <p> [[IODiff.toDelete]] must be removed from the storage
+   * <p> [[IODiff.toAdd]] must be inserted in the storage.
+   * <p> [[IODiff.toUpdate]] must be updated in the storage.
+   * <p> [[RuleData]] has the [[RuleData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * the storage must assign globally unique values (UUIDs). Inserted [[RuleData]] with new ids must be returned on success.
+   * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param diff [[IODiff]] containing the [[RuleData]] to add, update and delete
+   * @return Future of inserted [[RuleData]] on success.
+   */
   protected def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]]
 
+  /**
+   * Add, Update and Delete [[AttributeData]] as specified by a provided [[IODiff]].
+   * <p> [[IODiff.toDelete]] must be removed from the storage
+   * <p> [[IODiff.toAdd]] must be inserted in the storage.
+   * <p> [[IODiff.toUpdate]] must be updated in the storage.
+   * <p> [[AttributeData]] has the [[AttributeData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * the storage must assign globally unique values (UUIDs). Inserted [[AttributeData]] with new ids must be returned on success.
+   * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param diff [[IODiff]] containing the [[AttributeData]] to add, update and delete
+   * @return Future of inserted [[AttributeData]] on success.
+   */
   protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]]
 
+  /**
+   * Add, Update and Delete [[ParentRelationData]] as specified by a provided [[IODiff]].
+   * <p> [[IODiff.toDelete]] must be removed from the storage
+   * <p> [[IODiff.toAdd]] must be inserted in the storage.
+   * <p> [[IODiff.toUpdate]] must be updated in the storage.
+   * <p> [[ParentRelationData]] has the [[ParentRelationData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * the storage must assign globally unique values (UUIDs). Inserted [[ParentRelationData]] with new ids must be returned on success.
+   * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param diff [[IODiff]] containing the [[ParentRelationData]] to add, update and delete
+   * @return Future of inserted [[ParentRelationData]] on success.
+   */
   protected def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]]
 
+  /**
+   * Add, Update and Delete [[AssociationData]] as specified by a provided [[IODiff]].
+   * <p> [[IODiff.toDelete]] must be removed from the storage
+   * <p> [[IODiff.toAdd]] must be inserted in the storage.
+   * <p> [[IODiff.toUpdate]] must be updated in the storage.
+   * <p> [[AssociationData]] has the [[AssociationData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * the storage must assign globally unique values (UUIDs). Inserted [[AssociationData]] with new ids must be returned on success.
+   * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param diff [[IODiff]] containing the [[AssociationData]] to add, update and delete
+   * @return Future of inserted [[AssociationData]] on success.
+   */
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
+  /*
+   * ***********************************************************
+   * Remove Methods
+   * ***********************************************************
+   */
 
+  /**
+   * Remove a [[ModelElementData]] and all associated [[RuleData]] from the storage.
+   * <p> The [[ModelElementData]] is given by its primary key values [[ModelElementData.name]] and [[ModelElementData.identity]].
+   * <p> [[RuleData]] to delete matches those values in [[RuleData.modelElementName]] and [[RuleData.identity]].
+   * <p> <strong>All operations must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param modelElementName name of the [[ModelElementData]]
+   * @param identity identity of the [[ModelElementData]]
+   * @return Future on success
+   */
   protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
 
+
+  /**
+   * Remove a [[InstanceData]] with all associated [[AssociationData]], [[AttributeData]] and [[ParentRelationData]]
+   * from the storage.
+   * <p> The [[InstanceData]] is given by its primary key instanceId.
+   * <p> All associated values named above can be found by their corresponding instanceId value.
+   * <p> <strong>Note that his operation is explicitly not recursive on parent relations!</strong>
+   * <p> <strong>All operations must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param instanceId id of the [[InstanceData]] to remove
+   * @return Future on success
+   */
   protected def removeInstanceWithData(instanceId: String): Future[Any]
 
+
+  /*
+   * ***********************************************************
+   * Query Methods
+   * ***********************************************************
+   */
+
+  protected def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]]
+
+  /**
+   * Queries all types (ModelElements) present in the repository.
+   * The query follows the following syntax:
+   * "" -> empty query must return all
+   * "identity=VALUE" -> identity must match a value
+   * "name=VALUE" -> name must match a value
+   * "EXPR1 & EXPR2 & ..." -> chain selectors
+   * @param query Query string as specified in the method description.
+   * @return
+   */
+  protected def queryTypes(query: String): Future[Set[ModelElementData]]
+
+  /**
+   * Query all variants which are used by a known instance
+   *
+   * @return Future sequence of variant tuples in the format (variantTime, variantId)
+   */
+  protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]]
+
+  /**
+   * Query all variants that are known. This includes all variants that are known by instances and the variant used by
+   * the reference model which does not need to be instantiated.
+   *
+   * @return Future sequence of variant tuples in the format (variantTime, variantId)
+   */
+  protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]]
+
+  /**
+   * Query all known variants together with the number of times the variant is references over
+   * all known instances i.e, types including the reference model.
+   * Note that if a (deep-)instances consists of n internal types naturally using the same variant, this leads to n
+   * references of the variant although only one root instances (ESI) exists for the type.
+   *
+   * @return Future map of variant tuples with their number of occurrences (count) in the format
+   *         {(variantTime, variantId) -> count}
+   */
+  protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]]
 
   /*
    * ***********************************************************
@@ -70,7 +283,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * ***********************************************************
    */
 
-  override def getReferenceTimeIdentity: Future[TimeIdentity] = {
+  override final def getReferenceTimeIdentity: Future[TimeIdentity] = {
     getRoot flatMap (rootOption => {
       if(rootOption.isDefined){
         Future.successful(rootOption.get.getTimeIdentity)
@@ -80,7 +293,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def incrementVariant: Future[Any] = {
+  override final def incrementVariant: Future[Any] = {
     val variantTime = IdentityProvider.newTimestampId()
     val variantId = IdentityProvider.newRandomId()
     getReferences map (referenceHandles => {
@@ -90,7 +303,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   }
 
 
-  override def incrementRunning: Future[Any] = {
+  override final def incrementRunning: Future[Any] = {
     val runningTime = IdentityProvider.newTimestampId()
     val runningId = IdentityProvider.newRandomId()
     getReferences map (referenceHandles => {
@@ -99,31 +312,56 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def getTypes: Future[Set[String]] = ??? //TODO
+  override final def getReferenceTypes: Future[Set[String]] =
+    queryTypes(query = "identity="+ModelElement.REFERENCE_IDENTITY) map (_.map(_.name))
 
-  override def getInstanceVariants: Future[Seq[(Long, String)]] = ??? //TODO
+  override final def getAllTypes: Future[Set[String]] =
+    queryTypes(query = "") map (_.map(_.name))
 
-  override def getModelVariants: Future[Seq[(Long, String)]] = ??? //TODO
+  /**
+   * Get all variants which are used by a known instance
+   *
+   * @return Future sequence of variant tuples in the format (variantTime, variantId)
+   */
+  override final def getInstanceVariants: Future[Seq[(Long, String)]] = queryVariantsOfInstances()
 
-  override def getVariantMap: Future[Map[(Long, String), Int]] = ??? //TODO
+  /**
+   * Get all variants that are known. This includes all variants that are known by instances and the variant used by
+   * the reference model which does not need to be instantiated.
+   *
+   * @return Future sequence of variant tuples in the format (variantTime, variantId)
+   */
+  override final def getTypeVariants: Future[Seq[(Long, String)]] = queryVariantsOfTypes()
 
-  override def containsRoot: Future[Boolean] = {
+  /**
+   * Get all known variants together with the number of times the variant is references over
+   * all known instances i.e, types including the reference model.
+   * Note that if a (deep-)instances consists of n internal types naturally using the same variant, this leads to n
+   * references of the variant although only one root instances (ESI) exists for the type.
+   *
+   * @return Future map of variant tuples with their number of occurrences (count) in the format
+   *         {(variantTime, variantId) -> count}
+   */
+  override final def getVariantMap: Future[Map[(Long, String), Int]] = queryVariantOccurrencesAndCount()
+
+  override final def containsRoot: Future[Boolean] = {
     getRoot map (_.isDefined)
   }
 
-  def getRoot: Future[Option[TypeHandle]] = getType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY)
+  final def getRoot: Future[Option[TypeHandle]] = getType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY)
 
-  //FIXME
-  override def getSingletonTypes(name: String): Future[Set[TypeHandle]] = ???
+  override final def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = {
+    queryInstanceDataByIdentityPrefixAndTypeName(ModelElement.SINGLETON_PREFIX, name) flatMap (instanceData =>
+      Future.sequence(instanceData.map(_.instanceId).map(get))) map (results => results.filter(_.isDefined).map(_.get))
+  }
 
-
-  override def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
+  override final def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     for {
       modelElementDataOption <- fetchModelElementData(name, identity)
       ruleData <- fetchRuleData(name, identity)
     } yield {
       if(modelElementDataOption.isDefined){
-        val modelElementData = modelElementDataOption.get;
+        val modelElementData = modelElementDataOption.get
         Some(typeFactory.loadType(modelElementData, ruleData))
       }else {
         None
@@ -131,7 +369,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override def getReferences: Future[Set[TypeHandle]] = {
+  override final def getReferences: Future[Set[TypeHandle]] = {
     for {
       modelElementDataSet <- fetchModelElementData(ModelElement.REFERENCE_IDENTITY)
       ruleDataSet <- Future.sequence(modelElementDataSet.map(f => fetchRuleData(f.name, f.identity)))
@@ -150,7 +388,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle): Future[Any] = {
+  override protected final def setNode(typeHandle: TypeHandle): Future[Any] = {
     fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
       val (modelElementData, ruleData) = typeHandle.getModelElement.toData
       for {
@@ -161,7 +399,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def get(instanceId: String): Future[Option[DeepInstance]] = {
+  override final def get(instanceId: String): Future[Option[DeepInstance]] = {
     fetchInstanceData(instanceId) flatMap (instanceDataOption => {
       if(instanceDataOption.isDefined){
         val instanceData = instanceDataOption.get
@@ -186,7 +424,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
-  override def getAll(typeName: String): Future[Set[DeepInstance]] = {
+  override final def getAll(typeName: String): Future[Set[DeepInstance]] = {
     fetchInstanceDataOfType(typeName) flatMap (instanceDataSet =>
       Future.sequence(instanceDataSet.map(
         instanceData => get(instanceData.instanceId))) map (results =>
@@ -195,10 +433,10 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   /**
    *
-   * @param deepInstance
+   * @param deepInstance the [[DeepInstance]] to add to the [[Registry]].
    * @return
    */
-  override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
+  override final def setInstance(deepInstance: DeepInstance): Future[Unit] = {
     val data = deepInstance.toData
     val (instanceData, attributeData, associationData, parentRelationData) = (ImmutableShape unapply data).get
     get(deepInstance.getInstanceId) flatMap (oldInstanceOption => {
@@ -231,7 +469,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity of the [[ModelElement ModelElement]] trying to remove
    * @return
    */
-  override def autoRemove(name: String, identity: String): Future[Any] = {
+  override final def autoRemove(name: String, identity: String): Future[Any] = {
 
     if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
@@ -271,19 +509,19 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   }
 
 
-  private def applyRules(old: Set[RuleData], in: Set[RuleData]): IODiff[RuleData] = {
+  private final def applyRules(old: Set[RuleData], in: Set[RuleData]): IODiff[RuleData] = {
     applyUpdate(old, in, e => !old.exists(_.id == e.id))
   }
 
   /**
    *
-   * @param old
-   * @param in
-   * @param isNew
-   * @tparam T
+   * @param old Set of old values serving as the base
+   * @param in Set of incoming values to apply to the old values
+   * @param isNew decider function if a values if a new value
+   * @tparam T generic parameter
    * @return
    */
-  private def applyUpdate[T](old: Set[T], in: Set[T], isNew: T => Boolean): IODiff[T] = {
+  private final def applyUpdate[T](old: Set[T], in: Set[T], isNew: T => Boolean): IODiff[T] = {
     val toAdd = in.filter(isNew)
     val toChange = in.diff(toAdd)
     val toDelete = old.diff(toChange)

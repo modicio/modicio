@@ -271,7 +271,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
   }
 
   def hasSingleton: Future[Boolean] = {
-    registry.getSingletonTypes(name) map(_.nonEmpty)
+    registry.getSingletonRefsOf(name) map(_.nonEmpty)
   }
 
   def hasSingletonRoot: Future[Boolean] = {
@@ -485,17 +485,19 @@ object ModelElement {
   /**
    * <p> The built-in constant string value used to represent reference identity ModelElements.
    */
-  val REFERENCE_IDENTITY = "#"
+  val REFERENCE_IDENTITY: String = "#"
 
   /**
    * <p> The built-in constant string value used to represent singleton identities. I.e. objects/instances
    * that can and must exist only once in a registry-context.
    */
-  val SINGLETON_IDENTITY = "$"
+  val SINGLETON_IDENTITY: String = "$"
 
-  val ROOT_NAME = "ROOT"
+  val ROOT_NAME: String = "ROOT"
 
-  def composeSingletonIdentity(typeName: String): String = SINGLETON_IDENTITY + "_" + typeName
+  val SINGLETON_PREFIX: String = SINGLETON_IDENTITY + "_"
+
+  def composeSingletonIdentity(typeName: String): String = SINGLETON_PREFIX + typeName
 
   def decomposeSingletonIdentity(identity: String): String = {
     identity.split("_")(1)
