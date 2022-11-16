@@ -23,3 +23,9 @@ Please read the [contribution guide](https://github.com/modicio/modicio/blob/mai
 ## release notes
 
 Newer commits which are not yet part of a release may fix minor bugs or enhance documentation. We recommend to use the latest commit for exploration.
+
+---
+
+> This project was initally designed and contributed by Karl Kegel (KKegel) as part of the Master-Thesis *Deep Models at Runtime for User-Driven Flexible Systems* at TU-Dresden ([full text](https://www.researchgate.net/publication/361725823_Deep_ModelsRuntime_for_User-Driven_Flexible_Systems)) under the name *codi-native*. The Framework goals and design are especially covered in the chapters *Problem-Space Analyis* and *Solution Concept*. Modicio was started from codi-native and strives to become a full user-driven runtime modelling framework.
+
+*This organization is affiliated to the software engineering lab at TU-Dresden, please contact Karl Kegel for questions.*
