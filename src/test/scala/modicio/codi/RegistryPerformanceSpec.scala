@@ -17,7 +17,7 @@
 package modicio.codi
 
 import modicio.AbstractIntegrationSpec
-import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory, TypeHandle}
+import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
 import modicio.nativelang.defaults.{BenchmarkMapRegistry, SimpleDefinitionVerifier, SimpleModelVerifier}
 import org.scalatest.AppendedClues.convertToClueful
 
@@ -26,14 +26,26 @@ import scala.concurrent.Future
 
 class RegistryPerformanceSpec extends AbstractIntegrationSpec {
 
-  "DeepInstance.assignValue2" must "change the value of the correspondent key" in { fixture => {
+  "Number of database operations" must "be lower than x" in { fixture => {
       fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>
         for {
           todoInstance1 <- fixture.instanceFactory.newInstance("Todo")
           todoInstance2 <- fixture.instanceFactory.newInstance("Todo")
           projectInstance1 <- fixture.instanceFactory.newInstance("Project")
         } yield {
-//          projectInstance1.associate(todoInstance1, fixture.PROJECT_ITEM, fixture.PROJECT_HAS_PART)
+          projectInstance1.associate(todoInstance1, fixture.TODO, fixture.PROJECT_HAS_PART)
+          projectInstance1.associate(todoInstance2, fixture.TODO, fixture.PROJECT_HAS_PART)
+          todoInstance1.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
+          todoInstance2.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
+
+          todoInstance1.assignValue("Content", "abc")
+          todoInstance1.unfold()
+          todoInstance1.assignDeepValue("Title", "abc")
+
+          todoInstance2.assignValue("Content", "Todo1")
+          todoInstance2.unfold()
+          todoInstance2.assignDeepValue("Title", "Todo2")
+          // TODO: Count number of operations
           1 should be(1)
         }
       )
