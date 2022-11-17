@@ -17,10 +17,13 @@
 package modicio.nativelang.defaults
 
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, RuleData}
-import modicio.core.{DeepInstance,  InstanceFactory, ModelElement, TypeFactory}
+import modicio.core.util.IdentityProvider
+import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
 
-
+import java.util.concurrent.locks.{Lock, ReentrantReadWriteLock}
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 /**
  * Non-persistent implementation of the [[AbstractPersistentRegistry]] simulating database behaviour via
@@ -41,6 +44,23 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     ##########################################################################
    */
 
+  private var modelElementDataBuffer: ListBuffer[ModelElementData] = new ListBuffer[ModelElementData]()
+  private val modelElementDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
+  private var instanceDataBuffer: ListBuffer[InstanceData] = new ListBuffer[InstanceData]()
+  private val instanceDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
+  private var ruleDataBuffer: ListBuffer[RuleData] = new ListBuffer[RuleData]()
+  private val ruleDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
+  private var attributeDataBuffer: ListBuffer[AttributeData] = new ListBuffer[AttributeData]()
+  private val attributeDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
+  private var parentRelationDataBuffer: ListBuffer[ParentRelationData] = new ListBuffer[ParentRelationData]()
+  private val parentRelationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
+  private var associationDataBuffer: ListBuffer[AssociationData] = new ListBuffer[AssociationData]()
+  private val associationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
@@ -49,7 +69,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity identity of the [[ModelElement]]
    * @return Future option of [[ModelElementData]] or None if not found
    */
-  override protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]] = ???
+  override protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]] = {
+    modelElementDataLock.readLock().lock()
+
+    try {
+      val data = modelElementDataBuffer.find((datum) => datum.name.equals(name) && datum.identity.equals(identity))
+      Future.successful(data)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      modelElementDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
@@ -57,7 +88,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity identity of the [[ModelElement]]
    * @return Future option of [[ModelElementData]] or None if not found
    */
-  override protected def fetchModelElementData(identity: String): Future[Set[ModelElementData]] = ???
+  override protected def fetchModelElementData(identity: String): Future[Set[ModelElementData]] = {
+    modelElementDataLock.readLock().lock()
+
+    try {
+      val data = modelElementDataBuffer.filter((datum) => datum.identity.equals(identity))
+      Future.successful(data.toSet)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      modelElementDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get the [[InstanceData]] elements instantiation a given type ([[ModelElement]]) specified by its name.
@@ -66,7 +108,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param typeName name of the [[ModelElement]] which instances must be returned
    * @return Future set of [[InstanceData]] matching the given type name
    */
-  override protected def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]] = ???
+  override protected def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]] = {
+    instanceDataLock.readLock().lock()
+
+    try {
+      val data = instanceDataBuffer.filter((datum) => datum.instanceOf.equals(typeName))
+      Future.successful(data.toSet)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      instanceDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get the exact match of an [[InstanceData]] object by its instanceId.
@@ -74,7 +127,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId the [[InstanceData.instanceId]] of an instance
    * @return Future option of [[InstanceData]] or None if not found
    */
-  override protected def fetchInstanceData(instanceId: String): Future[Option[InstanceData]] = ???
+  override protected def fetchInstanceData(instanceId: String): Future[Option[InstanceData]] = {
+    instanceDataLock.readLock().lock()
+
+    try {
+      val data = instanceDataBuffer.find((datum) => datum.instanceId.equals(instanceId))
+      Future.successful(data)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      instanceDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get all [[RuleData]] objects associated to a given [[ModelElement]] by its provided parameters.
@@ -85,7 +149,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity         identity of the parent [[ModelElement]]
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
-  override protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]] = ???
+  override protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]] = {
+    ruleDataLock.readLock().lock()
+
+    try {
+      val data = ruleDataBuffer.filter((datum) => datum.modelElementName.equals(modelElementName) && datum.identity.equals(identity))
+      Future.successful(data.toSet)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      ruleDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get all [[AttributeData]] referenced by a given instanceId which is provided by [[AttributeData.instanceId]].
@@ -93,7 +168,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[AttributeData]]
    */
-  override protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]] = ???
+  override protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]] = {
+    attributeDataLock.readLock().lock()
+
+    try {
+      val data = attributeDataBuffer.filter((datum) => datum.instanceId.equals(instanceId))
+      Future.successful(data.toSet)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      attributeDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get all [[ParentRelationData]] referenced by a given instanceId which is provided by [[ParentRelationData.instanceId]].
@@ -101,7 +187,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[ParentRelationData]]
    */
-  override protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]] = ???
+  override protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]] = {
+    parentRelationDataLock.readLock().lock()
+
+    try {
+      val data = parentRelationDataBuffer.filter((datum) => datum.instanceId.equals(instanceId))
+      Future.successful(data.toSet)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      parentRelationDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Get all [[AssociationData]] referenced by a given instanceId which is provided by [[AssociationData.instanceId]].
@@ -109,7 +206,18 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[AssociationData]]
    */
-  override protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]] = ???
+  override protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]] = {
+    associationDataLock.readLock().lock()
+
+    try {
+      val data = associationDataBuffer.filter((datum) => datum.instanceId.equals(instanceId))
+      Future.successful(data.toSet)
+    } catch {
+      case e: Exception => Future.failed(e)
+    } finally {
+      associationDataLock.readLock().unlock()
+    }
+  }
 
   /**
    * Add [[ModelElementData]] to the storage. [[ModelElementData.name]] and [[ModelElementData.identity]] form the unique
@@ -120,7 +228,31 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param modelElementData [[ModelElementData]] to write.
    * @return Future of inserted data on success.
    */
-  override protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = ???
+  override protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
+    modelElementDataLock.writeLock().lock()
+    val _modelElementDataBuffer = modelElementDataBuffer
+
+    try {
+      val datum = modelElementDataBuffer.zipWithIndex.find((datum) => datum._1.name.equals(modelElementData.name) && datum._1.identity.equals(modelElementData.identity))
+      datum match {
+        case Some((_, index)) => {
+          modelElementDataBuffer.update(index, modelElementData)
+          Future.successful(modelElementData)
+        }
+        case None => {
+          modelElementDataBuffer += modelElementData
+          Future.successful(modelElementData)
+        }
+      }
+    } catch {
+      case e: Exception => {
+        modelElementDataBuffer = _modelElementDataBuffer
+        Future.failed(e)
+      }
+    } finally {
+     modelElementDataLock.writeLock().unlock()
+    }
+  }
 
   /**
    * Add [[InstanceData]] to the storage. [[InstanceData.instanceId]] serves as the unique primary key.
@@ -130,7 +262,31 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceData [[InstanceData]] to write
    * @return Future of inserted data on success.
    */
-  override protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = ???
+  override protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = {
+    instanceDataLock.writeLock().lock()
+    val _instanceDataBuffer = instanceDataBuffer
+
+    try {
+      val datum = instanceDataBuffer.zipWithIndex.find((datum) => datum._1.instanceId.equals(instanceData.instanceId))
+      datum match {
+        case Some((_, index)) => {
+          instanceDataBuffer.update(index, instanceData)
+          Future.successful(instanceData)
+        }
+        case None => {
+          instanceDataBuffer += instanceData
+          Future.successful(instanceData)
+        }
+      }
+    } catch {
+      case e: Exception => {
+        instanceDataBuffer = _instanceDataBuffer
+        Future.failed(e)
+      }
+    } finally {
+      instanceDataLock.writeLock().unlock()
+    }
+  }
 
   /**
    * Add, Update and Delete [[RuleData]] as specified by a provided [[IODiff]].
@@ -146,7 +302,76 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param diff [[IODiff]] containing the [[RuleData]] to add, update and delete
    * @return Future of inserted [[RuleData]] on success.
    */
-  override protected def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = ???
+  override protected def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
+    def findRuleDataIndex(id: String): Future[Int] = {
+      val data = ruleDataBuffer.zipWithIndex.filter((datum) => datum._1.id.equals(id)).map(datumWithIndex => datumWithIndex._2)
+      if (data.isEmpty) {
+        Future.failed(new NoSuchElementException("Could not find RuleData with the requested id!"))
+      } else if (data.size == 1) {
+        Future.successful(data.head)
+      } else {
+        throw new IllegalStateException("Found more than one RuleData with the requested id!")
+      }
+    }
+
+    def addRuleData(datum: RuleData): Future[RuleData] = {
+      if (datum.id.isEmpty || datum.id == "") {
+        val fDatum = RuleData() //TODO: Generate id and create new object
+        this.ruleDataBuffer += fDatum
+        Future.successful(fDatum)
+      } else {
+        findRuleDataIndex(datum.id).transform {
+          case Success(value) => Failure(new IllegalArgumentException("Id already exists!"))
+          case Failure(cause) => {
+            val fDatum = datum
+            this.ruleDataBuffer += fDatum
+            Success(fDatum)
+          }
+        }
+      }
+    }
+
+    def removeRuleData(datum: RuleData): Future[RuleData] = {
+      if (datum.id.isEmpty || datum.id == "") {
+        throw new IllegalArgumentException("No id provided for removing RuleData!")
+      } else {
+        findRuleDataIndex(datum.id).transform {
+          case Success(value) => Success(ruleDataBuffer.remove(value))
+          case Failure(cause) => Failure(new Exception("Error trying to find index!", cause))
+        }
+      }
+    }
+
+    def updateRuleData(datum: RuleData): Future[RuleData] = {
+      findRuleDataIndex(datum.id).transform {
+        case Success(value) => {
+          ruleDataBuffer.update(value, datum)
+          Success(datum)
+        }
+        case Failure(cause) => Failure(new Exception("Error trying to find index!", cause))
+      }
+    }
+
+    ruleDataLock.writeLock().lock()
+    val _ruleDataBuffer = ruleDataBuffer
+
+    try {
+      for {
+        adds <- Future.sequence(diff.toAdd.map((datum) => addRuleData(datum)))
+        updates <- Future.sequence(diff.toUpdate.map((datum) => updateRuleData(datum)))
+        deletes <- Future.sequence(diff.toDelete.map((datum) => removeRuleData(datum)))
+      } yield {
+        adds
+      }
+    } catch {
+      case e: Exception => {
+        ruleDataBuffer = _ruleDataBuffer
+        Future.failed(e)
+      }
+    } finally {
+      ruleDataLock.writeLock().unlock()
+    }
+  }
 
   /**
    * Add, Update and Delete [[AttributeData]] as specified by a provided [[IODiff]].
@@ -162,7 +387,77 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param diff [[IODiff]] containing the [[AttributeData]] to add, update and delete
    * @return Future of inserted [[AttributeData]] on success.
    */
-  override protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] = ???
+  override protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] = {
+    def findAttributeDataIndex(id: Long): Future[Int] = {
+      val data = attributeDataBuffer.zipWithIndex.filter((datum) => datum._1.id.equals(id)).map(datumWithIndex => datumWithIndex._2)
+      if (data.isEmpty) {
+        Future.failed(new NoSuchElementException("Could not find AttributeData with the requested id!"))
+      } else if (data.size == 1) {
+        Future.successful(data.head)
+      } else {
+        throw new IllegalStateException("Found more than one AttributeData with the requested id!")
+      }
+    }
+
+    def addAttributeData(datum: AttributeData): Future[AttributeData] = {
+      if (datum.id == 0 || datum.id.isNaN) {
+        val fDatum = AttributeData(attributeDataBuffer.map((datum) => datum.id).max + 1, datum.instanceId, datum.key, datum.value, datum.isFinal)
+        this.attributeDataBuffer += fDatum
+        Future.successful(fDatum)
+      } else {
+        findAttributeDataIndex(datum.id).transform {
+          case Success(value) => Failure(new IllegalArgumentException("Id already exists!"))
+          case Failure(cause) => {
+            val fDatum = datum
+            this.attributeDataBuffer += fDatum
+            Success(fDatum)
+          }
+        }
+      }
+    }
+
+    def removeAttributeData(datum: AttributeData): Future[AttributeData] = {
+      if (datum.id == 0 || datum.id.isNaN) {
+        throw new IllegalArgumentException("No id provided for removing AttributeData!")
+      } else {
+        findAttributeDataIndex(datum.id).transform {
+          case Success(value) => Success(attributeDataBuffer.remove(value))
+          case Failure(cause) => Failure(new Exception("Error trying to find index!", cause))
+        }
+      }
+    }
+
+    def updateAttributeData(datum: AttributeData): Future[AttributeData] = {
+      findAttributeDataIndex(datum.id).transform {
+        case Success(value) => {
+          attributeDataBuffer.update(value, datum)
+          Success(datum)
+        }
+        case Failure(cause) => Failure(new Exception("Error trying to find index!", cause))
+      }
+    }
+
+    attributeDataLock.writeLock().lock()
+    val _attributeDataBuffer = attributeDataBuffer
+
+    try {
+      for {
+        adds <- Future.sequence(diff.toAdd.map((datum) => addAttributeData(datum)))
+        updates <- Future.sequence(diff.toUpdate.map((datum) => updateAttributeData(datum)))
+        deletes <- Future.sequence(diff.toDelete.map((datum) => removeAttributeData(datum)))
+      } yield {
+        adds
+      }
+    } catch {
+      case e: Exception => {
+        attributeDataBuffer = _attributeDataBuffer
+        Future.failed(e)
+      }
+    } finally
+    {
+      attributeDataLock.writeLock().unlock()
+    }
+  }
 
   /**
    * Add, Update and Delete [[ParentRelationData]] as specified by a provided [[IODiff]].
