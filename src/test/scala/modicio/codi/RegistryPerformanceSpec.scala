@@ -21,6 +21,8 @@ import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory, T
 import modicio.nativelang.defaults.{BenchmarkMapRegistry, SimpleDefinitionVerifier, SimpleModelVerifier}
 import org.scalatest.AppendedClues.convertToClueful
 
+import scala.concurrent.Future
+
 
 class RegistryPerformanceSpec extends AbstractIntegrationSpec {
 
@@ -51,24 +53,20 @@ class RegistryPerformanceSpec extends AbstractIntegrationSpec {
 
     val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
 
-    var count = 0
-    for {
-      root <- typeFactory.newType (ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY) )
-      _ <- registry.setType (root)
-    } yield {
-      count = count + 1
-    }
+    val count = 11
 
-    for (i <- 1 to 10) {
+    def addType(number: Number): Future[Any] = {
       for {
-        newType <- typeFactory.newType("1", ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
+        newType <- typeFactory.newType(number.toString, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
         _ <- registry.setType(newType)
       } yield {
-        count = count + 1
       }
     }
 
     for {
+      root <- typeFactory.newType (ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY) )
+      _ <- registry.setType (root)
+      _ <- Future.sequence(Range(0,count-1).map((number) => addType(number)))
       model <- registry.getReferences
     } yield {
       var hint: String = "Elements in the model: "
@@ -77,9 +75,6 @@ class RegistryPerformanceSpec extends AbstractIntegrationSpec {
       model.size should be(11) withClue hint
       registry.benchmarkCounter.getOrElse("setType", 0) should be(count)
     }
-
-    // val hint = "Calls: " + count + "; Recorded function calls: " + registry.benchmarkCounter.toString
-    // registry.benchmarkCounter.getOrElse("setType", 0) should be (10) withClue hint
   }
 
   }
