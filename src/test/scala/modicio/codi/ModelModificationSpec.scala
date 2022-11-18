@@ -181,7 +181,7 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
     }
   }
 
-  "Adding a new Type" should "increment the running time of the model" in { fixture => {
+  "Adding a new Type" should "change running id of the model" in { fixture => {
     fixture.initProjectSetup() flatMap (_ =>
         for {
           pre_time <- fixture.registry.getReferenceTimeIdentity
@@ -191,17 +191,17 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
           model <- fixture.registry.getReferences
 
         } yield {
-          val times: String = "Before: " + pre_time.toString() + "; After: " + post_time.toString()
+          val times: String = "Before: " + pre_time.toString + "; After: " + post_time.toString
           var names: String = "Elements in the model: "
           model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
           val hint: String = times + "\n" + names
-          pre_time.runningTime should be < post_time.runningTime withClue hint
+          pre_time.runningId should not be post_time.runningId withClue hint
         }
       )
     }
   }
 
-  "Removing a Type" should "increment the running time of the model" in { fixture => {
+  "Removing a Type" should "change the id of the model" in { fixture => {
     fixture.initProjectSetup() flatMap (_ =>
         for {
           pre_time <- fixture.registry.getReferenceTimeIdentity
@@ -209,11 +209,11 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
           post_time <- fixture.registry.getReferenceTimeIdentity
           model <- fixture.registry.getReferences
         } yield {
-          val times: String = "Before: " + pre_time.toString() + "; After: " + post_time.toString()
+          val times: String = "Before: " + pre_time.toString + "; After: " + post_time.toString
           var names: String = "Elements in the model: "
           model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
           val hint: String = times + "\n" + names
-          pre_time.runningTime should be < post_time.runningTime withClue hint
+          pre_time.runningId should not be post_time.runningId withClue hint
         }
       )
     }
