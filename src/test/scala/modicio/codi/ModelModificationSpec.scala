@@ -1,3 +1,19 @@
+/**
+ * Copyright 2022 Karl Kegel, Johannes Gröschel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package modicio.codi
 
 import modicio.AbstractIntegrationSpec
@@ -18,8 +34,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
   protected val STRING: String = "String"
   protected val NONEMPTY: String = "true"
 
-  //TODO: Test for adding a Type
-
   "A new type" should "be correctly added to the model" in { fixture => {
       fixture.initProjectSetup() flatMap (_ =>
         for {
@@ -36,8 +50,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
     }
   }
 
-  //TODO: Test for removing a Type
-
   "A type" should "be correctly removed from the model" in { fixture => {
       fixture.initProjectSetup() flatMap (_ =>
         for {
@@ -51,8 +63,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
       )
     }
   }
-
-  //TODO: Test for adding an AssociationRule
 
   "An AssociationRule" should "be correctly added to a model" in { fixture => {
       val newRule = new AssociationRule(":"+PROJECT_DUE_BY_DEADLINE+":"+DEADLINE+":1:"+fixture.TIME_IDENTITY.variantTime.toString)
@@ -74,8 +84,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
     }
   }
 
-  //TODO: Test for removing an AssociationRule
-
   "An AssociationRule" should "be correctly removed from a model" in { fixture => {
       fixture.initProjectSetup() flatMap (_ =>
         for {
@@ -92,8 +100,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
       )
     }
   }
-
-  //TODO: Test for adding a ParentRelationRule
 
   "A ParentRelationRule" should "be correctly added to a model" in { fixture => {
       fixture.initProjectSetup() flatMap (_ =>
@@ -112,8 +118,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
       )
     }
   }
-
-  //TODO: Test for removing a ParentRelationRule
 
   "A ParentRelationRule" should "be correctly removed from a model" in { fixture => {
     fixture.initProjectSetup() flatMap (_ =>
@@ -138,8 +142,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
     }
   }
 
-  //TODO: Test for adding an AttributeRule
-
   "An AttributeRule" should "be correctly added to a model" in { fixture => {
       val newRule = new AttributeRule(":" + TITLE + ":" + STRING + ":" + NONEMPTY)
       fixture.initProjectSetup() flatMap (_ =>
@@ -156,8 +158,6 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
       )
     }
   }
-
-  //TODO: Test for removing an AttributeRule
 
   "An AttributeRule" should "be correctly removed from a model" in { fixture => {
       val newRule = new AttributeRule(":" + TITLE + ":" + STRING + ":" + NONEMPTY)
@@ -176,6 +176,44 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
           rules = "AttributeRules for Project: "
           project.getModelElement.definition.getAttributeRules.foreach(rule => rules = rules + rule.name + ", ")
           project.getModelElement.definition.getAttributeRules.size should be(0) withClue rules
+        }
+      )
+    }
+  }
+
+  "Adding a new Type" should "change running id of the model" in { fixture => {
+    fixture.initProjectSetup() flatMap (_ =>
+        for {
+          pre_time <- fixture.registry.getReferenceTimeIdentity
+          deadline <- fixture.typeFactory.newType(DEADLINE, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(fixture.TIME_IDENTITY))
+          _ <- fixture.registry.setType(deadline)
+          post_time <- fixture.registry.getReferenceTimeIdentity
+          model <- fixture.registry.getReferences
+
+        } yield {
+          val times: String = "Before: " + pre_time.toString + "; After: " + post_time.toString
+          var names: String = "Elements in the model: "
+          model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
+          val hint: String = times + "\n" + names
+          pre_time.runningId should not be post_time.runningId withClue hint
+        }
+      )
+    }
+  }
+
+  "Removing a Type" should "change the id of the model" in { fixture => {
+    fixture.initProjectSetup() flatMap (_ =>
+        for {
+          pre_time <- fixture.registry.getReferenceTimeIdentity
+          _ <- fixture.registry.autoRemove(fixture.TODO, ModelElement.REFERENCE_IDENTITY)
+          post_time <- fixture.registry.getReferenceTimeIdentity
+          model <- fixture.registry.getReferences
+        } yield {
+          val times: String = "Before: " + pre_time.toString + "; After: " + post_time.toString
+          var names: String = "Elements in the model: "
+          model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
+          val hint: String = times + "\n" + names
+          pre_time.runningId should not be post_time.runningId withClue hint
         }
       )
     }
