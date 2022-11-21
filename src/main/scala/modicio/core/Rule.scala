@@ -107,7 +107,7 @@ abstract class Rule(private[modicio] val nativeValue: String) {
 object Rule {
 
   //flag to set if unique ids should be assigned automatically, if no explicit id is specified by the client.
-  private var isAutoID = false
+  private var isAutoID = true
 
   /**
    * <p> Generates the UNKNOWN_ID value which is used, if no explicit Rule id is provided.
