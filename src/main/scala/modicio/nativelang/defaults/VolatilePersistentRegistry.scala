@@ -21,6 +21,7 @@ import modicio.core.util.IdentityProvider
 import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
 
 import java.util.concurrent.locks.{Lock, ReentrantReadWriteLock}
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -239,7 +240,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    */
   override protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
     modelElementDataLock.writeLock().lock()
-    val _modelElementDataBuffer = modelElementDataBuffer
+    val _modelElementDataBuffer = modelElementDataBuffer.clone()
 
     try {
       val datum = modelElementDataBuffer.zipWithIndex.find((datum) => datum._1.name.equals(modelElementData.name) && datum._1.identity.equals(modelElementData.identity))
@@ -273,7 +274,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    */
   override protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = {
     instanceDataLock.writeLock().lock()
-    val _instanceDataBuffer = instanceDataBuffer
+    val _instanceDataBuffer = instanceDataBuffer.clone()
 
     try {
       val datum = instanceDataBuffer.zipWithIndex.find((datum) => datum._1.instanceId.equals(instanceData.instanceId))
@@ -325,7 +326,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addRuleData(datum: RuleData): Future[RuleData] = {
       if (datum.id.isEmpty || datum.id == "") {
-        val fDatum = RuleData() //TODO: Generate id and create new object
+        val fDatum = RuleData(IdentityProvider.newRandomId(), datum.modelElementName, datum.identity, datum.nativeValue, datum.typeOf)
         this.ruleDataBuffer += fDatum
         Future.successful(fDatum)
       } else {
@@ -362,7 +363,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     }
 
     ruleDataLock.writeLock().lock()
-    val _ruleDataBuffer = ruleDataBuffer
+    val _ruleDataBuffer = ruleDataBuffer.clone()
 
     try {
       for {
@@ -447,7 +448,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     }
 
     attributeDataLock.writeLock().lock()
-    val _attributeDataBuffer = attributeDataBuffer
+    val _attributeDataBuffer = attributeDataBuffer.clone()
 
     try {
       for {
@@ -533,7 +534,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     }
 
     parentRelationDataLock.writeLock().lock()
-    val _parentRelationDataBuffer = parentRelationDataBuffer
+    val _parentRelationDataBuffer = parentRelationDataBuffer.clone()
 
     try {
       for {
@@ -618,7 +619,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     }
 
     associationDataLock.writeLock().lock()
-    val _associationDataBuffer = associationDataBuffer
+    val _associationDataBuffer = associationDataBuffer.clone()
 
     try {
       for {
@@ -654,8 +655,8 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     modelElementDataLock.writeLock().lock()
     ruleDataLock.writeLock().lock()
 
-    val _modelElementDataBuffer = modelElementDataBuffer
-    val _ruleDataBuffer = ruleDataBuffer
+    val _modelElementDataBuffer = modelElementDataBuffer.clone()
+    val _ruleDataBuffer = ruleDataBuffer.clone()
 
     try {
       modelElementDataBuffer.filterInPlace((datum) => !datum.name.equals(modelElementName) || !datum.identity.equals(identity))
@@ -692,10 +693,10 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     parentRelationDataLock.writeLock().lock()
     associationDataLock.writeLock().lock()
 
-    val _instanceDataBuffer = instanceDataBuffer
-    val _attributeDataBuffer = attributeDataBuffer
-    val _parentRelationDataBuffer = parentRelationDataBuffer
-    val _associationDataBuffer = associationDataBuffer
+    val _instanceDataBuffer = instanceDataBuffer.clone()
+    val _attributeDataBuffer = attributeDataBuffer.clone()
+    val _parentRelationDataBuffer = parentRelationDataBuffer.clone()
+    val _associationDataBuffer = associationDataBuffer.clone()
 
     try {
       instanceDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
@@ -746,9 +747,8 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
   override protected def queryTypes(query: String): Future[Set[ModelElementData]] = {
     modelElementDataLock.readLock()
 
-    var data: ListBuffer[ModelElementData] = new ListBuffer[ModelElementData]()
     try {
-      data = modelElementDataBuffer
+      var data = modelElementDataBuffer.clone()
 
       // Handle easy case first
       if (query == "") {
@@ -781,7 +781,20 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    *
    * @return Future sequence of variant tuples in the format (variantTime, variantId)
    */
-override protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]] = ???
+override protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]] = {
+  modelElementDataLock.readLock().lock()
+  instanceDataLock.readLock().lock()
+
+  try {
+    val options = instanceDataBuffer.map((datum) => modelElementDataBuffer.find((element) => element.name.equals(datum.instanceOf) && element.identity.equals(datum.identity)))
+    val data = options.filter((option) => option.isEmpty).map((option) => option.get).map((datum) => (datum.variantTime, datum.variantId))
+    Future.successful(data.toSeq)
+  } catch {
+    case e: Exception => Future.failed(e)
+  } finally {
+    modelElementDataLock.readLock().unlock()
+  }
+}
 
   /**
    * Query all variants that are known. This includes all variants that are known by instances and the variant used by
@@ -789,7 +802,18 @@ override protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]] =
    *
    * @return Future sequence of variant tuples in the format (variantTime, variantId)
    */
-override protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]] = ???
+override protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]] = {
+  modelElementDataLock.readLock().lock()
+
+  try {
+    val data = modelElementDataBuffer.map((datum) => (datum.variantTime, datum.variantId)).toSet
+    Future.successful(data.toSeq)
+  } catch {
+    case e: Exception => Future.failed(e)
+  } finally {
+    modelElementDataLock.readLock().unlock()
+  }
+}
 
   /**
    * Query all known variants together with the number of times the variant is references over
@@ -800,5 +824,15 @@ override protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]] = ???
    * @return Future map of variant tuples with their number of occurrences (count) in the format
    *         {(variantTime, variantId) -> count}
    */
-override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]] = ???
+override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]] = {
+  modelElementDataLock.readLock().lock()
+
+  try {
+    Future.successful(modelElementDataBuffer.groupMapReduce((datum) => (datum.variantTime, datum.variantId))(_ => 1)(_ + _))
+  } catch {
+    case e: Exception => Future.failed(e)
+  } finally {
+    modelElementDataLock.readLock().unlock()
+  }
+}
 }
