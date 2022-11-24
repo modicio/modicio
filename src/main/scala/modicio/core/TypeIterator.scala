@@ -32,17 +32,14 @@ class TypeIterator(private[modicio] val initialModelElement: ModelElement) {
     }
   }
 
+  @Deprecated
   def isDynamic: Boolean = current.get.isInstanceOf[ModelElement]
 
   def get: Option[Base] = {
     if(current.isEmpty){
       None
     }else{
-      if(!isDynamic){
-        Some(current.get.asInstanceOf[Base])
-      }else{
-        Some(current.get.definition)
-      }
+      Some(current.get.definition)
     }
   }
 
@@ -55,7 +52,7 @@ class TypeIterator(private[modicio] val initialModelElement: ModelElement) {
   }
 
   def asDefinition: Option[Definition] = {
-    if(current.isEmpty || !isDynamic){
+    if(current.isEmpty){
       None
     }else{
       Some(current.get.definition)
