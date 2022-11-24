@@ -17,11 +17,6 @@
 package modicio.codi
 
 import modicio.AbstractIntegrationSpec
-import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
-import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleModelVerifier}
-import org.scalatest.AppendedClues.convertToClueful
-
-import scala.concurrent.Future
 
 
 class RegistryPerformanceSpec extends AbstractIntegrationSpec {
@@ -32,19 +27,29 @@ class RegistryPerformanceSpec extends AbstractIntegrationSpec {
           todoInstance1 <- fixture.instanceFactory.newInstance("Todo")
           todoInstance2 <- fixture.instanceFactory.newInstance("Todo")
           projectInstance1 <- fixture.instanceFactory.newInstance("Project")
+          _ <- todoInstance1.unfold()
+          _ <- todoInstance2.unfold()
+          _ <- projectInstance1.unfold()
         } yield {
           projectInstance1.associate(todoInstance1, fixture.TODO, fixture.PROJECT_HAS_PART)
+          projectInstance1.commit
           projectInstance1.associate(todoInstance2, fixture.TODO, fixture.PROJECT_HAS_PART)
+          projectInstance1.commit
+
           todoInstance1.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
+          todoInstance1.commit
           todoInstance2.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
+          todoInstance2.commit
 
           todoInstance1.assignValue("Content", "abc")
-          todoInstance1.unfold()
+          todoInstance1.commit
           todoInstance1.assignDeepValue("Title", "abc")
+          todoInstance1.commit
 
           todoInstance2.assignValue("Content", "Todo1")
-          todoInstance2.unfold()
+          todoInstance2.commit
           todoInstance2.assignDeepValue("Title", "Todo2")
+          todoInstance2.commit
           // TODO: Count number of operations
           1 should be(1)
         }
