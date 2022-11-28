@@ -1,5 +1,6 @@
 /**
  * Copyright 2022 Karl Kegel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +24,52 @@ import scala.concurrent.Future
 
 
 class TypeIteratorSpec extends AbstractIntegrationSpec {
+  "TypeIterator.split" must "create new TypeIterator of the current element" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.registry.getType("Todo", "#")
+        modelElement <- Future.successful(todoInstance.get.getModelElement)
+        _ <- modelElement.unfold()
+      } yield {
+        val typeIterator = new TypeIterator(modelElement)
+        val newTypeIterator = typeIterator.split.get
+        newTypeIterator.name should be("Todo")
+      }
+      )
+  }
+  }
+
+  "TypeIterator.splitHandle" must "return TypeHandle for the current element" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.registry.getType("Todo", "#")
+        modelElement <- Future.successful(todoInstance.get.getModelElement)
+        _ <- modelElement.unfold()
+      } yield {
+        val typeIterator = new TypeIterator(modelElement)
+        val typeHandle = typeIterator.splitHandle.get
+        typeHandle.getTypeName should be("Todo")
+      }
+      )
+  }
+  }
+
+  "TypeIterator.getAssociated" must "return a TypeHandle for each parent" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.registry.getType("Todo", "#")
+        modelElement <- Future.successful(todoInstance.get.getModelElement)
+        _ <- modelElement.unfold()
+      } yield {
+        val typeIterator = new TypeIterator(modelElement)
+        val parentTypeHandleSet = typeIterator.getAssociated
+        parentTypeHandleSet.head.getTypeName should be("ProjectItem")
+        parentTypeHandleSet.size should be(1)
+      }
+      )
+  }
+  }
+
   "TypeIterator.up" must "set parent as current element" in { fixture => {
     fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
       for {
