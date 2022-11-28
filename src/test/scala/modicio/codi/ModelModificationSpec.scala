@@ -1,5 +1,7 @@
 /**
- * Copyright 2022 Karl Kegel, Johannes Gröschel
+ * Copyright 2022 Karl Kegel
+ * Johannes Gröschel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +22,8 @@ import modicio.AbstractIntegrationSpec
 import modicio.core.ModelElement
 import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import org.scalatest.AppendedClues.convertToClueful
+
+import scala.concurrent.Future
 
 class ModelModificationSpec extends AbstractIntegrationSpec {
 
@@ -217,5 +221,34 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
         }
       )
     }
+  }
+
+  "A ModelElement edit" should "raise its version time" in { fixture => {
+    fixture.importProjectSetupFromFile("model_types_01.json") flatMap (_ =>
+      for {
+        todoType <- fixture.registry.getType("Todo", "#")
+        oldTime <- Future.successful(todoType.get.getTimeIdentity.versionTime)
+        _ <- Future.successful(todoType.get.getModelElement.definition.setVolatile())
+        _ <- todoType.get.commit()
+      } yield {
+        oldTime should be < todoType.get.getTimeIdentity.versionTime
+      }
+      )
+  }
+  }
+
+  "Incrementing Version of the child type" should "not change the version of the parent type" in { fixture => {
+    fixture.importProjectSetupFromFile("model_types_01.json") flatMap (_ =>
+      for {
+        todoType <- fixture.registry.getType("Todo", "#")
+        projectItemType <- fixture.registry.getType("ProjectItem", "#")
+        oldTime <- Future.successful(projectItemType.get.getTimeIdentity.versionTime)
+        _ <- Future.successful(todoType.get.getModelElement.definition.setVolatile())
+        _ <- todoType.get.commit()
+      } yield {
+        oldTime should be (projectItemType.get.getTimeIdentity.versionTime)
+      }
+      )
+  }
   }
 }
