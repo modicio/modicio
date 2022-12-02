@@ -16,7 +16,7 @@
 
 package modicio
 
-import modicio.core.rules.AssociationRule
+import modicio.core.rules.{AssociationRule, AttributeRule, ConnectionInterface, ParentRelationRule}
 import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
 import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier}
 import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransformer}
@@ -53,10 +53,22 @@ class Fixture {
   instanceFactory.setRegistry (registry)
 
   val TODO: String = "Todo"
+  val SPECIAL_TODO: String = "SpecialTodo"
   val PROJECT: String = "Project"
+  val SPECIAL_PROJECT: String = "SpecialProject"
+  val DEADLINE: String = "Deadline"
+  val TITLE: String = "Title"
+
   val PROJECT_CONTAINS_TODO: String = "contains"
   val PROJECT_HAS_PART: String = "hasPart"
+  val PROJECT_DUE_BY_DEADLINE: String = "dueBy"
   val IS_PART_OF: String = "partOf"
+
+  val SINGLE: String = "1"
+  val MULTIPLE: String = "*"
+  val STRING: String = "String"
+  val NONEMPTY: Boolean = true
+
   val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
 
   def initProjectSetup (): Future[Any] = {
@@ -66,12 +78,22 @@ class Fixture {
       root <- typeFactory.newType (ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some (TIME_IDENTITY) )
       project <- typeFactory.newType (PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some (TIME_IDENTITY) )
       todo <- typeFactory.newType (TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some (TIME_IDENTITY) )
+      specialProject <- typeFactory.newType(DEADLINE, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
+      specialTodo <- typeFactory.newType(SPECIAL_TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
       _ <- registry.setType (root)
       _ <- registry.setType (project)
       _ <- registry.setType (todo)
-    } yield {
-      project.applyRule (new AssociationRule (":" + PROJECT_CONTAINS_TODO + ":" + TODO + ":*:" + TIME_IDENTITY.variantTime.toString) )
-    }
+      _ <- registry.setType(specialProject)
+      _ <- registry.setType(specialTodo)
+      _ <- Future({
+        project.applyRule(AssociationRule.create(PROJECT_CONTAINS_TODO, TODO, MULTIPLE, ConnectionInterface.parseInterface(TIME_IDENTITY.variantTime.toString, TODO)))
+        project.applyRule(AttributeRule.create(TITLE, STRING, NONEMPTY))
+        specialProject.applyRule(ParentRelationRule.create(project.getTypeName, project.getTypeIdentity))
+
+      })
+      _ <- project.commit()
+      _ <- specialProject.commit()
+    } yield {}
   }
 
   def importProjectSetupFromFile(file: String): Future[Any] = {
