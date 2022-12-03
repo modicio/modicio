@@ -203,17 +203,26 @@ class DeepInstance(private[modicio] val instanceId: String,
   }
 
   /**
-   * TODO add doc
-   * @return
+   * <p> Get the deep set of concrete [[AttributeData AttributeData]].
+   *
+   * <p> Duplicate attribute keys on the same level are handled by [[DeepInstance#attributeMap DeepInstance.attributeMap()]].
+   * Duplicate keys of higher levels are resolved as follows: ParentRelations are sorted by their typeName alphabetically. Out of
+   * those, the attribute of the alphabetical prior parentRelation is taken. In between levels, attributes of children override
+   * parent specifications ignoring the datatype.
+   * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
+   *
+   * @return Set[AttributeData]
    */
   def getDeepAttributes: Set[AttributeData] = {
     deepAttributeMap().keySet
   }
 
   /**
-   * TODO add doc
+   * <p> Get the deep map of concrete [[AssociationData AssociationData]] together with their respective
+   * [[AssociationRule AssociationRules]].
+   * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
    *
-   * @return
+   * @return Map[AssociationData, AssociationRule] - deep association map with resolved duplicates and overrides
    */
   def deepAssociationMap(): Map[AssociationData, Set[AssociationRule]] = {
     getDeepAssociations.map(data =>
