@@ -203,6 +203,34 @@ class DeepInstance(private[modicio] val instanceId: String,
   }
 
   /**
+   * <p> Get the deep set of concrete [[AttributeData AttributeData]].
+   *
+   * <p> Duplicate attribute keys on the same level are handled by [[DeepInstance#attributeMap DeepInstance.attributeMap()]].
+   * Duplicate keys of higher levels are resolved as follows: ParentRelations are sorted by their typeName alphabetically. Out of
+   * those, the attribute of the alphabetical prior parentRelation is taken. In between levels, attributes of children override
+   * parent specifications ignoring the datatype.
+   * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
+   *
+   * @return Set[AttributeData]
+   */
+  def getDeepAttributes: Set[AttributeData] = {
+    deepAttributeMap().keySet
+  }
+
+  /**
+   * <p> Get the deep map of concrete [[AssociationData AssociationData]] together with their respective
+   * [[AssociationRule AssociationRules]].
+   * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
+   *
+   * @return Map[AssociationData, AssociationRule] - deep association map with resolved duplicates and overrides
+   */
+  def deepAssociationMap(): Map[AssociationData, Set[AssociationRule]] = {
+    getDeepAssociations.map(data =>
+      (data, typeHandle.getModelElement.getDeepAssociationRulesOfRelation(data.byRelation))).toMap
+  }
+
+
+  /**
    * <p> Get the set of type-names which can be associated to this DeepInstance. The results do only contain type-names
    * as specified in the type-model. Polymorph smaller types which are also possible are not returned explicitly. The result
    * does not contain information which type can be used by which particular relation!
@@ -236,6 +264,15 @@ class DeepInstance(private[modicio] val instanceId: String,
     })
     results.toMap
   }
+
+  /**
+   * <p> Get all plain [[AssociationData AssociationData]] provided by the
+   * [[Shape Shapes]] of this DeepInstance and its parentRelation hierarchy.
+   * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
+   *
+   * @return Set[AssociationData] (deep immutable)
+   */
+  def getDeepAssociations: Set[AssociationData] = shape.getAssociations ++ unfoldedParentRelations.flatMap(_.getDeepAssociations)
 
   /**
    * <p> Get all association relation-names which are allowed the DeepInstance hierarchy together with the type-names that can
@@ -332,15 +369,6 @@ class DeepInstance(private[modicio] val instanceId: String,
    * @return Set[AssociationData] (deep immutable)
    */
   def getAssociations: Set[AssociationData] = shape.getAssociations
-
-  /**
-   * <p> Get all plain [[AssociationData AssociationData]] provided by the
-   * [[Shape Shapes]] of this DeepInstance and its parentRelation hierarchy.
-   * <p> <strong>This operation requires the DeepInstance to be unfolded!</strong>
-   *
-   * @return Set[AssociationData] (deep immutable)
-   */
-  def getDeepAssociations: Set[AssociationData] = shape.getAssociations ++ unfoldedParentRelations.flatMap(_.getDeepAssociations)
 
   /**
    * <p> Remove a concrete [[AssociationData AssociationData]] from the
