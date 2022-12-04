@@ -17,6 +17,14 @@ package modicio.core.rules
 
 import scala.collection.mutable
 
+/**
+ * <p> The ConnectionInterface describes the set of [[Slot Slots]] representing the possible variants of an association
+ * target.
+ * <p> Each slots describes a variantTime with prefix "=", "<" and ">". A ConnectionInterface holds true for an associations,
+ * if one of the slots allows the connection by an "OR" operation. If no prefix is specified, it is treated as an "=" prefix.
+ *
+ * @param slots predefined set of [[Slot Slots]]
+ */
 class ConnectionInterface(private val slots: mutable.Buffer[Slot]) {
 
   def getSlots: Seq[Slot] = slots.toSeq
@@ -29,8 +37,18 @@ class ConnectionInterface(private val slots: mutable.Buffer[Slot]) {
 
   def removeSlot(slot: Slot): Slot = slots.remove(slots.indexOf(slot))
 
-  def canConnect(name: String, variantTime: Long): Boolean =
-    slots.exists(slot => slot.targetName == name && slot.targetVariantTime == variantTime)
+  def canConnect(name: String, variantTime: Long): Boolean = {
+    slots.exists(slot => slot.targetName == name && {
+      val prefix = slot.targetVariantTimeArg.head.toString
+      val tail = slot.targetVariantTimeArg.tail.toString
+      prefix match {
+        case "<" => variantTime < tail.toLong
+        case ">" => variantTime > tail.toLong
+        case "=" => variantTime == tail.toLong
+        case _ => variantTime.toString == slot.targetVariantTimeArg
+      }
+    })
+  }
 
   def contains(slot: Slot): Boolean = slots.contains(slot)
 
@@ -39,8 +57,8 @@ class ConnectionInterface(private val slots: mutable.Buffer[Slot]) {
 object ConnectionInterface {
 
   def parseInterface(nativeValue: String, targetName: String): ConnectionInterface = {
-    val timestamps = nativeValue.split("&").map(_.toLong)
-    new ConnectionInterface(mutable.Buffer.from(timestamps.map(t => Slot(targetName, t))))
+    val variantArgs = nativeValue.split("&")
+    new ConnectionInterface(mutable.Buffer.from(variantArgs.map(t => Slot(targetName, t))))
   }
 
   def serialise(interface: ConnectionInterface): String = {
@@ -48,7 +66,7 @@ object ConnectionInterface {
     val maxIdx = interface.slots.size
     interface.slots.toSeq.zipWithIndex.foreach(elem => {
       val (slot, idx) = elem
-      result = result.concat(slot.targetVariantTime.toString)
+      result = result.concat(slot.targetVariantTimeArg)
       if(idx < maxIdx-1) {
         result = result.concat("&")
       }
