@@ -75,6 +75,13 @@ class DeepInstance(private[modicio] val instanceId: String,
   def getInstanceId: String = instanceId
 
   /**
+   * <p> Get the identity of the DeepInstance
+   *
+   * @return String - identity
+   */
+  def getIdentity: String = identity
+
+  /**
    * <p> Unfold the given DeepInstance asynchronously. This operation loads all DeepInstances specified by
    * [[ParentRelationData ParentRelationData]] from the provided [[Registry Registry]] and adds
    * them to the concreteParentRelations Set. The unfold call is propagated to the loaded parentRelations as well. The unfold call
