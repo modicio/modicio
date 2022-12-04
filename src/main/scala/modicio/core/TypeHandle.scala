@@ -75,24 +75,24 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
     }
   }
 
-  def applySlot(ruleID: String, variantTime: Long): Boolean = {
+  def applySlot(ruleID: String, variantTimeArg: String): Boolean = {
     val ruleOption = modelElement.definition.getAssociationRules.find(_.id == ruleID)
     if(ruleOption.isDefined){
       val rule = ruleOption.get
       val target = rule.targetName
-      rule.getInterface.addSlot(Slot(target, variantTime))
+      rule.getInterface.addSlot(Slot(target, variantTimeArg))
         true
     } else {
       false
     }
   }
 
-  def removeSlot(ruleID: String, variantTime: Long): Boolean = {
+  def removeSlot(ruleID: String, variantTimeArg: String): Boolean = {
     val ruleOption = modelElement.definition.getAssociationRules.find(_.id == ruleID)
     if (ruleOption.isDefined) {
       val rule = ruleOption.get
       val interface = rule.getInterface
-      val slots = interface.getSlots.filter(_.targetVariantTime == variantTime)
+      val slots = interface.getSlots.filter(_.targetVariantTimeArg == variantTimeArg)
       slots.foreach(interface.removeSlot)
       true
     } else {
