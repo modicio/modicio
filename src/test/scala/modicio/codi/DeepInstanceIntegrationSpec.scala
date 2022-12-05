@@ -99,4 +99,16 @@ class DeepInstanceIntegrationSpec extends AbstractIntegrationSpec {
       )
     }
   }
+
+  "Deleting a DeepInstance" must "delete the complete ESI and not fail" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.instanceFactory.newInstance("Todo")
+        _ <- fixture.registry.autoRemove(todoInstance.instanceId)
+        todoOption <- fixture.registry.get(todoInstance.instanceId)
+      } yield {
+       todoOption.isDefined should be(false)
+      })
+  }}
+
 }

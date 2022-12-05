@@ -133,7 +133,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  //FIXME
   override def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = {
     val typeGroup = typeRegistry.get(name)
     if (typeGroup.isEmpty) {
@@ -190,11 +189,15 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
   /**
    * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
    * <p> <strong>Experimental Feature</strong>
-   * <p> In case of a reference-identity ModelElement, the ModelElement is deleted only. In consequence, children pointing to that ModelElement
+   * <p> In case of a reference-identity ModelElement, the ModelElement is deleted only. In consequence, children pointing to
+   * that ModelElement
    * and other ModelElements associating this ModelElement become invalid and must be repaired manually.
    * <p> In case of a singleton-identity ModelElement, the whole singleton-fork of the ModelElement tree and the corresponding
    * [[DeepInstance DeepInstance]] tree are removed.
-   * <p> In case of a user-space identity, nothing happens yet => TODO
+   * <p> In case of a user-space identity, the deep instance and its types are deleted i.e., the ESI is removed. Note that
+   * associated ESI are not modified leading to associations pointing to nothing. This may introduce invalid related instances
+   * and must be taken care of manually.
+   *
  *
    * @param name     of the [[ModelElement ModelElement]] trying to remove
    * @param identity of the [[ModelElement ModelElement]] trying to remove
@@ -244,9 +247,40 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
        Future.failed(new IllegalArgumentException("AUTO DELETE: No such singleton instance found"))
       }
     } else {
-      //TODO
-      Future.successful((): Unit)
+      Future.failed(new IllegalArgumentException("AUTO DELETE: No operation available for: " + identity))
     }
+  }
+
+  /**
+   * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
+   * <p> <strong>Experimental Feature</strong>
+   * <p> In case of a user-space identity, the deep instance and its types are deleted i.e., the ESI is removed. Note that
+   * associated ESI are not modified leading to associations pointing to nothing. This may introduce invalid related instances
+   * and must be taken care of manually.
+   *
+   * @param instanceId id of the root instance element of the ESI to delete
+   * @return Future[Any] - if successful
+   */
+  override def autoRemove(instanceId: String): Future[Any] = {
+
+    val deepInstanceOption = instanceRegistry.get (instanceId)
+
+    if (deepInstanceOption.isDefined) {
+
+      val deepInstance = deepInstanceOption.get
+      val typeHandle = deepInstance.typeHandle
+
+      val parents = deepInstance.shape.getParentRelations
+
+      instanceRegistry.remove(deepInstance.getInstanceId)
+      typeRegistry(typeHandle.getTypeName).remove(typeHandle.getTypeIdentity)
+
+      Future.sequence(parents.map(p => autoRemove(p.parentInstanceId)))
+
+    }else{
+      Future.failed(new IllegalArgumentException("AUTO DELETE: No operation available for: " + instanceId))
+    }
+
   }
 
 }
