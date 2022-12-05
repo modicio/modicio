@@ -449,9 +449,9 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
       }
       for {
         _ <- writeInstanceData(instanceData)
-        _ <- writeParentRelationData(applyUpdate[ParentRelationData](oldParentRelationData, parentRelationData, _.id == 0))
-        _ <- writeAssociationData(applyUpdate[AssociationData](oldAssociationData, associationData, _.id == 0))
-        _ <- writeAttributeData(applyUpdate[AttributeData](oldAttributeData, attributeData, _.id == 0))
+        _ <- writeParentRelationData(applyUpdate[ParentRelationData](oldParentRelationData, parentRelationData))
+        _ <- writeAssociationData(applyUpdate[AssociationData](oldAssociationData, associationData))
+        _ <- writeAttributeData(applyUpdate[AttributeData](oldAttributeData, attributeData))
       } yield {}
     })
   }
@@ -510,7 +510,11 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
 
   private final def applyRules(old: Set[RuleData], in: Set[RuleData]): IODiff[RuleData] = {
-    applyUpdate(old, in, e => !old.exists(_.id == e.id))
+    applyUpdate(old, in)
+  }
+
+  type GenericData = Any{
+    val id: Long
   }
 
   /**
@@ -521,12 +525,10 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @tparam T generic parameter
    * @return
    */
-  private final def applyUpdate[T](old: Set[T], in: Set[T], isNew: T => Boolean): IODiff[T] = {
-    val toAdd = in.filter(isNew)
-    val toChange = in.diff(toAdd)
-    val toDelete = old.diff(toChange)
-    val toUpdate = toChange.diff(toDelete)
+  private final def applyUpdate[GenericData](old: Set[GenericData], in: Set[GenericData]): IODiff[GenericData] = {
+    val toUpdate = in.intersect(old)
+    val toAdd = in.diff(toUpdate)
+    val toDelete = old.diff(toUpdate)
     IODiff(toDelete, toAdd, toUpdate)
   }
-
 }
