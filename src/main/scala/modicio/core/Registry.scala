@@ -107,13 +107,14 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    * <p> If the TypeHandle to add has a not yet wired (check local id) TimeIdentity, this must be applied as well.
    * <p> In case of a singleton-identity ModelElement, the whole singleton-fork of the ModelElement tree and the corresponding
    * [[DeepInstance DeepInstance]] tree are removed.
-   * <p> In case of a user-space identity, nothing happens yet => TODO
    *
    * @param name     of the [[ModelElement ModelElement]] trying to remove
    * @param identity of the [[ModelElement ModelElement]] trying to remove
    * @return
    */
-  def autoRemove(name: String, SINGLETON_IDENTITY: String): Future[Any]
+  def autoRemove(name: String, identity: String): Future[Any]
+
+  def autoRemove(instanceId: String): Future[Any]
 
   def get(instanceId: String): Future[Option[DeepInstance]]
   def getAll(typeName: String): Future[Set[DeepInstance]]
