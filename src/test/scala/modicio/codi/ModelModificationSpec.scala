@@ -34,7 +34,7 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
         } yield {
           var names: String = "Elements in the model: "
           model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
-          model.size should be(5) withClue names
+          model.size should be(6) withClue names
         }
       )
     }
@@ -48,7 +48,7 @@ class ModelModificationSpec extends AbstractIntegrationSpec {
         } yield {
           var names: String = "Elements in the model: "
           model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
-          model.size should be(3) withClue names
+          model.size should be(4) withClue names
         }
       )
     }
