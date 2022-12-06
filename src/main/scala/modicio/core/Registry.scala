@@ -38,12 +38,16 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def getReferences: Future[Set[TypeHandle]]
 
+  def exchangeModel(set: Set[TypeHandle]): Future[Any]
+
   def getReferenceTypes: Future[Set[String]]
 
   def getAllTypes: Future[Set[String]]
 
   def getInstanceVariants: Future[Seq[(Long, String)]]
+
   def getTypeVariants: Future[Seq[(Long, String)]]
+
   def getVariantMap: Future[Map[(Long, String), Int]]
 
   /**

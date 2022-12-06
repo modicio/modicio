@@ -78,8 +78,27 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
   override def getAllTypes: Future[Set[String]] = Future.successful(typeRegistry.keySet.toSet)
 
+  override def exchangeModel(input: Set[TypeHandle]): Future[Any] = {
+    if(input.exists(_.getTypeName == ModelElement.ROOT_NAME)) {
+      val newRoot = input.find(_.getTypeName == ModelElement.ROOT_NAME).get
+      val oldRoot = typeRegistry(ModelElement.ROOT_NAME)(ModelElement.REFERENCE_IDENTITY)
+      for {
+        references <- getReferences
+        _ <- Future.sequence(references.diff(Set(oldRoot)).map(ref => autoRemove(ref.getTypeName, ref.getTypeIdentity)))
+        _ <- autoRemove(oldRoot.getTypeName, oldRoot.getTypeIdentity)
+        _ <- setType(newRoot)
+        _ <- Future.sequence(input.diff(Set(newRoot)).map(ref => setType(ref)))
+      }yield{
+        newRoot
+      }
+    }else{
+      Future.failed(new Exception("Cannot import model with missing ROOT element!"))
+    }
+  }
+
   /**
    * Get all variants which are used by a known instance
+ *
    * @return
    */
   override def getInstanceVariants: Future[Seq[(Long, String)]] = {
