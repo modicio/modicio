@@ -75,7 +75,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
         println(typeHandle.getTypeName, typeHandle.getTypeIdentity)
         for{
           timeIdentity <- setNode(typeHandle)
-          _ <- incrementRunning
+           _ <- incrementRunning if modelElement.identity == ModelElement.REFERENCE_IDENTITY
         } yield timeIdentity
       }else{
         println("SET TYPE")
@@ -119,6 +119,6 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   def get(instanceId: String): Future[Option[DeepInstance]]
   def getAll(typeName: String): Future[Set[DeepInstance]]
 
-  def setInstance(deepInstance: DeepInstance): Future[Unit]
+  def setInstance(deepInstance: DeepInstance): Future[Any]
 
 }

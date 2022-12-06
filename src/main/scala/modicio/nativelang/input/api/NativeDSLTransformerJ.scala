@@ -8,6 +8,7 @@ import modicio.api.JavaAPIConversions._
 import modicio.nativelang.input.{NativeCompartment, NativeDSL, NativeDSLTransformer}
 
 import java.util.concurrent.CompletableFuture
+import scala.concurrent.Future
 
 
 class NativeDSLTransformerJ(registry:RegistryJ,
@@ -22,4 +23,6 @@ class NativeDSLTransformerJ(registry:RegistryJ,
   override def decomposeInstanceJ(input: String): CompletableFuture[NativeCompartment] = transformer.decomposeInstance(input)
 
   override def decomposeModelJ(): CompletableFuture[NativeDSL] = transformer.decomposeModel()
+
+  override def extendInstance(input: NativeCompartment): Future[Any] = transformer.extendInstance(input)
 }
