@@ -36,10 +36,14 @@ class NativeDSLTransformer(registry: Registry,
 
   override def extend(input: NativeDSL): Future[Any] = {
     val defaultTimeIdentity = TimeIdentity.create
-    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity)))
+    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity, register = true)))
   }
 
-
+  override def transform(input: NativeDSL): Future[Seq[TypeHandle]] = {
+    val defaultTimeIdentity = TimeIdentity.create
+    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity, false)))
+  }
+  
   override def extendInstance(input: NativeCompartment): Future[Any] = {
     val typePart = input.definition
     val instancePart = input.configuration
@@ -59,7 +63,7 @@ class NativeDSLTransformer(registry: Registry,
 
   }
 
-  def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity): Future[TypeHandle] = {
+  def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity, register: Boolean): Future[TypeHandle] = {
     val name = NativeModelElement.parseName(statement)
     val identity = NativeModelElement.parseIdentity(statement)
 
@@ -78,7 +82,7 @@ class NativeDSLTransformer(registry: Registry,
 
     val typeHandleFuture = (for {
       typeHandle <- typeFactory.newType(name, identity, statement.template, Some(timeIdentity))
-      _ <- registry.setType(typeHandle)
+      _ <- registry.setType(typeHandle) if register
     } yield {
       typeHandle.openImportMode()
       statement.childOf.foreach(parentRelationRule => typeHandle.applyRule(new ParentRelationRule(parentRelationRule)))
