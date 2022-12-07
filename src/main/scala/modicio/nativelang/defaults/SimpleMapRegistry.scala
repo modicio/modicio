@@ -162,7 +162,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle): Future[TimeIdentity] = {
+  override protected def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[TimeIdentity] = {
     val name = typeHandle.getTypeName
     val identity = typeHandle.getTypeIdentity
     if (!typeRegistry.contains(name)) {
@@ -173,7 +173,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       typeGroup.remove(identity)
     }
     typeGroup.addOne(identity, typeHandle)
-    if(identity == ModelElement.REFERENCE_IDENTITY){
+    if(identity == ModelElement.REFERENCE_IDENTITY && importMode){
       incrementRunning map (_ => typeHandle.getTimeIdentity)
     }else{
       Future.successful(typeHandle.getTimeIdentity)

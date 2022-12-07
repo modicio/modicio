@@ -388,13 +388,13 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected final def setNode(typeHandle: TypeHandle): Future[Any] = {
+  override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = {
     fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
       val (modelElementData, ruleData) = typeHandle.getModelElement.toData
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
         _ <- writeModelElementData(modelElementData)
-        _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY
+        _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY && importMode
       } yield {}
     })
   }

@@ -36,10 +36,15 @@ class NativeDSLTransformer(registry: Registry,
 
   override def extend(input: NativeDSL): Future[Any] = {
     val defaultTimeIdentity = TimeIdentity.create
-    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity)))
+    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity, register = true)))
   }
 
-  def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity): Future[TypeHandle] = {
+  override def transform(input: NativeDSL): Future[Seq[TypeHandle]] = {
+    val defaultTimeIdentity = TimeIdentity.create
+    Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity, false)))
+  }
+
+  def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity, register: Boolean): Future[TypeHandle] = {
     val name = NativeModelElement.parseName(statement)
     val identity = NativeModelElement.parseIdentity(statement)
 
@@ -58,7 +63,7 @@ class NativeDSLTransformer(registry: Registry,
 
     for {
       typeHandle <- typeFactory.newType(name, identity, statement.template, Some(timeIdentity))
-      _ <- registry.setType(typeHandle)
+      _ <- registry.setType(typeHandle) if register
     } yield {
       statement.childOf.foreach(parentRelationRule => typeHandle.applyRule(new ParentRelationRule(parentRelationRule)))
       statement.attributes.foreach(propertyRule => typeHandle.applyRule(new AttributeRule(propertyRule)))
@@ -111,4 +116,5 @@ class NativeDSLTransformer(registry: Registry,
     val timeIdentity = NativeTimeIdentity(ti.variantTime, ti.runningTime, ti.versionTime, ti.variantId, ti.runningId, ti.versionId)
     NativeModelElement(frag.identity + ":" + frag.name, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
   }
+
 }
