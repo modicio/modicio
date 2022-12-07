@@ -17,7 +17,7 @@ package modicio.nativelang.input
 
 import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
-import modicio.core.{ImmutableShape, ModelElement, Registry, TimeIdentity, Transformer, TypeHandle}
+import modicio.core.{DeepInstance, ImmutableShape, ModelElement, Registry, Shape, TimeIdentity, Transformer, TypeHandle}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
@@ -43,6 +43,25 @@ class NativeDSLTransformer(registry: Registry,
     val defaultTimeIdentity = TimeIdentity.create
     Future.sequence(input.model.map(statement => evaluateModelElement(statement, defaultTimeIdentity, false)))
   }
+  
+  override def extendInstance(input: NativeCompartment): Future[Any] = {
+    val typePart = input.definition
+    val instancePart = input.configuration
+
+    extend(typePart) flatMap (_ => {
+
+      val instanceFuture = Future.sequence(instancePart.map(data => {
+        val (instanceData, parentRelationData, attributeData, associationData) = data
+        val shape = new Shape(attributeData, mutable.Set.from(associationData), parentRelationData)
+        registry.getType(instanceData.instanceOf, instanceData.identity) map (typeHandleOption => {
+            new DeepInstance(instanceData.instanceId, instanceData.identity, shape, typeHandleOption.get, registry)
+        })
+      }))
+
+      instanceFuture map (instances => Future.sequence(instances.map(registry.setInstance)))
+    })
+
+  }
 
   def evaluateModelElement(statement: NativeModelElement, defaultTimeIdentity: TimeIdentity, register: Boolean): Future[TypeHandle] = {
     val name = NativeModelElement.parseName(statement)
@@ -61,14 +80,23 @@ class NativeDSLTransformer(registry: Registry,
       }
     }
 
-    for {
+    val typeHandleFuture = (for {
       typeHandle <- typeFactory.newType(name, identity, statement.template, Some(timeIdentity))
       _ <- registry.setType(typeHandle) if register
     } yield {
+      typeHandle.openImportMode()
       statement.childOf.foreach(parentRelationRule => typeHandle.applyRule(new ParentRelationRule(parentRelationRule)))
       statement.attributes.foreach(propertyRule => typeHandle.applyRule(new AttributeRule(propertyRule)))
       statement.associations.foreach(associationRule => typeHandle.applyRule(new AssociationRule(associationRule)))
       statement.values.foreach(concreteValue => typeHandle.applyRule(new ConcreteValue(concreteValue)))
+      typeHandle.closeImportMode()
+      typeHandle
+    })
+
+    for {
+      typeHandle <- typeHandleFuture
+      _ <- typeHandle.commit()
+    } yield {
       typeHandle
     }
 

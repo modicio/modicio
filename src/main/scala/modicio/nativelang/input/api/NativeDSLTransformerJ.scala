@@ -26,4 +26,7 @@ class NativeDSLTransformerJ(registry:RegistryJ,
   override def decomposeModelJ(): CompletableFuture[NativeDSL] = transformer.decomposeModel()
 
   override def transformJ(input: NativeDSL): CompletableFuture[util.List[TypeHandleJ]] = ???
+
+  override def extendInstance(input: NativeCompartment): Future[Any] = transformer.extendInstance(input)
+
 }

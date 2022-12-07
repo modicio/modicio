@@ -27,6 +27,11 @@ object NativeDSLParser {
     decodingResult.toOption.getOrElse(throw new Exception("Decoding Error"))
   }
 
+  def parseCompartment(nativeInput: String): NativeCompartment = {
+    val decodingResult = parser.decode[NativeCompartment](nativeInput)
+    decodingResult.toOption.getOrElse(throw new Exception("Decoding Error"))
+  }
+
   def produceJson(extendedNativeDSL: NativeCompartment): Json = {
     implicit val decodeNativeDSL: Decoder[NativeDSL] = deriveDecoder[NativeDSL]
     implicit val decodeExtendedNativeDSL: Decoder[NativeCompartment] = deriveDecoder[NativeCompartment]
