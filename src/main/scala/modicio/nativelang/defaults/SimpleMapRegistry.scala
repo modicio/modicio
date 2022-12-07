@@ -74,10 +74,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override def getReferenceTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
-
-  override def getAllTypes: Future[Set[String]] = Future.successful(typeRegistry.keySet.toSet)
-
   /**
    * Get all variants which are used by a known instance
    * @return
@@ -155,6 +151,9 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
     typeGroup.addOne(identity, typeHandle)
     if(identity == ModelElement.REFERENCE_IDENTITY){
+
+      //FIXME remove this line!
+
       incrementRunning map (_ => typeHandle.getTimeIdentity)
     }else{
       Future.successful(typeHandle.getTimeIdentity)
@@ -162,9 +161,19 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
   }
 
+  /**
+   * Get all [[ModelElement ModelElements]] part of the reference model.
+   *
+   * @return
+   */
   override def getReferences: Future[Set[TypeHandle]] = {
     Future.successful(typeRegistry.values.flatMap(_.values).filter(_.getTypeIdentity == ModelElement.REFERENCE_IDENTITY).toSet)
   }
+
+  override def getReferenceTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
+
+  override def getAllTypes: Future[Set[String]] = Future.successful(typeRegistry.keySet.toSet)
+
 
   override def get(instanceId: String): Future[Option[DeepInstance]] = {
     if (DeepInstance.isSingletonRoot(instanceId)) {
@@ -181,9 +190,8 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     Future.successful(instanceRegistry.toSet.filter(_._2.getTypeHandle.getTypeName == typeName).map(_._2))
   }
 
-  override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
-    setType(deepInstance.getTypeHandle)
-    Future.successful(instanceRegistry.addOne(deepInstance.getInstanceId, deepInstance))
+  override def setInstance(deepInstance: DeepInstance): Future[Any] = {
+    setType(deepInstance.getTypeHandle) map (_ => instanceRegistry.addOne(deepInstance.getInstanceId, deepInstance))
   }
 
   /**
