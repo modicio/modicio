@@ -82,7 +82,7 @@ class NativeDSLTransformer(registry: Registry,
 
     val typeHandleFuture = (for {
       typeHandle <- typeFactory.newType(name, identity, statement.template, Some(timeIdentity))
-      _ <- registry.setType(typeHandle) if register
+      _ <- if(register) registry.setType(typeHandle) else Future.successful()
     } yield {
       typeHandle.openImportMode()
       statement.childOf.foreach(parentRelationRule => typeHandle.applyRule(new ParentRelationRule(parentRelationRule)))

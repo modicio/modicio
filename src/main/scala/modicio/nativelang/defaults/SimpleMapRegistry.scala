@@ -191,10 +191,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     Future.successful(typeRegistry.values.flatMap(_.values).filter(_.getTypeIdentity == ModelElement.REFERENCE_IDENTITY).toSet)
   }
 
-  override def getReferenceTypes: Future[Set[String]] = getReferences map (references => references.map(_.getTypeName))
-
-  override def getAllTypes: Future[Set[String]] = Future.successful(typeRegistry.keySet.toSet)
-
 
   override def get(instanceId: String): Future[Option[DeepInstance]] = {
     if (DeepInstance.isSingletonRoot(instanceId)) {
@@ -240,6 +236,9 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       val typeGroupOption = typeRegistry.get(name)
       if (typeGroupOption.isDefined) {
         typeGroupOption.get.remove(identity)
+        if(typeGroupOption.get.isEmpty){
+          typeRegistry.remove(name)
+        }
         incrementRunning
       } else {
         Future.failed(new IllegalArgumentException("AUTO DELETE: No type group found"))
@@ -303,6 +302,10 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
       instanceRegistry.remove(deepInstance.getInstanceId)
       typeRegistry(typeHandle.getTypeName).remove(typeHandle.getTypeIdentity)
+
+      if(typeRegistry(typeHandle.getTypeName).isEmpty){
+        typeRegistry.remove(typeHandle.getTypeName)
+      }
 
       Future.sequence(parents.map(p => autoRemove(p.parentInstanceId)))
 

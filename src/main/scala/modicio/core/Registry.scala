@@ -77,11 +77,13 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
       if(root || (modelElement.name == ModelElement.ROOT_NAME && modelElement.identity == ModelElement.REFERENCE_IDENTITY)){
         println("SET TYPE")
         println(typeHandle.getTypeName, typeHandle.getTypeIdentity)
-        for{
-          timeIdentity <- setNode(typeHandle, importMode)
-          _ <- incrementRunning
-           _ <- incrementRunning if !importMode && modelElement.identity == ModelElement.REFERENCE_IDENTITY
-        } yield timeIdentity
+        setNode(typeHandle, importMode) flatMap (_ => {
+          if(!importMode && modelElement.identity == ModelElement.REFERENCE_IDENTITY){
+            incrementRunning
+          }else{
+            Future.successful()
+          }
+        })
       }else{
         println("SET TYPE")
         println("failed for",typeHandle.getTypeName, typeHandle.getTypeIdentity)
