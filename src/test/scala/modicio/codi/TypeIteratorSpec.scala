@@ -100,4 +100,48 @@ class TypeIteratorSpec extends AbstractIntegrationSpec {
       )
     }
   }
+  "TypeIterator.get" must "return None when no element is inside buffer" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.registry.getType("Todo", "#")
+        modelElement <- Future.successful(todoInstance.get.getModelElement)
+        _ <- modelElement.unfold()
+      } yield {
+        val typeIterator = new TypeIterator(modelElement)
+        typeIterator.next
+        val mustBeNone = typeIterator.get
+        mustBeNone should be(None)
+      }
+      )
+  }
+  }
+  "TypeIterator.asDefinition" must "return None when no element is inside buffer" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.registry.getType("Todo", "#")
+        modelElement <- Future.successful(todoInstance.get.getModelElement)
+        _ <- modelElement.unfold()
+      } yield {
+        val typeIterator = new TypeIterator(modelElement)
+        typeIterator.next
+        val mustBeNone = typeIterator.asDefinition
+        mustBeNone should be(None)
+      }
+      )
+  }
+  }
+  it must "return the definition of the element inside buffer" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.registry.getType("Todo", "#")
+        modelElement <- Future.successful(todoInstance.get.getModelElement)
+        _ <- modelElement.unfold()
+      } yield {
+        val typeIterator = new TypeIterator(modelElement)
+        val definition = typeIterator.asDefinition.get
+        definition should be(modelElement.definition)
+      }
+      )
+  }
+  }
 }
