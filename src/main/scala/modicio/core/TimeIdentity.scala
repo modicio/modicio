@@ -51,7 +51,7 @@ object TimeIdentity {
     TimeIdentity(
       reference.variantTime,
       reference.runningTime,
-      IdentityProvider.newTimestampId(),
+      reference.versionTime,
       reference.variantId,
       reference.runningId,
       IdentityProvider.newRandomId()

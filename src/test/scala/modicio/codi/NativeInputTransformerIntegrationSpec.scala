@@ -21,4 +21,24 @@ class NativeInputTransformerIntegrationSpec extends AbstractIntegrationSpec {
       )
     }
   }
+  it must "not change the version time of types inside the model" in { fixture => {
+    fixture.importProjectSetupFromFile("model_types_02.json") flatMap (_ =>
+      for {
+        todoType <- fixture.registry.getType("Todo", "#")
+      } yield {
+        todoType.get.getTimeIdentity.versionTime should be(1669650193366L)
+      }
+      )
+  }
+  }
+  it must "not change the variant time of types inside the model" in { fixture => {
+    fixture.importProjectSetupFromFile("model_types_02.json") flatMap (_ =>
+      for {
+        todoType <- fixture.registry.getType("Todo", "#")
+      } yield {
+        todoType.get.getTimeIdentity.variantTime should be(1669650193368L)
+      }
+      )
+  }
+  }
 }
