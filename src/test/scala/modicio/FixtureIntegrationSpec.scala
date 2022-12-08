@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package modicio.codi
+package modicio
 
-import modicio.{IntegrationSpec, SimpleMapRegistryFixture, VolatilePersistentRegistryFixture}
-import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.FutureOutcome
+import org.scalatest.flatspec.FixtureAsyncFlatSpec
 import org.scalatest.matchers.should
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
-class ModelModificationSpec extends IntegrationSpec with RegistryBehaviors {
+class FixtureIntegrationSpec extends FixtureAsyncFlatSpec with should.Matchers{
+  type FixtureParam = VolatilePersistentRegistryFixture
 
-  def volatilePersistentRegistry = {
-    new VolatilePersistentRegistryFixture
+  override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
+    val theFixture = new FixtureParam()
+
+    complete {
+      super.withFixture(test.toNoArgAsyncTest(theFixture))
+    } lastly {
+
+    }
   }
-
-  def simpleMapRegistry = {
-    new SimpleMapRegistryFixture
-  }
-
-  "A SimpleMapRegistry" should behave like registry(simpleMapRegistry)
-
-  "A VolatilePersistentRegistry" should behave like registry(volatilePersistentRegistry)
-
 }
+

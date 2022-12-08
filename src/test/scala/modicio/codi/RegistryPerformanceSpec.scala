@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel, Tom Felber
+ * Copyright 2022 Karl Kegel, Tom Felber, Johannes Gröschel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package modicio.codi
 
-import modicio.AbstractIntegrationSpec
+import modicio.FixtureIntegrationSpec
 
 
-class RegistryPerformanceSpec extends AbstractIntegrationSpec {
+class RegistryPerformanceSpec extends FixtureIntegrationSpec {
 
   "Number of database operations" must "be lower than x" in { fixture => {
       fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>

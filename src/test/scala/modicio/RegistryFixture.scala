@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel
+ * Copyright 2022 Karl Kegel, Johannes Gröschel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,41 +16,26 @@
 
 package modicio
 
+import modicio.core.{InstanceFactory, ModelElement, Registry, TimeIdentity, TypeFactory}
 import modicio.core.rules.{AssociationRule, AttributeRule, ConnectionInterface, ParentRelationRule}
-import modicio.core.{InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
-import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier}
+import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier, VolatilePersistentRegistry}
 import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransformer}
-import org.scalatest.FutureOutcome
-import org.scalatest.flatspec.FixtureAsyncFlatSpec
-import org.scalatest.matchers.should
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.Source
 
-class AbstractIntegrationSpec extends FixtureAsyncFlatSpec with should.Matchers{
-  type FixtureParam = Fixture
-
-  override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
-    val theFixture = new Fixture()
-
-    complete {
-      super.withFixture(test.toNoArgAsyncTest(theFixture))
-    } lastly {
-
-    }
-  }
-}
-
-class Fixture {
+abstract class RegistryFixture {
   val modelVerifier = new SimpleModelVerifier()
   val definitionVerifier = new SimpleDefinitionVerifier()
 
-  val typeFactory: TypeFactory = new TypeFactory (definitionVerifier, modelVerifier)
-  val instanceFactory: InstanceFactory = new InstanceFactory (definitionVerifier, modelVerifier)
+  val typeFactory: TypeFactory = new TypeFactory(definitionVerifier, modelVerifier)
+  val instanceFactory: InstanceFactory = new InstanceFactory(definitionVerifier, modelVerifier)
 
-  val registry: SimpleMapRegistry = new SimpleMapRegistry (typeFactory, instanceFactory)
-  typeFactory.setRegistry (registry)
-  instanceFactory.setRegistry (registry)
+  val registry: Registry
+  // Call these after defining the value for the registry
+  // typeFactory.setRegistry(registry)
+  // instanceFactory.setRegistry(registry)
 
   val TODO: String = "Todo"
   val SPECIAL_TODO: String = "SpecialTodo"
@@ -71,18 +56,16 @@ class Fixture {
 
   val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
 
-  def initProjectSetup (): Future[Any] = {
-    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-
+  def initProjectSetup(): Future[Any] = {
     for {
-      root <- typeFactory.newType (ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some (TIME_IDENTITY) )
-      project <- typeFactory.newType (PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some (TIME_IDENTITY) )
-      todo <- typeFactory.newType (TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some (TIME_IDENTITY) )
+      root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      project <- typeFactory.newType(PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
+      todo <- typeFactory.newType(TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
       specialProject <- typeFactory.newType(SPECIAL_PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
       specialTodo <- typeFactory.newType(SPECIAL_TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
-      _ <- registry.setType (root)
-      _ <- registry.setType (project)
-      _ <- registry.setType (todo)
+      _ <- registry.setType(root)
+      _ <- registry.setType(project)
+      _ <- registry.setType(todo)
       _ <- registry.setType(specialProject)
       _ <- registry.setType(specialTodo)
       _ <- Future({
@@ -97,8 +80,6 @@ class Fixture {
   }
 
   def importProjectSetupFromFile(file: String): Future[Any] = {
-    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-
     val source = Source.fromResource(file)
     val fileContents = source.getLines.mkString
     println(fileContents)
@@ -114,4 +95,16 @@ class Fixture {
 
     }
   }
+}
+
+class SimpleMapRegistryFixture extends RegistryFixture {
+  val registry: SimpleMapRegistry = new SimpleMapRegistry (typeFactory, instanceFactory)
+  typeFactory.setRegistry(registry)
+  instanceFactory.setRegistry(registry)
+}
+
+class VolatilePersistentRegistryFixture extends RegistryFixture {
+  val registry: VolatilePersistentRegistry = new VolatilePersistentRegistry(typeFactory, instanceFactory)
+  typeFactory.setRegistry(registry)
+  instanceFactory.setRegistry(registry)
 }

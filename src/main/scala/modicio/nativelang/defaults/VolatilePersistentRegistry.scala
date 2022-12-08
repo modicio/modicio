@@ -325,7 +325,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     }
 
     def addRuleData(datum: RuleData): Future[RuleData] = {
-      if (datum.id.isEmpty || datum.id == "") {
+      if (datum.id.isEmpty || datum.id == "" || datum.id == "0") {
         val fDatum = RuleData(IdentityProvider.newRandomId(), datum.modelElementName, datum.identity, datum.nativeValue, datum.typeOf)
         this.ruleDataBuffer += fDatum
         Future.successful(fDatum)
@@ -342,7 +342,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     }
 
     def removeRuleData(datum: RuleData): Future[RuleData] = {
-      if (datum.id.isEmpty || datum.id == "") {
+      if (datum.id.isEmpty || datum.id == "" || datum.id == "0") {
         throw new IllegalArgumentException("No id provided for removing RuleData!")
       } else {
         findRuleDataIndex(datum.id).transform {
