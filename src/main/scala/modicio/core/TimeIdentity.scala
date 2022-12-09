@@ -47,18 +47,6 @@ object TimeIdentity {
   def fromModelElementData(med: ModelElementData): TimeIdentity =
     TimeIdentity(med.variantTime, med.runningTime, med.versionTime, med.variantId, med.runningId, med.versionId)
 
-
-  def createFrom(reference: TimeIdentity): TimeIdentity = {
-    TimeIdentity(
-      reference.variantTime,
-      reference.runningTime,
-      reference.versionTime,
-      reference.variantId,
-      reference.runningId,
-      IdentityProvider.newRandomId()
-    )
-  }
-
   def incrementVersion(reference: TimeIdentity): TimeIdentity = {
     TimeIdentity(
       reference.variantTime,
