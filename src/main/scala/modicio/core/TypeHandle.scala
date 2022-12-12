@@ -53,7 +53,7 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
   def unfold(): Future[TypeHandle] = modelElement.unfold() map (_ => this)
 
-  def commit(): Future[Any] = modelElement.commit()
+  def commit(importMode: Boolean = false): Future[Any] = modelElement.commit(importMode)
 
   def iterator: TypeIterator = new TypeIterator(modelElement)
 
