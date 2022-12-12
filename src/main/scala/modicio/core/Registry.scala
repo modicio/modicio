@@ -38,12 +38,16 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def getReferences: Future[Set[TypeHandle]]
 
+  def exchangeModel(set: Set[TypeHandle]): Future[Any]
+
   def getReferenceTypes: Future[Set[String]]
 
   def getAllTypes: Future[Set[String]]
 
   def getInstanceVariants: Future[Seq[(Long, String)]]
+
   def getTypeVariants: Future[Seq[(Long, String)]]
+
   def getVariantMap: Future[Map[(Long, String), Int]]
 
   /**
@@ -67,16 +71,19 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    * @param typeHandle [[TypeHandle TypeHandle]] of the model-element to store/register
    * @return TODO doc
    */
-  def setType(typeHandle: TypeHandle): Future[Any] = {
+  def setType(typeHandle: TypeHandle, importMode: Boolean = false ): Future[Any] = {
     val modelElement = typeHandle.getModelElement
     containsRoot flatMap (root => {
       if(root || (modelElement.name == ModelElement.ROOT_NAME && modelElement.identity == ModelElement.REFERENCE_IDENTITY)){
         println("SET TYPE")
         println(typeHandle.getTypeName, typeHandle.getTypeIdentity)
-        for{
-          timeIdentity <- setNode(typeHandle)
-          _ <- incrementRunning
-        } yield timeIdentity
+        setNode(typeHandle, importMode) flatMap (_ => {
+          if(!importMode && modelElement.identity == ModelElement.REFERENCE_IDENTITY){
+            incrementRunning
+          }else{
+            Future.successful()
+          }
+        })
       }else{
         println("SET TYPE")
         println("failed for",typeHandle.getTypeName, typeHandle.getTypeIdentity)
@@ -94,7 +101,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    * @param typeHandle [[TypeHandle TypeHandle]] of a dynamic or forked model-element to store/register
    * @return TODO doc
    */
-  protected def setNode(typeHandle: TypeHandle): Future[Any]
+  protected def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any]
 
   /**
    * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
@@ -119,6 +126,6 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   def get(instanceId: String): Future[Option[DeepInstance]]
   def getAll(typeName: String): Future[Set[DeepInstance]]
 
-  def setInstance(deepInstance: DeepInstance): Future[Unit]
+  def setInstance(deepInstance: DeepInstance): Future[Any]
 
 }

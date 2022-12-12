@@ -132,16 +132,18 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
    *
    * @return Future[Unit] - after the persistence process was completed
    */
-  def commit(): Future[Any] = {
+  def commit(importMode: Boolean): Future[Any] = {
     val commitLocal = {
       if(definition.isVolatile) {
-        incrementVersion()
-        registry.setType(this.createHandle) map (_ => definition.cleanVolatile())
+        if(!importMode) {
+          incrementVersion()
+        }
+        registry.setType(this.createHandle, importMode) map (_ => definition.cleanVolatile())
       } else {
         Future.successful()
       }
     }
-    commitLocal flatMap (_ => Future.sequence(parentRelations.map(_.commit())))
+    commitLocal flatMap (_ => Future.sequence(parentRelations.map(_.commit(importMode))))
   }
 
   /**
