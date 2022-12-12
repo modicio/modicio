@@ -51,7 +51,7 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
         }
       }
       typeHandle <- {
-        val modelElement = new ModelElement(name, identity, isTemplate, TimeIdentity.createFrom(time))
+        val modelElement = new ModelElement(name, identity, isTemplate, time)
         modelElement.setRegistry(registry)
         modelElement.setDefinition(definition)
         modelElement.setVerifiers(definitionVerifier, modelVerifier)
