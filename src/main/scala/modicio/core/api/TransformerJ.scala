@@ -16,7 +16,7 @@
 package modicio.core.api
 
 import modicio.api.JavaAPIConversions._
-import modicio.core.Transformer
+import modicio.core.{Transformer, TypeHandle}
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
 
 import scala.concurrent.Future
@@ -32,7 +32,11 @@ abstract class TransformerJ[IN, OUT](registry: RegistryJ,
 
   override final def decomposeModel(): Future[IN] = decomposeModelJ()
 
+  override final def transform(input: IN): Future[Seq[TypeHandle]] = ???
+
   def extendJ(input: IN): java.util.concurrent.CompletableFuture[Any]
+
+  def transformJ(input: IN): java.util.concurrent.CompletableFuture[java.util.List[TypeHandleJ]]
 
   def decomposeInstanceJ(input: java.lang.String): java.util.concurrent.CompletableFuture[OUT]
 

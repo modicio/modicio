@@ -1,5 +1,6 @@
 /**
  * Copyright 2022 Karl Kegel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,18 +46,6 @@ object TimeIdentity {
 
   def fromModelElementData(med: ModelElementData): TimeIdentity =
     TimeIdentity(med.variantTime, med.runningTime, med.versionTime, med.variantId, med.runningId, med.versionId)
-
-
-  def createFrom(reference: TimeIdentity): TimeIdentity = {
-    TimeIdentity(
-      reference.variantTime,
-      reference.runningTime,
-      IdentityProvider.newTimestampId(),
-      reference.variantId,
-      reference.runningId,
-      IdentityProvider.newRandomId()
-    )
-  }
 
   def incrementVersion(reference: TimeIdentity): TimeIdentity = {
     TimeIdentity(

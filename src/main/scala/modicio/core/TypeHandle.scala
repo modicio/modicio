@@ -23,6 +23,12 @@ import scala.concurrent.Future
 
 class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
+  private var importMode: Boolean = false
+
+  private[modicio] def openImportMode(): Unit = this.importMode = true
+  private[modicio] def closeImportMode(): Unit = this.importMode = false
+
+
   def isValid: Boolean = modelElement.isValid
 
   def getTypeName: String = modelElement.name
@@ -47,12 +53,12 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
   def unfold(): Future[TypeHandle] = modelElement.unfold() map (_ => this)
 
-  def commit(): Future[Any] = modelElement.commit()
+  def commit(importMode: Boolean = false): Future[Any] = modelElement.commit(importMode)
 
   def iterator: TypeIterator = new TypeIterator(modelElement)
 
   def applyRule(rule: Rule): Unit = {
-    if (!static) {
+    if (!static || importMode) {
       modelElement.applyRule(rule)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")
@@ -60,7 +66,7 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
   }
 
   def removeRule(rule: Rule): Unit = {
-    if (!static) {
+    if (!static || importMode) {
       modelElement.definition.removeRule(rule)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")
@@ -68,7 +74,7 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
   }
 
   def removeRule(ruleID: String): Unit = {
-    if (!static) {
+    if (!static || importMode) {
       modelElement.definition.removeRuleByID(ruleID)
     } else {
       throw new Exception("Forbidden: instantiated types are not changeable")

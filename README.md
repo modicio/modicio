@@ -7,7 +7,7 @@
 
 # modicio
 
-:bulb: **A demonstration video is provided [here](https://videocampus.sachsen.de/m/3edea95717a07f74373ac0bdab1f29938e6374fa262a938afa55818b19d84d071c53fa20f61bf52acac6ea4530bc21c4fdeeb1b6c8814c6af38deacd54130e5d)**.
+:movie_camera: **A demonstration video is provided [here](https://videocampus.sachsen.de/m/3edea95717a07f74373ac0bdab1f29938e6374fa262a938afa55818b19d84d071c53fa20f61bf52acac6ea4530bc21c4fdeeb1b6c8814c6af38deacd54130e5d)**.
 
 A framework for entity modelling and management at runtime based on eternal subspace instances (ESI).
 
