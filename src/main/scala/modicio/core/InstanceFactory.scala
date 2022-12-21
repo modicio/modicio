@@ -48,7 +48,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
           val identity: String = newIdentity
           val deepValueSet: Set[ConcreteValue] = referenceTypeHandle.getModelElement.deepValueSet
 
-          referenceTypeHandle.getModelElement.fork(identity) flatMap (forkedModelElement => {
+          referenceTypeHandle.getModelElement.fork(identity, persist = false) flatMap (forkedModelElement => {
           forkedModelElement.setVerifiers(definitionVerifier, modelVerifier)
 
           forkedModelElement.createHandle.unfold() flatMap (unfoldedTypeHandle => {
