@@ -27,6 +27,7 @@ Please read the [contribution guide](https://github.com/modicio/modicio/blob/mai
 Newer commits which are not yet part of a release may fix minor bugs or enhance documentation. We recommend to use the latest commit for exploration.
 
 * [0.1.2](https://github.com/modicio/modicio/releases/tag/0.1.2) stable experimental beta
+  * [0.1.2.1](https://github.com/modicio/modicio/releases/tag/0.1.2.1) maintenance update (**recommended version**)
 
 ---
 
