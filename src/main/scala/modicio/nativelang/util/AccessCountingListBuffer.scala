@@ -4,7 +4,7 @@ import scala.collection.mutable.ListBuffer
 
 
 class AccessCountingListBuffer[T] {
-  private val internalBuffer = new ListBuffer[T]
+  private val internalBuffer = new ListBuffer[T]()
   private var readCount = 0
   private var writeCount = 0
 
@@ -15,6 +15,18 @@ class AccessCountingListBuffer[T] {
     writeCount += 1
     internalBuffer += elem
     this
+  }
+
+  @`inline` def -=(elem: T): AccessCountingListBuffer[T] = {
+    writeCount += 1
+    internalBuffer -= elem
+    this
+  }
+
+  def size: Int = internalBuffer.size
+
+  def getByIndex(index: Int): T = {
+    internalBuffer(index)
   }
 
   def find(p: T => Boolean): Option[T] = {
