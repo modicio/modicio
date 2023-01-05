@@ -28,6 +28,10 @@ abstract class Transformer[MODEL, COMPARTMENT](protected val registry: Registry,
 
   def extend(input: MODEL): Future[Any]
 
+  def transform(input: MODEL): Future[Seq[TypeHandle]]
+
+  def extendInstance(input: COMPARTMENT): Future[Any]
+  
   def decomposeInstance(instanceId: String): Future[COMPARTMENT]
 
   def decomposeModel(): Future[MODEL]

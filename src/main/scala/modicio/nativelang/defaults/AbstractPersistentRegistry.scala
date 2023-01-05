@@ -388,16 +388,40 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected final def setNode(typeHandle: TypeHandle): Future[Any] = {
+  override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = {
     fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
       val (modelElementData, ruleData) = typeHandle.getModelElement.toData
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
         _ <- writeModelElementData(modelElementData)
-        _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY
+        _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY && importMode
       } yield {}
     })
   }
+
+
+  /**
+   * FIXME - not implemented yet
+   *
+   * @param set
+   * @return
+   */
+  override def exchangeModel(set: Set[TypeHandle]): Future[Any] = ???
+
+  /**
+   * FIXME - not implemented yet
+   *
+   * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
+   * <p> <strong>Experimental Feature</strong>
+   * <p> In case of a user-space identity, the deep instance and its types are deleted i.e., the ESI is removed. Note that
+   * associated ESI are not modified leading to associations pointing to nothing. This may introduce invalid related instances
+   * and must be taken care of manually.
+   *
+   * @param instanceId id of the root instance element of the ESI to delete
+   * @return Future[Any] - if successful
+   */
+  override def autoRemove(instanceId: String): Future[Any] = ???
+
 
   override final def get(instanceId: String): Future[Option[DeepInstance]] = {
     fetchInstanceData(instanceId) flatMap (instanceDataOption => {

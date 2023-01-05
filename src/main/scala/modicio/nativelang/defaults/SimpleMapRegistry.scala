@@ -78,8 +78,28 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
   override def getAllTypes: Future[Set[String]] = Future.successful(typeRegistry.keySet.toSet)
 
+  override def exchangeModel(input: Set[TypeHandle]): Future[Any] = {
+    if(input.exists(_.getTypeName == ModelElement.ROOT_NAME)) {
+      val newRoot = input.find(_.getTypeName == ModelElement.ROOT_NAME).get
+      val oldRoot = typeRegistry(ModelElement.ROOT_NAME)(ModelElement.REFERENCE_IDENTITY)
+      for {
+        references <- getReferences
+        _ <- Future.sequence(references.diff(Set(oldRoot)).map(ref => autoRemove(ref.getTypeName, ref.getTypeIdentity)))
+        _ <- autoRemove(oldRoot.getTypeName, oldRoot.getTypeIdentity)
+        _ <- setType(newRoot)
+        _ <- Future.sequence(input.diff(Set(newRoot)).map(ref => setType(ref)))
+      }yield{
+        newRoot
+      }
+    }else{
+      Future.failed(new Exception("Cannot import model with missing ROOT element!"))
+    }
+  }
+
+
   /**
    * Get all variants which are used by a known instance
+ *
    * @return
    */
   override def getInstanceVariants: Future[Seq[(Long, String)]] = {
@@ -143,7 +163,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle): Future[TimeIdentity] = {
+  override protected def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[TimeIdentity] = {
     val name = typeHandle.getTypeName
     val identity = typeHandle.getTypeIdentity
     if (!typeRegistry.contains(name)) {
@@ -154,7 +174,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       typeGroup.remove(identity)
     }
     typeGroup.addOne(identity, typeHandle)
-    if(identity == ModelElement.REFERENCE_IDENTITY){
+    if(identity == ModelElement.REFERENCE_IDENTITY && !importMode){
       incrementRunning map (_ => typeHandle.getTimeIdentity)
     }else{
       Future.successful(typeHandle.getTimeIdentity)
@@ -162,9 +182,15 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
   }
 
+  /**
+   * Get all [[ModelElement ModelElements]] part of the reference model.
+   *
+   * @return
+   */
   override def getReferences: Future[Set[TypeHandle]] = {
     Future.successful(typeRegistry.values.flatMap(_.values).filter(_.getTypeIdentity == ModelElement.REFERENCE_IDENTITY).toSet)
   }
+
 
   override def get(instanceId: String): Future[Option[DeepInstance]] = {
     if (DeepInstance.isSingletonRoot(instanceId)) {
@@ -181,9 +207,8 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     Future.successful(instanceRegistry.toSet.filter(_._2.getTypeHandle.getTypeName == typeName).map(_._2))
   }
 
-  override def setInstance(deepInstance: DeepInstance): Future[Unit] = {
-    setType(deepInstance.getTypeHandle)
-    Future.successful(instanceRegistry.addOne(deepInstance.getInstanceId, deepInstance))
+  override def setInstance(deepInstance: DeepInstance): Future[Any] = {
+    setType(deepInstance.getTypeHandle) map (_ => instanceRegistry.addOne(deepInstance.getInstanceId, deepInstance))
   }
 
   /**
@@ -211,6 +236,9 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
       val typeGroupOption = typeRegistry.get(name)
       if (typeGroupOption.isDefined) {
         typeGroupOption.get.remove(identity)
+        if(typeGroupOption.get.isEmpty){
+          typeRegistry.remove(name)
+        }
         incrementRunning
       } else {
         Future.failed(new IllegalArgumentException("AUTO DELETE: No type group found"))
@@ -274,6 +302,10 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
       instanceRegistry.remove(deepInstance.getInstanceId)
       typeRegistry(typeHandle.getTypeName).remove(typeHandle.getTypeIdentity)
+
+      if(typeRegistry(typeHandle.getTypeName).isEmpty){
+        typeRegistry.remove(typeHandle.getTypeName)
+      }
 
       Future.sequence(parents.map(p => autoRemove(p.parentInstanceId)))
 

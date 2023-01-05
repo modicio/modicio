@@ -25,7 +25,10 @@ class ParentRelationRuleSpec extends AnyFlatSpec with should.Matchers {
 
   val nativeStringNoId = ":#:Project"
 
+
+
   "An ExtensionRule" must "be correctly constructed from a (native value) DSL string with empty id" in {
+    Rule.disableAutoID()
     val extensionRule = new ParentRelationRule(nativeStringNoId)
     extensionRule.parentName should equal ("Project")
     extensionRule.parentIdentity should equal ("#")

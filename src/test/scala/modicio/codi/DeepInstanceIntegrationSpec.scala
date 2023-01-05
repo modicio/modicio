@@ -46,7 +46,7 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
     }
   }
 
-  "A new DeepInstance" must "increment the running time of the model" in { fixture => {
+  "A new DeepInstance" must "not increment the running time of the model" in { fixture => {
       fixture.importProjectSetupFromFile("model_deepInstance_01.json") flatMap (_ =>
         for {
           _ <- fixture.instanceFactory.newInstance("Todo")
@@ -54,7 +54,7 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
           _ <- fixture.instanceFactory.newInstance("Todo")
           post_time <- fixture.registry.getReferenceTimeIdentity
         } yield {
-          pre_time.runningTime should be < post_time.runningTime
+          pre_time.runningTime should be(post_time.runningTime)
         }
       )
     }
@@ -66,7 +66,7 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
           todoInstance1 <- fixture.instanceFactory.newInstance("Todo")
           todoInstance2 <- fixture.instanceFactory.newInstance("Todo")
         } yield {
-          todoInstance1.typeHandle.getTimeIdentity.runningTime should be < todoInstance2.typeHandle.getTimeIdentity.runningTime
+          todoInstance1.typeHandle.getTimeIdentity.runningTime should be (todoInstance2.typeHandle.getTimeIdentity.runningTime)
         }
       )
     }

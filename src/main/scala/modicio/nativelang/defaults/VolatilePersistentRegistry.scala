@@ -890,16 +890,4 @@ override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, Stri
   })
 }
 
-  /**
-   * FIXME - not implemented yet
-   *
-   * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
-   * <p> <strong>Experimental Feature</strong>
-   * <p> In case of a user-space identity, the deep instance and its types are deleted i.e., the ESI is removed. Note that
-   * associated ESI are not modified leading to associations pointing to nothing. This may introduce invalid related instances
-   * and must be taken care of manually.
-   * @param instanceId id of the root instance element of the ESI to delete
-   * @return Future[Any] - if successful
-   */
-  override def autoRemove(instanceId: String): Future[Any] = ???
 }

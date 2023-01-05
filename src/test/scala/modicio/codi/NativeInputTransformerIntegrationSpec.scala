@@ -1,5 +1,7 @@
 /**
- * Copyright 2022 Karl Kegel, Johannes Gröschel
+ * Copyright 2022 Karl Kegel
+ * Johannes Gröschel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package modicio.codi
 
 import modicio.FixtureIntegrationSpec
@@ -36,5 +37,25 @@ class NativeInputTransformerIntegrationSpec extends FixtureIntegrationSpec {
         }
       )
     }
+  }
+  it must "not change the version time of types inside the model" in { fixture => {
+    fixture.importProjectSetupFromFile("model_types_01.json") flatMap (_ =>
+      for {
+        todoType <- fixture.registry.getType("Todo", "#")
+      } yield {
+        todoType.get.getTimeIdentity.versionTime should be(1669650193366L)
+      }
+      )
+  }
+  }
+  it must "not change the variant time of types inside the model" in { fixture => {
+    fixture.importProjectSetupFromFile("model_types_01.json") flatMap (_ =>
+      for {
+        todoType <- fixture.registry.getType("Todo", "#")
+      } yield {
+        todoType.get.getTimeIdentity.variantTime should be(1669650193368L)
+      }
+      )
+  }
   }
 }
