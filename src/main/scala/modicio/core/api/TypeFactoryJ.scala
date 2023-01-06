@@ -17,9 +17,10 @@ package modicio.core.api
 
 import modicio.api.JavaAPIConversions._
 import modicio.core.datamappings.api.{ModelElementDataJ, RuleDataJ}
-import modicio.core.{Rule, TypeFactory}
+import modicio.core.{Rule, TimeIdentity, TypeFactory}
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
 
+import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -29,6 +30,10 @@ class TypeFactoryJ(definitionVerifier: DefinitionVerifierJ, modelVerifier: Model
   def setRegistryJ(registry: RegistryJ): Unit = super.setRegistry(registry)
 
   def newTypeJ(name: java.lang.String, identity: java.lang.String, isTemplate: Boolean): CompletableFuture[TypeHandleJ] = super.newType(name, identity, isTemplate) map convert
+
+  def newTypeJ(name: java.lang.String, identity: java.lang.String, isTemplate: Boolean, timeIdentity: Optional[TimeIdentity]): CompletableFuture[TypeHandleJ] =
+    super.newType(name, identity, isTemplate, timeIdentity) map convert
+
 
   def loadTypeJ(modelElementData: ModelElementDataJ, ruleData: java.util.Set[RuleDataJ]): TypeHandleJ = super.loadType(modelElementData, ruleData.map(convert))
 

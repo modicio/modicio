@@ -27,11 +27,13 @@ class RuleSpec extends AnyFlatSpec with should.Matchers {
   val nativeStringId = "abc:#:Project"
 
   "Rule" must "be correctly constructed from a (native value) DSL string with empty id" in {
+    Rule.disableAutoID()
     val rule = new ParentRelationRule(nativeStringNoId)
     rule.id should be (Rule.UNKNOWN_ID)
   }
 
   it must "be correctly evaluate a predefined id" in {
+    Rule.disableAutoID()
     val rule = new ParentRelationRule(nativeStringId)
     rule.id should be("abc")
   }
