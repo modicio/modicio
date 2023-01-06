@@ -110,4 +110,27 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
     modelElement.associations.toSet
   }
 
+  def getPlugins: Set[Plugin] = {
+    modelElement.definition.getPlugins
+  }
+
+  def addPlugin(plugin: Plugin): Unit = {
+    if(!getIsStatic) {
+      modelElement.definition.applyPlugin(plugin)
+    }
+  }
+
+  def getPluginsByDescription(description: String): Set[Plugin] = {
+    getPlugins.filter(_.description == description)
+  }
+
+  def getPluginsByResolver(resolver: String): Set[Plugin] = {
+    getPlugins.filter(_.resolver == resolver)
+  }
+
+  def removePlugin(plugin: Plugin): Unit = {
+    modelElement.definition.removePlugin(plugin)
+  }
+
+
 }

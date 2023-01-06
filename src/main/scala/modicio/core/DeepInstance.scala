@@ -457,6 +457,15 @@ class DeepInstance(private[modicio] val instanceId: String,
       throw new Exception("The proposed relation is not defined on top of a type which is in the instance type hierarchy")
     }
   }
+  
+  def getPlugins: Set[Plugin] = {
+    getTypeHandle.getPlugins
+  }
+
+  def getDeepPlugins: Set[Plugin] = {
+    getPlugins union unfoldedParentRelations.flatMap(_.getDeepPlugins)
+  }
+
 }
 
 object DeepInstance {

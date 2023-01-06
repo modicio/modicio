@@ -15,4 +15,7 @@
  */
 package modicio.core.datamappings
 
+import io.circe.generic.JsonCodec
+
+@JsonCodec
 case class PluginData(id: String, description: String, resolver: String, content: String, modelElementName: String, identity: String)

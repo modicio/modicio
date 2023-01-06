@@ -15,4 +15,12 @@
  */
 package modicio.core
 
-class Plugin(description: String, resolver: String, content: String)
+import modicio.core.datamappings.PluginData
+
+class Plugin(val id: String, val description: String, val resolver: String, val content: String){
+
+  def toData(parent: ModelElement): PluginData =
+    PluginData(id, description, resolver, content, parent.name, parent.identity)
+
+}
+
