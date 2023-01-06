@@ -42,6 +42,8 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
 
     val definition = new Definition(definitionVerifier)
 
+    val tid = TimeIdentity.create
+
     for {
       time <- {
         if (defaultTimeIdentity.isDefined) {

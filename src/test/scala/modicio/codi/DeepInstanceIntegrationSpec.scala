@@ -16,10 +16,10 @@
 
 package modicio.codi
 
-import modicio.AbstractIntegrationSpec
+import modicio.FixtureIntegrationSpec
 
 
-class DeepInstanceIntegrationSpec extends AbstractIntegrationSpec {
+class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
 
   "DeepInstance.assignValue" must "change the value of the correspondent key" in { fixture => {
       fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>

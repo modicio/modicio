@@ -16,12 +16,13 @@
 
 package modicio.codi
 
+import modicio.IntegrationSpec
 import modicio.core.rules.ConnectionInterface
 import modicio.core.util.IdentityProvider
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 
-class ConnectionInterfaceSpec extends AnyFlatSpec with should.Matchers {
+class ConnectionInterfaceSpec extends IntegrationSpec {
 
   private val time1: Long = IdentityProvider.newTimestampId()
   private val time2: Long = time1 + 60000
