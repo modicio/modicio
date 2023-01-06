@@ -374,18 +374,15 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
       modelElementDataSet <- fetchModelElementData(ModelElement.REFERENCE_IDENTITY)
       ruleDataSet <- Future.sequence(modelElementDataSet.map(f => fetchRuleData(f.name, f.identity)))
     } yield {
-      if(modelElementDataSet.size != ruleDataSet.size){
-        Future.failed(new Exception("Not matching modelElement and rule-set relations"))
+        modelElementDataSet.map(modelElementData => (modelElementData, {
+          ruleDataSet.find(rules => rules.exists(ruleData =>
+            ruleData.modelElementName == modelElementData.name && ruleData.identity == modelElementData.identity))
+        })).map(modelTuple => {
+          val (modelElementData, ruleDataOption) = modelTuple
+          val ruleData: Set[RuleData] = ruleDataOption.getOrElse(Set())
+          typeFactory.loadType(modelElementData, ruleData)
+        }) //++ baseModels.values.map(_.createHandle).toSet
       }
-      modelElementDataSet.map(modelElementData => (modelElementData, {
-        ruleDataSet.find(rules => rules.exists(ruleData =>
-          ruleData.modelElementName == modelElementData.name && ruleData.identity == modelElementData.identity))
-      })).map(modelTuple => {
-        val (modelElementData, ruleDataOption) = modelTuple
-        val ruleData: Set[RuleData] = ruleDataOption.getOrElse(Set())
-        typeFactory.loadType(modelElementData, ruleData)
-      }) //++ baseModels.values.map(_.createHandle).toSet
-    }
   }
 
   override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = {
@@ -394,7 +391,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
         _ <- writeModelElementData(modelElementData)
-        _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY && importMode
+        _ <- if (modelElementData.identity == ModelElement.REFERENCE_IDENTITY && importMode) incrementRunning else Future.successful()
       } yield {}
     })
   }

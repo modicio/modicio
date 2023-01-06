@@ -68,15 +68,14 @@ abstract class RegistryFixture {
       _ <- registry.setType(todo)
       _ <- registry.setType(specialProject)
       _ <- registry.setType(specialTodo)
-      _ <- Future({
+      _ <- Future.successful({
         project.applyRule(AssociationRule.create(PROJECT_CONTAINS_TODO, TODO, MULTIPLE, ConnectionInterface.parseInterface(TIME_IDENTITY.variantTime.toString, TODO)))
         project.applyRule(AttributeRule.create(TITLE, STRING, NONEMPTY))
         specialProject.applyRule(ParentRelationRule.create(project.getTypeName, project.getTypeIdentity))
-
       })
       _ <- project.commit()
       _ <- specialProject.commit()
-    } yield {}
+    } yield Future.successful()
   }
 
   def importProjectSetupFromFile(file: String): Future[Any] = {
