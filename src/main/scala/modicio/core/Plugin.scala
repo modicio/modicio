@@ -24,3 +24,12 @@ class Plugin(val id: String, val description: String, val resolver: String, val 
 
 }
 
+object Plugin {
+
+  def formatData(pluginData: PluginData): Plugin =
+    new Plugin(pluginData.id, pluginData.description, pluginData.resolver, pluginData.content)
+
+  //TODO auto id
+
+}
+
