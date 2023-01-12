@@ -18,13 +18,13 @@ package modicio.nativelang.defaults
 
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, RuleData}
 import modicio.core.util.IdentityProvider
-import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TimeIdentity, TypeFactory}
+import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
 
-import java.util.concurrent.locks.{Lock, ReentrantReadWriteLock}
-import scala.collection.mutable
+import java.util.concurrent.locks.{ReentrantReadWriteLock}
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Buffer
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Success}
 
 /**
  * Non-persistent implementation of the [[AbstractPersistentRegistry]] simulating database behaviour via
@@ -32,7 +32,15 @@ import scala.util.{Failure, Success}
  * <p> This class is used for testing and benchmarking mainly, but can also be used in prototypical scenarios where
  * the [[SimpleMapRegistry]] is not sufficient due to their superficial behaviour.
  */
-class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory)
+class VolatilePersistentRegistry(
+                                  typeFactory: TypeFactory,
+                                  instanceFactory: InstanceFactory,
+                                  modelElementDataBufferOption: Option[ListBuffer[ModelElementData]] = None,
+                                  instanceDataBufferOption: Option[ListBuffer[InstanceData]] = None,
+                                  ruleDataBufferOption: Option[ListBuffer[RuleData]] = None,
+                                  attributeDataBufferOption: Option[ListBuffer[AttributeData]] = None,
+                                  parentRelationDataBufferOption: Option[ListBuffer[ParentRelationData]] = None,
+                                  associationDataBufferOption: Option[ListBuffer[AssociationData]] = None)
                                 (implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(typeFactory, instanceFactory)(executionContext) {
 
@@ -54,23 +62,25 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * 5. parentRelationDataLock
    * 6. associationDataLock
    */
-  private var modelElementDataBuffer: ListBuffer[ModelElementData] = new ListBuffer[ModelElementData]()
+
+  private var modelElementDataBuffer: ListBuffer[ModelElementData] = if (modelElementDataBufferOption.isDefined) modelElementDataBufferOption.get else new ListBuffer[ModelElementData]()
   private val modelElementDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  private var instanceDataBuffer: ListBuffer[InstanceData] = new ListBuffer[InstanceData]()
+  private var instanceDataBuffer: ListBuffer[InstanceData] = if (instanceDataBufferOption.isDefined) instanceDataBufferOption.get else new ListBuffer[InstanceData]()
   private val instanceDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  private var ruleDataBuffer: ListBuffer[RuleData] = new ListBuffer[RuleData]()
+  private var ruleDataBuffer: ListBuffer[RuleData] = if (ruleDataBufferOption.isDefined) ruleDataBufferOption.get else new ListBuffer[RuleData]()
   private val ruleDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  private var attributeDataBuffer: ListBuffer[AttributeData] = new ListBuffer[AttributeData]()
+  private var attributeDataBuffer: ListBuffer[AttributeData] = if (attributeDataBufferOption.isDefined) attributeDataBufferOption.get else new ListBuffer[AttributeData]()
   private val attributeDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  private var parentRelationDataBuffer: ListBuffer[ParentRelationData] = new ListBuffer[ParentRelationData]()
+  private var parentRelationDataBuffer: ListBuffer[ParentRelationData] = if (parentRelationDataBufferOption.isDefined) parentRelationDataBufferOption.get else new ListBuffer[ParentRelationData]()
   private val parentRelationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  private var associationDataBuffer: ListBuffer[AssociationData] = new ListBuffer[AssociationData]()
+  private var associationDataBuffer: ListBuffer[AssociationData] = if (associationDataBufferOption.isDefined) associationDataBufferOption.get else new ListBuffer[AssociationData]()
   private val associationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
@@ -436,7 +446,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addAttributeData(datum: AttributeData): AttributeData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        val fDatum = AttributeData(attributeDataBuffer.map((datum) => datum.id).max + 1, datum.instanceId, datum.key, datum.value, datum.isFinal)
+        val fDatum = AttributeData(attributeDataBuffer.map((datum) => datum.id).addOne(0).max + 1, datum.instanceId, datum.key, datum.value, datum.isFinal)
         attributeDataBuffer += fDatum
         fDatum
       } else {
@@ -526,7 +536,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addParentRelationData(datum: ParentRelationData): ParentRelationData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        val fDatum = ParentRelationData(parentRelationDataBuffer.map((datum) => datum.id).max + 1,datum.instanceId, datum.parentInstanceId)
+        val fDatum = ParentRelationData(parentRelationDataBuffer.map((datum) => datum.id).addOne(0).max + 1,datum.instanceId, datum.parentInstanceId)
         parentRelationDataBuffer += fDatum
         fDatum
       } else {
@@ -616,7 +626,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addAssociationData(datum: AssociationData): AssociationData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        val fDatum = AssociationData(associationDataBuffer.map((datum) => datum.id).max + 1, datum.byRelation, datum.instanceId, datum.targetInstanceId, datum.isFinal)
+        val fDatum = AssociationData(associationDataBuffer.map((datum) => datum.id).addOne(0).max + 1, datum.byRelation, datum.instanceId, datum.targetInstanceId, datum.isFinal)
         associationDataBuffer += fDatum
         fDatum
       } else {
