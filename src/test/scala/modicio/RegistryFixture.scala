@@ -96,14 +96,4 @@ abstract class RegistryFixture {
   }
 }
 
-class SimpleMapRegistryFixture extends RegistryFixture {
-  val registry: SimpleMapRegistry = new SimpleMapRegistry (typeFactory, instanceFactory)
-  typeFactory.setRegistry(registry)
-  instanceFactory.setRegistry(registry)
-}
 
-class VolatilePersistentRegistryFixture extends RegistryFixture {
-  val registry: VolatilePersistentRegistry = new VolatilePersistentRegistry(typeFactory, instanceFactory)
-  typeFactory.setRegistry(registry)
-  instanceFactory.setRegistry(registry)
-}
