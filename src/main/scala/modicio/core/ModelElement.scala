@@ -115,11 +115,18 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
     (modelElementData, ruleData)
   }
 
-  private[modicio] def incrementVersion(): Unit = timeIdentity = TimeIdentity.incrementVersion(timeIdentity)
+  private[modicio] def incrementVersion(): Unit = timeIdentity = {
+    TimeIdentity.incrementVersion(timeIdentity)
+  }
 
-  private[modicio] def incrementVariant(time: Long, id: String): Unit = timeIdentity = TimeIdentity.incrementVariant(timeIdentity, time, id)
+  private[modicio] def incrementVariant(time: Long, id: String): Unit = {
+    definition.setVolatile
+    timeIdentity = TimeIdentity.incrementVariant(timeIdentity, time, id)
+  }
 
-  private[modicio] def incrementRunning(time: Long, id: String): Unit = timeIdentity = TimeIdentity.incrementRunning(timeIdentity, time, id)
+  private[modicio] def incrementRunning(time: Long, id: String): Unit = {
+    timeIdentity = TimeIdentity.incrementRunning(timeIdentity, time, id)
+  }
 
   private def unfoldParentRelations(): Future[Unit] = {
     Future.sequence(parentRelations.map(_.unfold())) flatMap (_ => Future.unit)
