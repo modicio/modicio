@@ -23,7 +23,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory)
-  extends Registry(typeFactory, instanceFactory) {
+  extends AbstractRegistry(typeFactory, instanceFactory) {
 
   // name -> (identity -> model)
   private[modicio] val typeRegistry = mutable.Map[String, mutable.Map[String, TypeHandle]]()

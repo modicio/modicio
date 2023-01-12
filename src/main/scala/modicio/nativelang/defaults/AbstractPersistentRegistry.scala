@@ -15,16 +15,16 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData, ModelElementData, RuleData}
+import modicio.core.datamappings._
 import modicio.core.util.IdentityProvider
-import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, TimeIdentity, TypeFactory, TypeHandle}
+import modicio.core._
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
 
 abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory)
                                          (implicit executionContext: ExecutionContext)
-  extends Registry(typeFactory, instanceFactory) {
+  extends AbstractRegistry(typeFactory, instanceFactory) {
 
   protected case class IODiff[T](toDelete: Set[T], toAdd: Set[T], toUpdate: Set[T])
 
