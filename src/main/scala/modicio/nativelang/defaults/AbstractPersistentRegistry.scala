@@ -298,7 +298,12 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     val variantId = IdentityProvider.newRandomId()
     getReferences map (referenceHandles => {
       referenceHandles.foreach(_.getModelElement.incrementVariant(variantTime, variantId))
-      Future.sequence(referenceHandles.map(_.commit()))
+
+      Future.sequence(referenceHandles.map(handle => {
+        val modelElementData = handle.getModelElement.toData._1
+        writeModelElementData(modelElementData)
+      }))
+
     })
   }
 
@@ -308,7 +313,12 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     val runningId = IdentityProvider.newRandomId()
     getReferences map (referenceHandles => {
       referenceHandles.foreach(_.getModelElement.incrementRunning(runningTime, runningId))
-      Future.sequence(referenceHandles.map(_.commit()))
+
+      Future.sequence(referenceHandles.map(handle => {
+        val modelElementData = handle.getModelElement.toData._1
+        writeModelElementData(modelElementData)
+      }))
+
     })
   }
 
