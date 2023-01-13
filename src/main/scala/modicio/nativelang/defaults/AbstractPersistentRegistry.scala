@@ -15,7 +15,7 @@
  */
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, ParentRelationData, InstanceData, ModelElementData, RuleData}
+import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
 import modicio.core.util.IdentityProvider
 import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, TimeIdentity, TypeFactory, TypeHandle}
 
@@ -78,6 +78,17 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
   protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]]
+
+  /**
+   * Get all [[PluginData]] objects associated to a given [[ModelElement]] by its provided parameters.
+   * <p> The [[PluginData]] object refers to its parent ModelElement directly by its attributes
+   * [[PluginData.modelElementName]] and [[PluginData.identity]].
+   *
+   * @param modelElementName name of the parent [[ModelElement]]
+   * @param identity         identity of the parent [[ModelElement]]
+   * @return Future set of all [[RuleData]] associated by the given parameters
+   */
+  protected def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]]
 
   /**
    * Get all [[AttributeData]] referenced by a given instanceId which is provided by [[AttributeData.instanceId]].
@@ -193,6 +204,22 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @return Future of inserted [[AssociationData]] on success.
    */
   protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
+
+  /**
+   * Add, Update and Delete [[PluginData]] as specified by a provided [[IODiff]].
+   * <p> [[IODiff.toDelete]] must be removed from the storage
+   * <p> [[IODiff.toAdd]] must be inserted in the storage.
+   * <p> [[IODiff.toUpdate]] must be updated in the storage.
+   * <p> [[AssociationData]] has the [[PluginData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * the storage must assign globally unique values (UUIDs). Inserted [[PluginData]] with new ids must be returned on success.
+   * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param diff [[IODiff]] containing the [[PluginData]] to add, update and delete
+   * @return Future of inserted [[PluginData]] on success.
+   */
+  protected def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]]
 
   /*
    * ***********************************************************
@@ -359,10 +386,11 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     for {
       modelElementDataOption <- fetchModelElementData(name, identity)
       ruleData <- fetchRuleData(name, identity)
+      pluginData <- fetchPluginData(name, identity)
     } yield {
       if(modelElementDataOption.isDefined){
         val modelElementData = modelElementDataOption.get
-        Some(typeFactory.loadType(modelElementData, ruleData))
+        Some(typeFactory.loadType(modelElementData, ruleData, pluginData))
       }else {
         None
       }
@@ -373,6 +401,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     for {
       modelElementDataSet <- fetchModelElementData(ModelElement.REFERENCE_IDENTITY)
       ruleDataSet <- Future.sequence(modelElementDataSet.map(f => fetchRuleData(f.name, f.identity)))
+      pluginDataSet <- Future.sequence(modelElementDataSet.map(f => fetchPluginData(f.name, f.identity)))
     } yield {
       if(modelElementDataSet.size != ruleDataSet.size){
         Future.failed(new Exception("Not matching modelElement and rule-set relations"))
@@ -380,23 +409,31 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
       modelElementDataSet.map(modelElementData => (modelElementData, {
         ruleDataSet.find(rules => rules.exists(ruleData =>
           ruleData.modelElementName == modelElementData.name && ruleData.identity == modelElementData.identity))
-      })).map(modelTuple => {
-        val (modelElementData, ruleDataOption) = modelTuple
+      },
+        pluginDataSet.find(plugins => plugins.exists(pluginData =>
+          pluginData.modelElementName == modelElementData.name && pluginData.identity == modelElementData.identity))
+      )).map(modelTuple => {
+        val (modelElementData, ruleDataOption, pluginDataOption) = modelTuple
         val ruleData: Set[RuleData] = ruleDataOption.getOrElse(Set())
-        typeFactory.loadType(modelElementData, ruleData)
-      }) //++ baseModels.values.map(_.createHandle).toSet
+        val pluginData: Set[PluginData] = pluginDataOption.getOrElse(Set())
+        typeFactory.loadType(modelElementData, ruleData, pluginData)
+      })
     }
   }
 
   override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = {
-    fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity) flatMap (oldRuleData => {
-      val (modelElementData, ruleData) = typeHandle.getModelElement.toData
+    for{
+      oldRuleData <- fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
+      oldPluginData <- fetchPluginData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
+    } yield {
+      val (modelElementData, ruleData, pluginData) = typeHandle.getModelElement.toData
       for {
         _ <- writeRuleData(applyRules(oldRuleData, ruleData))
         _ <- writeModelElementData(modelElementData)
+        _ <- writePluginData(applyPlugins(oldPluginData, pluginData))
         _ <- incrementRunning if modelElementData.identity == ModelElement.REFERENCE_IDENTITY && importMode
       } yield {}
-    })
+    }
   }
 
 
@@ -534,6 +571,10 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
 
   private final def applyRules(old: Set[RuleData], in: Set[RuleData]): IODiff[RuleData] = {
+    applyUpdate(old, in, e => !old.exists(_.id == e.id))
+  }
+
+  private final def applyPlugins(old: Set[PluginData], in: Set[PluginData]): IODiff[PluginData] = {
     applyUpdate(old, in, e => !old.exists(_.id == e.id))
   }
 
