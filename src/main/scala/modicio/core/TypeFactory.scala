@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.datamappings.{ModelElementData, RuleData}
+import modicio.core.datamappings.{ModelElementData, PluginData, RuleData}
 import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule, RuleDataType}
 import modicio.core.values.ConcreteValue
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
@@ -61,9 +61,10 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
 
   }
 
-  def loadType(modelElementData: ModelElementData, ruleData: Set[RuleData]): TypeHandle = {
+  def loadType(modelElementData: ModelElementData, ruleData: Set[RuleData], pluginData: Set[PluginData]): TypeHandle = {
     val definition = new Definition(definitionVerifier)
     ruleData.foreach(data => definition.applyRule(loadRule(data)))
+    pluginData.foreach(data => definition.applyPlugin(Plugin.formatData(data)))
 
     val timeIdentity = TimeIdentity.fromModelElementData(modelElementData)
     val modelElement = new ModelElement(modelElementData.name, modelElementData.identity, modelElementData.isTemplate, timeIdentity)
