@@ -16,6 +16,7 @@
 package modicio.core.api
 
 import modicio.api.JavaAPIConversions._
+import modicio.core.datamappings.PluginData
 import modicio.core.datamappings.api.{ModelElementDataJ, RuleDataJ}
 import modicio.core.{Rule, TimeIdentity, TypeFactory}
 import modicio.verification.api.{DefinitionVerifierJ, ModelVerifierJ}
@@ -34,8 +35,8 @@ class TypeFactoryJ(definitionVerifier: DefinitionVerifierJ, modelVerifier: Model
   def newTypeJ(name: java.lang.String, identity: java.lang.String, isTemplate: Boolean, timeIdentity: Optional[TimeIdentity]): CompletableFuture[TypeHandleJ] =
     super.newType(name, identity, isTemplate, timeIdentity) map convert
 
-
-  def loadTypeJ(modelElementData: ModelElementDataJ, ruleData: java.util.Set[RuleDataJ]): TypeHandleJ = super.loadType(modelElementData, ruleData.map(convert))
+  //TODO implement PluginDataJ & PluginJ
+  def loadTypeJ(modelElementData: ModelElementDataJ, ruleData: java.util.Set[RuleDataJ], pluginData: java.util.Set[PluginData]): TypeHandleJ = super.loadType(modelElementData, ruleData.map(convert), pluginData)
 
   def loadRuleJ(ruleData: RuleDataJ): Rule = super.loadRule(ruleData)
 }

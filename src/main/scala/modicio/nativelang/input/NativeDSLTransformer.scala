@@ -17,7 +17,7 @@ package modicio.nativelang.input
 
 import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
-import modicio.core.{DeepInstance, ImmutableShape, ModelElement, Registry, Shape, TimeIdentity, Transformer, TypeHandle}
+import modicio.core.{DeepInstance, ImmutableShape, ModelElement, Plugin, Registry, Shape, TimeIdentity, Transformer, TypeHandle}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
@@ -89,6 +89,10 @@ class NativeDSLTransformer(registry: Registry,
       statement.attributes.foreach(propertyRule => typeHandle.applyRule(new AttributeRule(propertyRule)))
       statement.associations.foreach(associationRule => typeHandle.applyRule(new AssociationRule(associationRule)))
       statement.values.foreach(concreteValue => typeHandle.applyRule(new ConcreteValue(concreteValue)))
+      if(statement.plugins.isDefined){
+        statement.plugins.get.foreach(plugin =>
+          typeHandle.addPlugin(new Plugin(plugin.id, plugin.description, plugin.resolver, plugin.content)))
+      }
       typeHandle.closeImportMode()
       typeHandle
     })
@@ -140,9 +144,10 @@ class NativeDSLTransformer(registry: Registry,
     val associations = frag.definition.getAssociationRules.map(_.serialise()).toSeq
     val attributes = frag.definition.getAttributeRules.map(_.serialise()).toSeq
     val values = frag.definition.getConcreteValues.map(_.serialise()).toSeq
+    val plugins = frag.definition.getPlugins.map(_.toData(frag)).toSeq
     val ti = frag.getTimeIdentity
     val timeIdentity = NativeTimeIdentity(ti.variantTime, ti.runningTime, ti.versionTime, ti.variantId, ti.runningId, ti.versionId)
-    NativeModelElement(frag.identity + ":" + frag.name, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values)
+    NativeModelElement(frag.identity + ":" + frag.name, frag.isTemplate, Some(timeIdentity), childOf, associations, attributes, values, Some(plugins))
   }
 
 }
