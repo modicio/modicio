@@ -17,13 +17,13 @@
 
 package modicio.codi
 
-import modicio.AbstractIntegrationSpec
+import modicio.FixtureIntegrationSpec
 import modicio.core.TypeIterator
 
 import scala.concurrent.Future
 
 
-class TypeIteratorSpec extends AbstractIntegrationSpec {
+class TypeIteratorSpec extends FixtureIntegrationSpec {
   "TypeIterator.split" must "create new TypeIterator of the current element" in { fixture => {
     fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>
       for {
