@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel
+ * Copyright 2023 Karl Kegel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.core.rules.api
+package modicio.core.datamappings
 
-import modicio.core.Rule
-import modicio.core.api.RuleJ
-import modicio.core.rules.AssociationRule
+import io.circe.generic.JsonCodec
 
-class AssociationRuleJ(nativeValue: java.lang.String) extends AssociationRule(nativeValue) with RuleJ {
-
-  override def getRule: Rule = this
-
-  override def forkJ(identity: String): RuleJ =  new AssociationRuleJ(super.fork(identity).nativeValue)
-
-}
+@JsonCodec
+case class PluginData(id: String, description: String, resolver: String, content: String, modelElementName: String, identity: String)

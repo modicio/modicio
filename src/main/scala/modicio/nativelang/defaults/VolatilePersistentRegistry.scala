@@ -16,8 +16,8 @@
 
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, RuleData}
 import modicio.core.util.IdentityProvider
+import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
 import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -860,4 +860,30 @@ override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, Stri
   })
 }
 
+  /**
+   * Get all [[PluginData]] objects associated to a given [[ModelElement]] by its provided parameters.
+   * <p> The [[PluginData]] object refers to its parent ModelElement directly by its attributes
+   * [[PluginData.modelElementName]] and [[PluginData.identity]].
+   *
+   * @param modelElementName name of the parent [[ModelElement]]
+   * @param identity         identity of the parent [[ModelElement]]
+   * @return Future set of all [[RuleData]] associated by the given parameters
+   */
+  override protected def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = ???
+
+  /**
+   * Add, Update and Delete [[PluginData]] as specified by a provided [[IODiff]].
+   * <p> [[IODiff.toDelete]] must be removed from the storage
+   * <p> [[IODiff.toAdd]] must be inserted in the storage.
+   * <p> [[IODiff.toUpdate]] must be updated in the storage.
+   * <p> [[AssociationData]] has the [[PluginData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * the storage must assign globally unique values (UUIDs). Inserted [[PluginData]] with new ids must be returned on success.
+   * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
+   * other operations must not be performed or rolled back.</strong>
+   * <p> If not successfully, the Future must fail with an Exception.
+   *
+   * @param diff [[IODiff]] containing the [[PluginData]] to add, update and delete
+   * @return Future of inserted [[PluginData]] on success.
+   */
+  override protected def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = ???
 }

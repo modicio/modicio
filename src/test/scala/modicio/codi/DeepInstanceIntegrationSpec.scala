@@ -18,6 +18,8 @@ package modicio.codi
 
 import modicio.FixtureIntegrationSpec
 
+import scala.concurrent.Future
+
 
 class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
 
@@ -33,6 +35,18 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
     }
   }
 
+  "DeepInstance.assignDeepValue" must "change the value of the correspondent key" in { fixture => {
+    fixture.importProjectSetupFromFile("model_deepInstance_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.instanceFactory.newInstance("Todo")
+        _ <- todoInstance.unfold()
+      } yield {
+        todoInstance.assignDeepValue("Content", "abc")
+        todoInstance.value("Content").get should be("abc")
+      }
+      )
+  }}
+
   "DeepInstance.assignDeepValue" must "change the value of the correspondent key of the parent" in { fixture => {
       fixture.importProjectSetupFromFile("model_deepInstance_01.json") flatMap (_ =>
         for {
@@ -44,6 +58,24 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
         }
       )
     }
+  }
+
+  "DeepInstance.assignDeepValue" must "change if applied sequentially with commit" in { fixture => {
+    fixture.importProjectSetupFromFile("model_deepInstance_01.json") flatMap (_ =>
+      for {
+        todoInstance <- fixture.instanceFactory.newInstance("Todo")
+        _ <- todoInstance.unfold()
+        _ <- Future(todoInstance.assignDeepValue("Content", "abc"))
+        _ <- Future(todoInstance.assignDeepValue("Name", "abc"))
+        _ <- todoInstance.commit
+        td2 <- fixture.registry.get(todoInstance.instanceId)
+        _ <- td2.get.unfold()
+      } yield {
+        val m = td2.get.getDeepAttributes
+        td2.get.deepValue("Content").get should be("abc")
+        td2.get.deepValue("Name").get should be("abc")
+      })
+  }
   }
 
   "A new DeepInstance" must "not increment the running time of the model" in { fixture => {

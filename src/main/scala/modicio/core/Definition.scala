@@ -47,6 +47,8 @@ class Definition
 
   private val values: mutable.Set[ConcreteValue] = mutable.Set()
 
+  private val plugins: mutable.Set[Plugin] = mutable.Set()
+
 
   private var volatile: Boolean = false
 
@@ -73,6 +75,9 @@ class Definition
    * @return Set[RuleData] - all Rules part of the Definition in their serialised form
    */
   def toData(name: String, identity: String): Set[RuleData] = {
+
+    //TODO add plugin serialisation here
+
     getRules.map(rule => RuleData(rule.id, name, identity, rule.serialise(), rule.getDataType))
   }
 
@@ -156,6 +161,12 @@ class Definition
     val rule = getRules.find(_.id == ruleID)
     if (rule.isDefined) removeRule(rule.get)
   }
+
+  def applyPlugin(plugin: Plugin): Unit = plugins.add(plugin)
+
+  def removePlugin(plugin: Plugin): Unit = plugins.remove(plugin)
+
+  def getPlugins: Set[Plugin] = plugins.toSet
 
   /**
    * <p> Get all [[AttributeRule AttributeRules]] part of this Definition.

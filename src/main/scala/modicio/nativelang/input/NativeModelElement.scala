@@ -16,6 +16,7 @@
 package modicio.nativelang.input
 
 import io.circe.generic.JsonCodec
+import modicio.core.datamappings.PluginData
 
 /**
  * @param name
@@ -24,6 +25,7 @@ import io.circe.generic.JsonCodec
  * @param associations
  * @param attributes
  * @param values
+ * @param plugins
  */
 @JsonCodec
 case class NativeModelElement(name: String,
@@ -32,7 +34,8 @@ case class NativeModelElement(name: String,
                               childOf: Seq[String],
                               associations: Seq[String],
                               attributes: Seq[String],
-                              values: Seq[String])
+                              values: Seq[String],
+                              plugins: Option[Seq[PluginData]])
 
 /**
  * TODO documentation

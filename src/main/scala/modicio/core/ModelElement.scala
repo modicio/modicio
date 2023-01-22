@@ -16,7 +16,7 @@
 package modicio.core
 
 import modicio.core.ModelElement.composeSingletonIdentity
-import modicio.core.datamappings.{ModelElementData, RuleData}
+import modicio.core.datamappings.{ModelElementData, PluginData, RuleData}
 import modicio.core.rules.{AssociationRule, AttributeRule}
 import modicio.core.util.Observer
 import modicio.core.values.ConcreteValue
@@ -108,11 +108,12 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
    * @return (ModelElementData, Set[RuleData]) - tuple of [[ModelElementData ModelElementData]] and
    *         [[RuleData RuleData]]
    */
-  private[modicio] def toData: (ModelElementData, Set[RuleData]) = {
+  private[modicio] def toData: (ModelElementData, Set[RuleData], Set[PluginData]) = {
     val modelElementData = ModelElementData(name, identity, isTemplate, timeIdentity.variantTime,
       timeIdentity.runningTime, timeIdentity.versionTime, timeIdentity.variantId, timeIdentity.runningId, timeIdentity.versionId)
     val ruleData = definition.toData(name, identity)
-    (modelElementData, ruleData)
+    val pluginData = definition.getPlugins.map(_.toData(this))
+    (modelElementData, ruleData, pluginData)
   }
 
   private[modicio] def incrementVersion(): Unit = timeIdentity = {

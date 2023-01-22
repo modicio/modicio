@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel
+ * Copyright 2023 Karl Kegel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.nativelang.defaults.api
+package modicio.core
 
-import modicio.core.api.RuleJ
-import modicio.verification.api.DefinitionVerifierJ
+import modicio.core.datamappings.PluginData
 
-import java.util
+class Plugin(val id: String, val description: String, val resolver: String, val content: String){
 
-class SimpleDefinitionVerifierJ extends DefinitionVerifierJ {
-  override def verifyJ(rules: util.Set[RuleJ]): Boolean = true
+  def toData(parent: ModelElement): PluginData =
+    PluginData(id, description, resolver, content, parent.name, parent.identity)
+
 }
+
+object Plugin {
+
+  def formatData(pluginData: PluginData): Plugin =
+    new Plugin(pluginData.id, pluginData.description, pluginData.resolver, pluginData.content)
+
+  //TODO auto id
+
+}
+
