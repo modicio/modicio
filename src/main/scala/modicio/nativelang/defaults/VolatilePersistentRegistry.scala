@@ -869,7 +869,10 @@ override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, Stri
    * @param identity         identity of the parent [[ModelElement]]
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
-  override protected def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = ???
+  override protected def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = {
+    //FIXME
+    Future(Set())
+  }
 
   /**
    * Add, Update and Delete [[PluginData]] as specified by a provided [[IODiff]].
@@ -885,5 +888,8 @@ override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, Stri
    * @param diff [[IODiff]] containing the [[PluginData]] to add, update and delete
    * @return Future of inserted [[PluginData]] on success.
    */
-  override protected def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = ???
+  override protected def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = {
+    //FIXME
+    Future(Set())
+  }
 }

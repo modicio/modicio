@@ -428,19 +428,15 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = {
+  override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Unit] = {
     for{
       oldRuleData <- fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
       oldPluginData <- fetchPluginData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
-    } yield {
-      val (modelElementData, ruleData, pluginData) = typeHandle.getModelElement.toData
-      for {
-        _ <- writeRuleData(applyRules(oldRuleData, ruleData))
-        _ <- writeModelElementData(modelElementData)
-        _ <- writePluginData(applyPlugins(oldPluginData, pluginData))
-        _ <- if (modelElementData.identity == ModelElement.REFERENCE_IDENTITY && importMode) incrementRunning else Future.successful()
-      } yield {}
-    }
+      (modelElementData, ruleData, pluginData) = typeHandle.getModelElement.toData
+      _ <- writeRuleData(applyRules(oldRuleData, ruleData))
+      _ <- writeModelElementData(modelElementData)
+      _ <- writePluginData(applyPlugins(oldPluginData, pluginData))
+    } yield {}
   }
 
 
@@ -464,7 +460,23 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceId id of the root instance element of the ESI to delete
    * @return Future[Any] - if successful
    */
-  override def autoRemove(instanceId: String): Future[Any] = ???
+  override def autoRemove(instanceId: String): Future[Any] = {
+    get(instanceId) flatMap (instanceOption => {
+      if(instanceOption.isDefined){
+        val instance = instanceOption.get
+        val typeHandle = instance.typeHandle
+        val parents = instance.shape.getParentRelations.map(_.parentInstanceId)
+        for {
+          _ <- removeModelElementWithRules(typeHandle.getTypeName, typeHandle.getTypeIdentity)
+          _ <- removeInstanceWithData(instanceId)
+          _ <- Future.sequence(parents.map(autoRemove))
+        } yield {}
+      }else{
+        Future.failed(new IllegalArgumentException("No such instance found"))
+      }
+    })
+
+  }
 
 
   override final def get(instanceId: String): Future[Option[DeepInstance]] = {
@@ -506,20 +518,23 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    */
   override final def setInstance(deepInstance: DeepInstance): Future[Unit] = {
     val data = deepInstance.toData
-    val (instanceData, attributeData, associationData, parentRelationData) = (ImmutableShape unapply data).get
+    val instanceData = data.instanceData
+    val attributeData = data.attributes
+    val associationData = data.associations
+    val parentRelationData = data.parentRelations
     get(deepInstance.getInstanceId) flatMap (oldInstanceOption => {
-      val (_, oldParentRelationData: Set[ParentRelationData], oldAttributeData: Set[AttributeData], oldAssociationData: Set[AssociationData]) = {
+      val oldData = {
         if(oldInstanceOption.isDefined){
           oldInstanceOption.get.toData
         }else{
-          (null, Set[ParentRelationData](), Set[AttributeData](), Set[AssociationData]())
+          ImmutableShape(null, Set[AttributeData](), Set[AssociationData](), Set[ParentRelationData]())
         }
       }
       for {
         _ <- writeInstanceData(instanceData)
-        _ <- writeParentRelationData(applyUpdate[ParentRelationData](oldParentRelationData, parentRelationData))
-        _ <- writeAssociationData(applyUpdate[AssociationData](oldAssociationData, associationData))
-        _ <- writeAttributeData(applyUpdate[AttributeData](oldAttributeData, attributeData))
+        _ <- writeParentRelationData(applyUpdate[ParentRelationData](oldData.parentRelations, parentRelationData))
+        _ <- writeAssociationData(applyUpdate[AssociationData](oldData.associations, associationData))
+        _ <- writeAttributeData(applyUpdate[AttributeData](oldData.attributes, attributeData))
       } yield {}
     })
   }
@@ -586,7 +601,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   }
 
   private final def applyPlugins(old: Set[PluginData], in: Set[PluginData]): IODiff[PluginData] = {
-    applyUpdate(old, in, e => !old.exists(_.id == e.id))
+    applyUpdate(old, in)
   }
 
   /**

@@ -180,7 +180,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
       newModelElement.setRegistry(registry)
       newModelElement.setDefinition(definition.fork(identity))
       if(persist) {
-        registry.setType(newModelElement.createHandle) map (_ => newModelElement)
+        registry.setType(newModelElement.createHandle, importMode = true) map (_ => newModelElement)
       }else{
         Future.successful(newModelElement)
       }

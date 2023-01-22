@@ -59,11 +59,11 @@ abstract class RegistryFixture {
   def initProjectSetup(): Future[Any] = {
     for {
       root <- typeFactory.newType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY))
+      _ <- registry.setType(root)
       project <- typeFactory.newType(PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
       todo <- typeFactory.newType(TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
       specialProject <- typeFactory.newType(SPECIAL_PROJECT, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
       specialTodo <- typeFactory.newType(SPECIAL_TODO, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
-      _ <- registry.setType(root)
       _ <- registry.setType(project)
       _ <- registry.setType(todo)
       _ <- registry.setType(specialProject)
@@ -75,7 +75,7 @@ abstract class RegistryFixture {
       })
       _ <- project.commit()
       _ <- specialProject.commit()
-    } yield Future.successful()
+    } yield {}
   }
 
   def importProjectSetupFromFile(file: String): Future[Any] = {
