@@ -17,14 +17,14 @@
  */
 package modicio.codi
 
-import modicio.AbstractIntegrationSpec
+import modicio.FixtureIntegrationSpec
 import modicio.core.ModelElement
 import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransformer}
 import org.scalatest.AppendedClues.convertToClueful
 
 import scala.io.Source
 
-class NativeInputTransformerIntegrationSpec extends AbstractIntegrationSpec {
+class NativeInputTransformerIntegrationSpec extends FixtureIntegrationSpec {
 
   "The NativeInputTransformer" must "load the input model and extend the registry" in {  fixture => {
       fixture.importProjectSetupFromFile("model_01.json") flatMap (_ =>

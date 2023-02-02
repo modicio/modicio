@@ -1,8 +1,6 @@
 ![Scala CI](https://github.com/modicio/modicio/workflows/Scala%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/modicio/modicio/branch/main/graph/badge.svg?token=TY4TLWUGSG)](https://codecov.io/gh/modicio/modicio)
 
-> :birthday: **An experimental Java wrapper is available as a direct framework member! Documentation can be found [here](https://github.com/modicio/modicio/wiki/Getting-Started).**
-
 > :ambulance: **As of right now, modicio is a scientific prototype and under frequent refactoring, so please refrain from using it in production yet. Stable releases will be marked accordingly.**
 
 # modicio

@@ -16,10 +16,10 @@
 
 package modicio.codi
 
-import modicio.AbstractIntegrationSpec
+import modicio.FixtureIntegrationSpec
 
 
-class ConnectionInterfaceIntegrationSpec extends AbstractIntegrationSpec {
+class ConnectionInterfaceIntegrationSpec extends FixtureIntegrationSpec {
   "DeepInstance.associate()" must "create correct AssociationData if a matching Slot is found" in { fixture => {
       fixture.initProjectSetup() flatMap (_ =>
         for {
