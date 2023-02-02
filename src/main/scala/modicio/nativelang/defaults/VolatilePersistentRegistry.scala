@@ -95,7 +95,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity identity of the [[ModelElement]]
    * @return Future option of [[ModelElementData]] or None if not found
    */
-  override protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]] = {
+  override protected[modicio] def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]] = {
     Future({
       core.modelElementDataLock.readLock().lock()
 
@@ -116,7 +116,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity identity of the [[ModelElement]]
    * @return Future set of [[ModelElementData]] matching the given identity
    */
-  override protected def fetchModelElementData(identity: String): Future[Set[ModelElementData]] = {
+  override protected[modicio] def fetchModelElementData(identity: String): Future[Set[ModelElementData]] = {
     Future({
       core.modelElementDataLock.readLock().lock()
 
@@ -138,7 +138,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param typeName name of the [[ModelElement]] which instances must be returned
    * @return Future set of [[InstanceData]] matching the given type name
    */
-  override protected def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]] = {
+  override protected[modicio] def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]] = {
   Future({
       core.instanceDataLock.readLock().lock()
 
@@ -159,7 +159,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId the [[InstanceData.instanceId]] of an instance
    * @return Future option of [[InstanceData]] or None if not found
    */
-  override protected def fetchInstanceData(instanceId: String): Future[Option[InstanceData]] = {
+  override protected[modicio] def fetchInstanceData(instanceId: String): Future[Option[InstanceData]] = {
     Future({
       core.instanceDataLock.readLock().lock()
 
@@ -183,7 +183,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity         identity of the parent [[ModelElement]]
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
-  override protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]] = {
+  override protected[modicio] def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]] = {
     Future({
       core.ruleDataLock.readLock().lock()
 
@@ -204,7 +204,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[AttributeData]]
    */
-  override protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]] = {
+  override protected[modicio] def fetchAttributeData(instanceId: String): Future[Set[AttributeData]] = {
     Future({
       core.attributeDataLock.readLock().lock()
 
@@ -225,7 +225,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[ParentRelationData]]
    */
-  override protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]] = {
+  override protected[modicio] def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]] = {
     Future({
       core.parentRelationDataLock.readLock().lock()
 
@@ -246,7 +246,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[AssociationData]]
    */
-  override protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]] = {
+  override protected[modicio] def fetchAssociationData(instanceId: String): Future[Set[AssociationData]] = {
     Future({
       core.associationDataLock.readLock().lock()
 
@@ -270,7 +270,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param modelElementData [[ModelElementData]] to write.
    * @return Future of inserted data on success.
    */
-  override protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
+  override protected[modicio] def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
     Future({
       core.modelElementDataLock.writeLock().lock()
       val _modelElementDataBuffer = core.modelElementDataBuffer.clone()
@@ -306,7 +306,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceData [[InstanceData]] to write
    * @return Future of inserted data on success.
    */
-  override protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = {
+  override protected[modicio] def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = {
     Future({
       core.instanceDataLock.writeLock().lock()
       val _instanceDataBuffer = core.instanceDataBuffer.clone()
@@ -348,7 +348,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param diff [[IODiff]] containing the [[RuleData]] to add, update and delete
    * @return Future of inserted [[RuleData]] on success.
    */
-  override protected def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
+  override protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
     def findRuleDataIndex(id: String): Int = {
       val data = core.ruleDataBuffer.zipWithIndex.filter((datum) => datum._1.id.equals(id)).map(datumWithIndex => datumWithIndex._2)
       if (data.isEmpty) {
@@ -438,7 +438,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param diff [[IODiff]] containing the [[AttributeData]] to add, update and delete
    * @return Future of inserted [[AttributeData]] on success.
    */
-  override protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] = {
+  override protected[modicio] def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] = {
     def findAttributeDataIndex(id: Long): Int = {
       val data = core.attributeDataBuffer.zipWithIndex.filter((datum) => datum._1.id.equals(id)).map(datumWithIndex => datumWithIndex._2)
       if (data.isEmpty) {
@@ -528,7 +528,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param diff [[IODiff]] containing the [[ParentRelationData]] to add, update and delete
    * @return Future of inserted [[ParentRelationData]] on success.
    */
-  override protected def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]] = {
+  override protected[modicio] def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]] = {
     def findParentRelationDataIndex(id: Long): Int = {
       val data = core.parentRelationDataBuffer.zipWithIndex.filter((datum) => datum._1.id.equals(id)).map(datumWithIndex => datumWithIndex._2)
       if (data.isEmpty) {
@@ -618,7 +618,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param diff [[IODiff]] containing the [[AssociationData]] to add, update and delete
    * @return Future of inserted [[AssociationData]] on success.
    */
-  override protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]] = {
+  override protected[modicio] def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]] = {
     def findAssociationDataIndex(id: Long): Int = {
       val data = core.associationDataBuffer.zipWithIndex.filter((datum) => datum._1.id.equals(id)).map(datumWithIndex => datumWithIndex._2)
       if (data.isEmpty) {
@@ -706,7 +706,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param identity         identity of the [[ModelElementData]]
    * @return Future on success
    */
-  override protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any] = {
+  override protected[modicio] def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any] = {
     Future({
       core.modelElementDataLock.writeLock().lock()
       core.ruleDataLock.writeLock().lock()
@@ -744,7 +744,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param instanceId id of the [[InstanceData]] to remove
    * @return Future on success
    */
-  override protected def removeInstanceWithData(instanceId: String): Future[Any] = {
+  override protected[modicio] def removeInstanceWithData(instanceId: String): Future[Any] = {
     Future({
       core.instanceDataLock.writeLock().lock()
       core.attributeDataLock.writeLock().lock()
@@ -779,7 +779,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     })
   }
 
-  override protected def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]] = {
+  override protected[modicio] def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]] = {
     Future({
       core.instanceDataLock.readLock().lock()
 
@@ -805,7 +805,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    * @param query Query string as specified in the method description.
    * @return
    */
-  override protected def queryTypes(query: String): Future[Set[ModelElementData]] = {
+  override protected[modicio] def queryTypes(query: String): Future[Set[ModelElementData]] = {
     Future({
       core.modelElementDataLock.readLock()
 
@@ -844,7 +844,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    *
    * @return Future sequence of variant tuples in the format (variantTime, variantId)
    */
-override protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]] = {
+override protected[modicio] def queryVariantsOfInstances(): Future[Seq[(Long, String)]] = {
   Future({
     core.modelElementDataLock.readLock().lock()
     core.instanceDataLock.readLock().lock()
@@ -867,7 +867,7 @@ override protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]] =
    *
    * @return Future sequence of variant tuples in the format (variantTime, variantId)
    */
-override protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]] = {
+override protected[modicio] def queryVariantsOfTypes(): Future[Seq[(Long, String)]] = {
   Future({
     core.modelElementDataLock.readLock().lock()
 
@@ -892,7 +892,7 @@ override protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]] = {
    *         {(variantTime, variantId) -> count}
    */
 
-override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]] = {
+override protected[modicio] def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]] = {
   Future({
     core.modelElementDataLock.readLock().lock()
 
@@ -915,7 +915,7 @@ override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, Stri
    * @param identity         identity of the parent [[ModelElement]]
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
-  override protected def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = {
+  override protected[modicio] def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = {
     //FIXME
     Future(Set())
   }
@@ -934,7 +934,7 @@ override protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, Stri
    * @param diff [[IODiff]] containing the [[PluginData]] to add, update and delete
    * @return Future of inserted [[PluginData]] on success.
    */
-  override protected def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = {
+  override protected[modicio] def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = {
     //FIXME
     Future(Set())
   }

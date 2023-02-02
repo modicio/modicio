@@ -41,7 +41,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity identity of the [[ModelElement]]
    * @return Future option of [[ModelElementData]] or None if not found
    */
-  protected def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]]
+  protected[modicio] def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]]
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
@@ -49,7 +49,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity identity of the [[ModelElement]]
    * @return Future option of [[ModelElementData]] or None if not found
    */
-  protected def fetchModelElementData(identity: String): Future[Set[ModelElementData]]
+  protected[modicio] def fetchModelElementData(identity: String): Future[Set[ModelElementData]]
 
   /**
    * Get the [[InstanceData]] elements instantiation a given type ([[ModelElement]]) specified by its name.
@@ -58,7 +58,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param typeName name of the [[ModelElement]] which instances must be returned
    * @return Future set of [[InstanceData]] matching the given type name
    */
-  protected def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]]
+  protected[modicio] def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]]
 
   /**
    * Get the exact match of an [[InstanceData]] object by its instanceId.
@@ -66,7 +66,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceId the [[InstanceData.instanceId]] of an instance
    * @return Future option of [[InstanceData]] or None if not found
    */
-  protected def fetchInstanceData(instanceId: String): Future[Option[InstanceData]]
+  protected[modicio] def fetchInstanceData(instanceId: String): Future[Option[InstanceData]]
 
   /**
    * Get all [[RuleData]] objects associated to a given [[ModelElement]] by its provided parameters.
@@ -77,7 +77,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity identity of the parent [[ModelElement]]
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
-  protected def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]]
+  protected[modicio] def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]]
 
   /**
    * Get all [[PluginData]] objects associated to a given [[ModelElement]] by its provided parameters.
@@ -88,7 +88,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity         identity of the parent [[ModelElement]]
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
-  protected def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]]
+  protected[modicio] def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]]
 
   /**
    * Get all [[AttributeData]] referenced by a given instanceId which is provided by [[AttributeData.instanceId]].
@@ -96,7 +96,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[AttributeData]]
    */
-  protected def fetchAttributeData(instanceId: String): Future[Set[AttributeData]]
+  protected[modicio] def fetchAttributeData(instanceId: String): Future[Set[AttributeData]]
 
   /**
    * Get all [[ParentRelationData]] referenced by a given instanceId which is provided by [[ParentRelationData.instanceId]].
@@ -104,7 +104,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[ParentRelationData]]
    */
-  protected def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]]
+  protected[modicio] def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]]
 
   /**
    * Get all [[AssociationData]] referenced by a given instanceId which is provided by [[AssociationData.instanceId]].
@@ -112,7 +112,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceId instanceId of the parent [[DeepInstance]]
    * @return Future set of all matching [[AssociationData]]
    */
-  protected def fetchAssociationData(instanceId: String): Future[Set[AssociationData]]
+  protected[modicio] def fetchAssociationData(instanceId: String): Future[Set[AssociationData]]
 
   /*
    * ***********************************************************
@@ -129,7 +129,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param modelElementData [[ModelElementData]] to write.
    * @return Future of inserted data on success.
    */
-  protected def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData]
+  protected[modicio] def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData]
 
   /**
    * Add [[InstanceData]] to the storage. [[InstanceData.instanceId]] serves as the unique primary key.
@@ -139,7 +139,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceData [[InstanceData]] to write
    * @return Future of inserted data on success.
    */
-  protected def writeInstanceData(instanceData: InstanceData): Future[InstanceData]
+  protected[modicio] def writeInstanceData(instanceData: InstanceData): Future[InstanceData]
 
   /**
    * Add, Update and Delete [[RuleData]] as specified by a provided [[IODiff]].
@@ -155,7 +155,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param diff [[IODiff]] containing the [[RuleData]] to add, update and delete
    * @return Future of inserted [[RuleData]] on success.
    */
-  protected def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]]
+  protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]]
 
   /**
    * Add, Update and Delete [[AttributeData]] as specified by a provided [[IODiff]].
@@ -171,7 +171,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param diff [[IODiff]] containing the [[AttributeData]] to add, update and delete
    * @return Future of inserted [[AttributeData]] on success.
    */
-  protected def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]]
+  protected[modicio] def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]]
 
   /**
    * Add, Update and Delete [[ParentRelationData]] as specified by a provided [[IODiff]].
@@ -187,7 +187,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param diff [[IODiff]] containing the [[ParentRelationData]] to add, update and delete
    * @return Future of inserted [[ParentRelationData]] on success.
    */
-  protected def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]]
+  protected[modicio] def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]]
 
   /**
    * Add, Update and Delete [[AssociationData]] as specified by a provided [[IODiff]].
@@ -203,7 +203,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param diff [[IODiff]] containing the [[AssociationData]] to add, update and delete
    * @return Future of inserted [[AssociationData]] on success.
    */
-  protected def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
+  protected[modicio] def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]]
 
   /**
    * Add, Update and Delete [[PluginData]] as specified by a provided [[IODiff]].
@@ -219,7 +219,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param diff [[IODiff]] containing the [[PluginData]] to add, update and delete
    * @return Future of inserted [[PluginData]] on success.
    */
-  protected def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]]
+  protected[modicio] def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]]
 
   /*
    * ***********************************************************
@@ -239,7 +239,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param identity identity of the [[ModelElementData]]
    * @return Future on success
    */
-  protected def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
+  protected[modicio] def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any]
 
 
   /**
@@ -255,7 +255,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param instanceId id of the [[InstanceData]] to remove
    * @return Future on success
    */
-  protected def removeInstanceWithData(instanceId: String): Future[Any]
+  protected[modicio] def removeInstanceWithData(instanceId: String): Future[Any]
 
 
   /*
@@ -264,7 +264,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * ***********************************************************
    */
 
-  protected def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]]
+  protected[modicio] def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]]
 
   /**
    * Queries all types (ModelElements) present in the repository.
@@ -276,14 +276,14 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @param query Query string as specified in the method description.
    * @return
    */
-  protected def queryTypes(query: String): Future[Set[ModelElementData]]
+  protected[modicio] def queryTypes(query: String): Future[Set[ModelElementData]]
 
   /**
    * Query all variants which are used by a known instance
    *
    * @return Future sequence of variant tuples in the format (variantTime, variantId)
    */
-  protected def queryVariantsOfInstances(): Future[Seq[(Long, String)]]
+  protected[modicio] def queryVariantsOfInstances(): Future[Seq[(Long, String)]]
 
   /**
    * Query all variants that are known. This includes all variants that are known by instances and the variant used by
@@ -291,7 +291,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    *
    * @return Future sequence of variant tuples in the format (variantTime, variantId)
    */
-  protected def queryVariantsOfTypes(): Future[Seq[(Long, String)]]
+  protected[modicio] def queryVariantsOfTypes(): Future[Seq[(Long, String)]]
 
   /**
    * Query all known variants together with the number of times the variant is references over
@@ -302,7 +302,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @return Future map of variant tuples with their number of occurrences (count) in the format
    *         {(variantTime, variantId) -> count}
    */
-  protected def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]]
+  protected[modicio] def queryVariantOccurrencesAndCount(): Future[Map[(Long, String), Int]]
 
   /*
    * ***********************************************************
