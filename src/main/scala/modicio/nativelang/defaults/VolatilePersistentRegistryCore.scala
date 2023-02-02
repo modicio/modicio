@@ -17,6 +17,7 @@
 package modicio.nativelang.defaults
 
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, RuleData}
+import modicio.nativelang.util.AccessCountingListBuffer
 
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import scala.collection.mutable.ListBuffer
@@ -37,21 +38,21 @@ class VolatilePersistentRegistryCore {
    * 6. associationDataLock
    */
 
-  var modelElementDataBuffer: ListBuffer[ModelElementData] = new ListBuffer[ModelElementData]()
+  var modelElementDataBuffer: AccessCountingListBuffer[ModelElementData] = new AccessCountingListBuffer[ModelElementData]()
   val modelElementDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  var instanceDataBuffer: ListBuffer[InstanceData] = new ListBuffer[InstanceData]()
+  var instanceDataBuffer: AccessCountingListBuffer[InstanceData] = new AccessCountingListBuffer[InstanceData]()
   val instanceDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  var ruleDataBuffer: ListBuffer[RuleData] = new ListBuffer[RuleData]()
+  var ruleDataBuffer: AccessCountingListBuffer[RuleData] = new AccessCountingListBuffer[RuleData]()
   val ruleDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  var attributeDataBuffer: ListBuffer[AttributeData] = new ListBuffer[AttributeData]()
+  var attributeDataBuffer: AccessCountingListBuffer[AttributeData] = new AccessCountingListBuffer[AttributeData]()
   val attributeDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  var parentRelationDataBuffer: ListBuffer[ParentRelationData] = new ListBuffer[ParentRelationData]()
+  var parentRelationDataBuffer: AccessCountingListBuffer[ParentRelationData] = new AccessCountingListBuffer[ParentRelationData]()
   val parentRelationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
-  var associationDataBuffer: ListBuffer[AssociationData] = new ListBuffer[AssociationData]()
+  var associationDataBuffer: AccessCountingListBuffer[AssociationData] = new AccessCountingListBuffer[AssociationData]()
   val associationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 }

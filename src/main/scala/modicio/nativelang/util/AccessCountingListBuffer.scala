@@ -19,10 +19,7 @@ package modicio.nativelang.util
 import scala.collection.mutable.ListBuffer
 
 
-class AccessCountingListBuffer[T] {
-  private val internalBuffer = new ListBuffer[T]()
-  private var readCount = 0
-  private var writeCount = 0
+class AccessCountingListBuffer[T](private val internalBuffer: ListBuffer[T] = new ListBuffer[T], private var readCount: Int = 0, private var writeCount: Int = 0) {
 
   def getReadCount: Int = readCount
   def getWriteCount: Int = writeCount
@@ -79,5 +76,18 @@ class AccessCountingListBuffer[T] {
   def groupMapReduce[K, B](key: T => K)(f: T => B)(reduce: (B, B) => B): Map[K, B] = {
     readCount += 1
     internalBuffer.groupMapReduce(key)(f)(reduce)
+  }
+
+  def remove(idx: Int): T = {
+    writeCount += 1
+    internalBuffer.remove(idx)
+  }
+
+  override def clone(): AccessCountingListBuffer[T] = {
+    new AccessCountingListBuffer[T](internalBuffer.clone(), readCount, writeCount)
+  }
+
+  def toSet(): Set[T] = {
+    internalBuffer.toSet
   }
 }

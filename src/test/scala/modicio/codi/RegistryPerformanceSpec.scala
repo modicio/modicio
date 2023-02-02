@@ -50,7 +50,9 @@ class RegistryPerformanceSpec extends FixtureIntegrationSpec {
           todoInstance2.commit
           todoInstance2.assignDeepValue("Title", "Todo2")
           todoInstance2.commit
-          // TODO: Count number of operations
+
+          fixture.registry.writeAccessCounts("RegistryPerformanceSpec", "") //TODO: Set path
+
           1 should be(1)
         }
       )

@@ -20,8 +20,11 @@ import modicio.core.util.IdentityProvider
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
 import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
 
+import java.io.{BufferedWriter, FileWriter}
+import scala.collection.immutable.HashMap
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success}
+import scala.reflect.io.File
+import scala.util.{Failure, Success, Try}
 
 /**
  * Non-persistent implementation of the [[AbstractPersistentRegistry]] simulating database behaviour via
@@ -33,6 +36,49 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
                                 (implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(typeFactory, instanceFactory)(executionContext) {
 
+  def getAccessCounts(): Map[String, Map[String, Int]] = {
+    core.modelElementDataLock.readLock().lock()
+    core.instanceDataLock.readLock().lock()
+    core.ruleDataLock.readLock().lock()
+    core.attributeDataLock.readLock().lock()
+    core.parentRelationDataLock.readLock().lock()
+    core.associationDataLock.readLock().lock()
+
+    try {
+      HashMap[String, Map[String, Int]](
+        "ModelElementData" -> HashMap[String, Int]("ReadCount" -> core.modelElementDataBuffer.getReadCount, "WriteCount" -> core.modelElementDataBuffer.getWriteCount),
+        "InstanceData" -> HashMap[String, Int]("ReadCount" -> core.instanceDataBuffer.getReadCount, "WriteCount" -> core.instanceDataBuffer.getWriteCount),
+        "RuleData" -> HashMap[String, Int]("ReadCount" -> core.ruleDataBuffer.getReadCount, "WriteCount" -> core.ruleDataBuffer.getWriteCount),
+        "AttributeData" -> HashMap[String, Int]("ReadCount" -> core.attributeDataBuffer.getReadCount, "WriteCount" -> core.attributeDataBuffer.getWriteCount),
+        "ParentRelationData" -> HashMap[String, Int]("ReadCount" -> core.parentRelationDataBuffer.getReadCount, "WriteCount" -> core.parentRelationDataBuffer.getWriteCount),
+        "AssociationInstanceData" -> HashMap[String, Int]("ReadCount" -> core.associationDataBuffer.getReadCount, "WriteCount" -> core.associationDataBuffer.getWriteCount))
+    } finally {
+      core.modelElementDataLock.readLock().unlock()
+      core.instanceDataLock.readLock().unlock()
+      core.ruleDataLock.readLock().unlock()
+      core.attributeDataLock.readLock().unlock()
+      core.parentRelationDataLock.readLock().unlock()
+      core.associationDataLock.readLock().unlock()
+    }
+  }
+
+  def writeAccessCounts(fileName: String, path: String = ""): Try[Unit] = {
+    Try(new BufferedWriter(new FileWriter(path + "/" + fileName + ".csv"))).flatMap((writer: BufferedWriter) => {
+      Try {
+        writer.write("DataType, ReadCount, WriteCount\n")
+        for ((buffer, values) <- getAccessCounts()) {
+          writer.write(s"${buffer}, ${values.getOrElse("ReadCount", 0)}, ${values.getOrElse("WriteCount", 0)}\n")
+        }
+        writer.close()
+      } match {
+        case f@Failure(_) =>
+          Try(writer.close()).recoverWith {
+            case _ => f
+          }
+        case success => success
+      }
+    })
+  }
 
   /*
     #########################################################################
