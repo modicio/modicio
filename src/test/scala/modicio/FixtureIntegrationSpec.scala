@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel
+ * Copyright 2022 Karl Kegel, Johannes Gröschel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package modicio.nativelang.defaults.api
 
-import modicio.core.api.RuleJ
-import modicio.verification.api.DefinitionVerifierJ
+package modicio
 
-import java.util
+import org.scalatest.FutureOutcome
+import org.scalatest.flatspec.FixtureAsyncFlatSpec
+import org.scalatest.matchers.should
 
-class SimpleDefinitionVerifierJ extends DefinitionVerifierJ {
-  override def verifyJ(rules: util.Set[RuleJ]): Boolean = true
+class FixtureIntegrationSpec extends FixtureAsyncFlatSpec with should.Matchers{
+  type FixtureParam = VolatilePersistentRegistryFixture
+
+  override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
+    val theFixture = new FixtureParam()
+
+    complete {
+      super.withFixture(test.toNoArgAsyncTest(theFixture))
+    } lastly {
+
+    }
+  }
 }
+
