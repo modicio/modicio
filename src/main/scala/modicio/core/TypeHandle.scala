@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.rules.Slot
+import modicio.core.rules.{ParentRelationRule, Slot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -56,6 +56,16 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
   def commit(importMode: Boolean = false): Future[Any] = modelElement.commit(importMode)
 
   def iterator: TypeIterator = new TypeIterator(modelElement)
+
+  def getTypeClosure: Set[String] = modelElement.getTypeClosure
+
+  /**
+   * <p> Get the direct parent relations (extensions) of a [[ModelElement]].
+   * <p> Note that indirections are not covered! If the [[ModelElement]] is unfolded, please use [[ModelElement.getTypeClosure]] instead.
+   *
+   * @return Set[ParentRelationRule] - direct parent relations
+   */
+  def getParentRelations: Set[ParentRelationRule] = modelElement.definition.getParentRelationRules
 
   def applyRule(rule: Rule): Unit = {
     if (!static || importMode) {

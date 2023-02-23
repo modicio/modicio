@@ -504,6 +504,8 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     })
   }
 
+  override def getRootOf(instance: DeepInstance): Future[DeepInstance] = ???
+
   override final def getAll(typeName: String): Future[Set[DeepInstance]] = {
     fetchInstanceDataOfType(typeName) flatMap (instanceDataSet =>
       Future.sequence(instanceDataSet.map(
