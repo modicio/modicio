@@ -207,6 +207,16 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     Future.successful(instanceRegistry.toSet.filter(_._2.getTypeHandle.getTypeName == typeName).map(_._2))
   }
 
+
+  override def getRootOf(instance: DeepInstance): Future[DeepInstance] = {
+    val childOption = instanceRegistry.values.find(_.shape.getParentRelations.map(_.parentInstanceId).contains(instance.instanceId))
+    if(childOption.isEmpty){
+      Future(instance)
+    }else{
+      getRootOf(childOption.get)
+    }
+  }
+
   override def setInstance(deepInstance: DeepInstance): Future[Any] = {
     setType(deepInstance.getTypeHandle) map (_ => instanceRegistry.addOne(deepInstance.getInstanceId, deepInstance))
   }

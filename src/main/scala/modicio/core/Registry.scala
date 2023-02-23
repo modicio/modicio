@@ -50,6 +50,8 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def getVariantMap: Future[Map[(Long, String), Int]]
 
+  def getRootOf(instance: DeepInstance): Future[DeepInstance]
+
   /**
    *
    * @param name
@@ -124,6 +126,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   def autoRemove(instanceId: String): Future[Any]
 
   def get(instanceId: String): Future[Option[DeepInstance]]
+
   def getAll(typeName: String): Future[Set[DeepInstance]]
 
   def setInstance(deepInstance: DeepInstance): Future[Any]

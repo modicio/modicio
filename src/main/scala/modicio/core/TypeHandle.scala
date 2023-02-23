@@ -57,6 +57,8 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
   def iterator: TypeIterator = new TypeIterator(modelElement)
 
+  def getTypeClosure: Set[String] = modelElement.getTypeClosure
+
   def applyRule(rule: Rule): Unit = {
     if (!static || importMode) {
       modelElement.applyRule(rule)
