@@ -144,7 +144,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @param diff [[IODiff]] containing the [[RuleData]] to add, update and delete
    * @return Future of inserted [[RuleData]] on success.
    */
-  override protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = ???
+  override protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
+    registry.writeRuleData(diff)
+  }
 
   /**
    * Add, Update and Delete [[AttributeData]] as specified by a provided [[IODiff]].
@@ -160,7 +162,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @param diff [[IODiff]] containing the [[AttributeData]] to add, update and delete
    * @return Future of inserted [[AttributeData]] on success.
    */
-  override protected[modicio] def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] = ???
+  override protected[modicio] def writeAttributeData(diff: IODiff[AttributeData]): Future[Set[AttributeData]] = {
+    registry.writeAttributeData(diff)
+  }
 
   /**
    * Add, Update and Delete [[ParentRelationData]] as specified by a provided [[IODiff]].
@@ -176,7 +180,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @param diff [[IODiff]] containing the [[ParentRelationData]] to add, update and delete
    * @return Future of inserted [[ParentRelationData]] on success.
    */
-  override protected[modicio] def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]] = ???
+  override protected[modicio] def writeParentRelationData(diff: IODiff[ParentRelationData]): Future[Set[ParentRelationData]] = {
+    registry.writeParentRelationData(diff)
+  }
 
   /**
    * Add, Update and Delete [[AssociationData]] as specified by a provided [[IODiff]].
@@ -192,7 +198,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @param diff [[IODiff]] containing the [[AssociationData]] to add, update and delete
    * @return Future of inserted [[AssociationData]] on success.
    */
-  override protected[modicio] def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]] = ???
+  override protected[modicio] def writeAssociationData(diff: IODiff[AssociationData]): Future[Set[AssociationData]] = {
+    registry.writeAssociationData(diff)
+  }
 
   /**
    * Add, Update and Delete [[PluginData]] as specified by a provided [[IODiff]].
@@ -208,7 +216,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @param diff [[IODiff]] containing the [[PluginData]] to add, update and delete
    * @return Future of inserted [[PluginData]] on success.
    */
-  override protected[modicio] def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = ???
+  override protected[modicio] def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = {
+    registry.writePluginData(diff)
+  }
 
   /**
    * Remove a [[ModelElementData]] and all associated [[RuleData]] from the storage.
