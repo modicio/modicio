@@ -5,24 +5,26 @@ import modicio.core.util.IODiff
 
 import scala.collection.mutable
 
-class ShapeWrapper(attributes: Set[AttributeData], associations: mutable.Set[AssociationData], parentRelations: Set[ParentRelationData]) {
+class ShapeWrapper(attributes: Set[AttributeData], associations: mutable.Set[AssociationData], parentRelations: Set[ParentRelationData])
+  extends Shape(attributes, associations, parentRelations) {
 
-  val hotShape = new Shape(attributes, associations, parentRelations)
-  val coldShape = new Shape(attributes.map(data => data.copy()), associations.map(data => data.copy()), parentRelations.map(data => data.copy()))
+  private val hotShape = new Shape(attributes, associations, parentRelations)
+  private val coldShape = new Shape(attributes.map(data => data.copy()), associations.map(data => data.copy()), parentRelations.map(data => data.copy()))
 
-  def getAttribute(key: String): Option[AttributeData] = hotShape.getAttribute(key)
+  override def getAttribute(key: String): Option[AttributeData] = hotShape.getAttribute(key)
 
-  def getAttributes: Set[AttributeData] = hotShape.getAttributes
+  override def getAttributes: Set[AttributeData] = hotShape.getAttributes
 
-  def setAttributeValue(key: String, value: String): Boolean = hotShape.setAttributeValue(key, value)
+  override def setAttributeValue(key: String, value: String): Boolean = hotShape.setAttributeValue(key, value)
 
-  def getAssociations: Set[AssociationData] = hotShape.getAssociations
+  override def getAssociations: Set[AssociationData] = hotShape.getAssociations
 
-  def removeAssociation(associationId: Long): Unit = hotShape.removeAssociation(associationId)
+  override def removeAssociation(associationId: Long): Unit = hotShape.removeAssociation(associationId)
 
-  def addAssociation(association: AssociationData): Unit = hotShape.addAssociation(association)
+  override def addAssociation(association: AssociationData): Unit = hotShape.addAssociation(association)
 
-  def getParentRelations: Set[ParentRelationData] = hotShape.getParentRelations
+  override def getParentRelations: Set[ParentRelationData] = hotShape.getParentRelations
+
   def getAttributeDiff(): IODiff[AttributeData] = {
     val add = hotShape.getAttributes.filter(datum => datum.id == 0)
     val changed = mutable.Set[AttributeData]()

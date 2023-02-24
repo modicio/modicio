@@ -64,10 +64,11 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
     fixture.importProjectSetupFromFile("model_deepInstance_01.json") flatMap (_ =>
       for {
         todoInstance <- fixture.instanceFactory.newInstance("Todo")
-        _ <- todoInstance.unfold()
-        _ <- Future(todoInstance.assignDeepValue("Content", "abc"))
-        _ <- Future(todoInstance.assignDeepValue("Name", "abc"))
-        _ <- todoInstance.commit
+        todoOption <- fixture.registry.get(todoInstance.instanceId)
+        _ <- todoOption.get.unfold()
+        _ <- Future(todoOption.get.assignDeepValue("Content", "abc"))
+        _ <- Future(todoOption.get.assignDeepValue("Name", "abc"))
+        _ <- todoOption.get.commit
         td2 <- fixture.registry.get(todoInstance.instanceId)
         _ <- td2.get.unfold()
       } yield {

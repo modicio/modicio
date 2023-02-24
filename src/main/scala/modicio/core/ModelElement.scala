@@ -41,7 +41,7 @@ import scala.concurrent.Future
 class ModelElement(val name: String, val identity: String, val isTemplate: Boolean, protected var timeIdentity: TimeIdentity) {
 
 
-  private final var definitionOption: Option[Definition] = None
+  private final var definitionOption: Option[DefinitionWrapper] = None
   private final var registryOption: Option[Registry] = None
 
   protected final var modelVerifier: Option[ModelVerifier] = None
@@ -336,7 +336,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
    *
    * @param definition the Definition of this ModelElement
    */
-  private[modicio] final def setDefinition(definition: Definition): Unit = {
+  private[modicio] final def setDefinition(definition: DefinitionWrapper): Unit = {
     definitionOption = Some(definition)
     definition.registerObserver(_definitionObserver)
   }
@@ -346,7 +346,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
    *
    * @return Definition if available or Exception
    */
-  private[modicio] def definition: Definition = definitionOption.getOrElse(throw new Exception("undefined definition"))
+  private[modicio] def definition: DefinitionWrapper = definitionOption.getOrElse(throw new Exception("undefined definition"))
 
   /**
    * <p> Protected [[Definition Definition]] getter.
@@ -355,7 +355,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
    * @return Definition if available or Exception
    */
   @Deprecated
-  protected def getDefinition: Definition = definition
+  protected def getDefinition: DefinitionWrapper = definition
 
   /**
    * <p> Package-private setter for [[Registry Registry]].

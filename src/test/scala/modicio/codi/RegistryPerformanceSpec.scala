@@ -51,7 +51,7 @@ class RegistryPerformanceSpec extends FixtureIntegrationSpec {
           todoInstance2.assignDeepValue("Title", "Todo2")
           todoInstance2.commit
 
-          fixture.registry.writeAccessCounts("RegistryPerformanceSpecWithUpdate", "C:\\Users\\jgroe") //TODO: Set path
+          fixture.registry.writeAccessCounts("RegistryPerformanceSpec")
 
           1 should be(1)
         }

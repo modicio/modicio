@@ -427,13 +427,12 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   }
 
   override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Unit] = {
+    val modelElement = typeHandle.getModelElement
+    val (modelElementData, ruleData, pluginData) = modelElement.toData
     for{
-      oldRuleData <- fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
-      oldPluginData <- fetchPluginData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
-      (modelElementData, ruleData, pluginData) = typeHandle.getModelElement.toData
-      _ <- writeRuleData(applyRules(oldRuleData, ruleData))
+      _ <- writeRuleData(modelElement.definition.getRuleDiff(modelElement.name, modelElement.identity))
       _ <- writeModelElementData(modelElementData)
-      _ <- writePluginData(applyPlugins(oldPluginData, pluginData))
+      _ <- writePluginData(modelElement.definition.getPluginDiff(modelElement))
     } yield {}
   }
 
