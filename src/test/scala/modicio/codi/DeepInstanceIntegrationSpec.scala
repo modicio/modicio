@@ -143,4 +143,27 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
       })
   }}
 
+  "Changing the value of an Attribute" must "not cause an error" in { fixture => {
+    fixture.importProjectSetupFromFile("model_01.json") flatMap(_ =>
+      for {
+        todoInstance <- fixture.instanceFactory.newInstance("Todo")
+        todoOption <- fixture.registry.get(todoInstance.instanceId)
+        _ <- todoOption.get.unfold()
+        _ <- Future(todoOption.get.assignDeepValue("Content", "foo"))
+        _ <- todoOption.get.commit
+        todoOption <- fixture.registry.get(todoInstance.instanceId)
+        _ <- todoOption.get.unfold()
+        _ <- Future(todoOption.get.assignDeepValue("Content", "bar"))
+        _ <- Future.successful()
+        _ <- todoOption.get.commit
+        todoOption <- fixture.registry.get(todoInstance.instanceId)
+        _ <- todoOption.get.unfold()
+      } yield {
+        todoInstance
+        val m = todoOption.get.getDeepAttributes
+        todoOption.get.deepValue("Content").get should be("bar")
+      })
+    }
+  }
+
 }

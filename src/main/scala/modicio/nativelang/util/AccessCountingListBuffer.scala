@@ -68,9 +68,9 @@ class AccessCountingListBuffer[T](private val internalBuffer: ListBuffer[T] = ne
     this
   }
 
-  def map[B](f: T => B): ListBuffer[B] = {
+  def map[B](f: T => B): AccessCountingListBuffer[B] = {
     readCount += 1
-    internalBuffer.map(f)
+    new AccessCountingListBuffer(internalBuffer.map(f), readCount, writeCount)
   }
 
   def groupMapReduce[K, B](key: T => K)(f: T => B)(reduce: (B, B) => B): Map[K, B] = {
@@ -84,10 +84,16 @@ class AccessCountingListBuffer[T](private val internalBuffer: ListBuffer[T] = ne
   }
 
   override def clone(): AccessCountingListBuffer[T] = {
+    readCount += 1
     new AccessCountingListBuffer[T](internalBuffer.clone(), readCount, writeCount)
   }
 
   def toSet(): Set[T] = {
+    readCount += 1
     internalBuffer.toSet
+  }
+
+  def toListBuffer(): ListBuffer[T] = {
+    return internalBuffer
   }
 }

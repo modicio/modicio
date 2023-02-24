@@ -16,14 +16,13 @@
 
 package modicio.nativelang.defaults
 
-import modicio.core.util.IdentityProvider
+import modicio.core.util.{IODiff, IdentityProvider}
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
 import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
 
 import java.io.{BufferedWriter, FileWriter}
 import scala.collection.immutable.HashMap
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.io.File
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -43,6 +42,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
     core.attributeDataLock.readLock().lock()
     core.parentRelationDataLock.readLock().lock()
     core.associationDataLock.readLock().lock()
+    core.pluginDataLock.readLock().lock()
 
     try {
       HashMap[String, Map[String, Int]](
@@ -51,7 +51,8 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
         "RuleData" -> HashMap[String, Int]("ReadCount" -> core.ruleDataBuffer.getReadCount, "WriteCount" -> core.ruleDataBuffer.getWriteCount),
         "AttributeData" -> HashMap[String, Int]("ReadCount" -> core.attributeDataBuffer.getReadCount, "WriteCount" -> core.attributeDataBuffer.getWriteCount),
         "ParentRelationData" -> HashMap[String, Int]("ReadCount" -> core.parentRelationDataBuffer.getReadCount, "WriteCount" -> core.parentRelationDataBuffer.getWriteCount),
-        "AssociationInstanceData" -> HashMap[String, Int]("ReadCount" -> core.associationDataBuffer.getReadCount, "WriteCount" -> core.associationDataBuffer.getWriteCount))
+        "AssociationInstanceData" -> HashMap[String, Int]("ReadCount" -> core.associationDataBuffer.getReadCount, "WriteCount" -> core.associationDataBuffer.getWriteCount),
+        "PluginData" -> HashMap[String, Int]("ReadCount" -> core.pluginDataBuffer.getReadCount, "WriteCount" -> core.pluginDataBuffer.getWriteCount))
     } finally {
       core.modelElementDataLock.readLock().unlock()
       core.instanceDataLock.readLock().unlock()
@@ -59,10 +60,11 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       core.attributeDataLock.readLock().unlock()
       core.parentRelationDataLock.readLock().unlock()
       core.associationDataLock.readLock().unlock()
+      core.pluginDataLock.readLock().unlock()
     }
   }
 
-  def writeAccessCounts(fileName: String, path: String = ""): Try[Unit] = {
+  def writeAccessCounts(fileName: String, path: String = "."): Try[Unit] = {
     Try(new BufferedWriter(new FileWriter(path + "/" + fileName + ".csv"))).flatMap((writer: BufferedWriter) => {
       Try {
         writer.write("DataType, ReadCount, WriteCount\n")
@@ -101,7 +103,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.modelElementDataBuffer.find((datum) => datum.name.equals(name) && datum.identity.equals(identity))
-        data
+        if (!data.isEmpty) Option(data.get.copy()) else None
       } catch {
         case e: Exception => throw e
       } finally {
@@ -122,7 +124,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.modelElementDataBuffer.filter((datum) => datum.identity.equals(identity))
-        data.toSet
+        data.toSet.map[ModelElementData]((_datum) => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -144,7 +146,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.instanceDataBuffer.filter((datum) => datum.instanceOf.equals(typeName))
-       data.toSet
+        data.toSet.map[InstanceData](_datum => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -165,7 +167,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.instanceDataBuffer.find((datum) => datum.instanceId.equals(instanceId))
-        data
+        if (!data.isEmpty) Option(data.get.copy()) else None
       } catch {
         case e: Exception => throw e
       } finally {
@@ -189,7 +191,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.ruleDataBuffer.filter((datum) => datum.modelElementName.equals(modelElementName) && datum.identity.equals(identity))
-        data.toSet
+        data.toSet.map[RuleData](_datum => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -210,7 +212,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.attributeDataBuffer.filter((datum) => datum.instanceId.equals(instanceId))
-        data.toSet
+        data.toSet.map[AttributeData](_datum => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -231,7 +233,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.parentRelationDataBuffer.filter((datum) => datum.instanceId.equals(instanceId))
-        data.toSet
+        data.toSet.map[ParentRelationData](_datum => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -252,7 +254,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.associationDataBuffer.filter((datum) => datum.instanceId.equals(instanceId))
-        data.toSet
+        data.toSet.map[AssociationData](_datum => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -273,18 +275,20 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
   override protected[modicio] def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
     Future({
       core.modelElementDataLock.writeLock().lock()
-      val _modelElementDataBuffer = core.modelElementDataBuffer.clone()
+      val _modelElementDataBuffer = core.modelElementDataBuffer.map(_datum => _datum.copy())
+
+      val inputData = modelElementData.copy()
 
       try {
-        val datum = core.modelElementDataBuffer.zipWithIndex.find((datum) => datum._1.name.equals(modelElementData.name) && datum._1.identity.equals(modelElementData.identity))
+        val datum = core.modelElementDataBuffer.zipWithIndex.find((datum) => datum._1.name.equals(inputData.name) && datum._1.identity.equals(inputData.identity))
         datum match {
           case Some((_, index)) => {
-            core.modelElementDataBuffer.update(index, modelElementData)
-            modelElementData
+            core.modelElementDataBuffer.update(index, inputData)
+            inputData.copy()
           }
           case None => {
-            core.modelElementDataBuffer += modelElementData
-            modelElementData
+            core.modelElementDataBuffer += inputData
+            inputData.copy()
           }
         }
       } catch {
@@ -309,18 +313,20 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
   override protected[modicio] def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = {
     Future({
       core.instanceDataLock.writeLock().lock()
-      val _instanceDataBuffer = core.instanceDataBuffer.clone()
+      val _instanceDataBuffer = core.instanceDataBuffer.map(_datum => _datum.copy())
+
+      val inputData = instanceData.copy()
 
       try {
-        val datum = core.instanceDataBuffer.zipWithIndex.find((datum) => datum._1.instanceId.equals(instanceData.instanceId))
+        val datum = core.instanceDataBuffer.zipWithIndex.find((datum) => datum._1.instanceId.equals(inputData.instanceId))
         datum match {
           case Some((_, index)) => {
-            core.instanceDataBuffer.update(index, instanceData)
-            instanceData
+            core.instanceDataBuffer.update(index, inputData)
+            inputData.copy()
           }
           case None => {
-            core.instanceDataBuffer += instanceData
-            instanceData
+            core.instanceDataBuffer += inputData
+            inputData.copy()
           }
         }
       } catch {
@@ -406,13 +412,13 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     Future({
       core.ruleDataLock.writeLock().lock()
-      val _ruleDataBuffer = core.ruleDataBuffer.clone()
+      val _ruleDataBuffer = core.ruleDataBuffer.map(_datum => _datum.copy())
 
       try {
-        val adds = diff.toAdd.map((datum) => addRuleData((datum)))
-        val updates = diff.toUpdate.map((datum) => updateRuleData(datum))
-        val deletes = diff.toDelete.map((datum) => removeRuleData(datum))
-        adds
+        val adds = diff.toAdd.map((datum) => addRuleData((datum.copy())))
+        val updates = diff.toUpdate.map((datum) => updateRuleData(datum.copy()))
+        val deletes = diff.toDelete.map((datum) => removeRuleData(datum.copy()))
+        adds.map(_datum => _datum.copy())
       } catch {
         case e: Exception => {
           core.ruleDataBuffer = _ruleDataBuffer
@@ -452,7 +458,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addAttributeData(datum: AttributeData): AttributeData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        val fDatum = AttributeData(core.attributeDataBuffer.map((datum) => datum.id).addOne(0).max + 1, datum.instanceId, datum.key, datum.value, datum.isFinal)
+        val fDatum = AttributeData(core.attributeDataBuffer.toListBuffer().map((datum) => datum.id).addOne(0).max + 1, datum.instanceId, datum.key, datum.value, datum.isFinal)
         core.attributeDataBuffer += fDatum
         fDatum
       } else {
@@ -496,13 +502,13 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     Future({
       core.attributeDataLock.writeLock().lock()
-      val _attributeDataBuffer = core.attributeDataBuffer.clone()
+      val _attributeDataBuffer = core.attributeDataBuffer.map(_datum => _datum.copy())
 
       try {
-        val adds = diff.toAdd.map((datum) => addAttributeData(datum))
-        val updates = diff.toUpdate.map((datum) => updateAttributeData(datum))
-        val deletes = diff.toDelete.map((datum) => removeAttributeData(datum))
-        adds
+        val adds = diff.toAdd.map((datum) => addAttributeData(datum.copy()))
+        val updates = diff.toUpdate.map((datum) => updateAttributeData(datum.copy()))
+        val deletes = diff.toDelete.map((datum) => removeAttributeData(datum.copy()))
+        adds.map(_datum => _datum.copy())
       } catch {
         case e: Exception => {
           core.attributeDataBuffer = _attributeDataBuffer
@@ -542,7 +548,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addParentRelationData(datum: ParentRelationData): ParentRelationData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        val fDatum = ParentRelationData(core.parentRelationDataBuffer.map((datum) => datum.id).addOne(0).max + 1,datum.instanceId, datum.parentInstanceId)
+        val fDatum = ParentRelationData(core.parentRelationDataBuffer.toListBuffer().map((datum) => datum.id).addOne(0).max + 1,datum.instanceId, datum.parentInstanceId)
         core.parentRelationDataBuffer += fDatum
         fDatum
       } else {
@@ -572,7 +578,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def updateParentRelationData(datum: ParentRelationData): ParentRelationData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        throw new IllegalArgumentException("No id provided for removing ParentRelationData!")
+        throw new IllegalArgumentException("No id provided for updating ParentRelationData!")
       } else {
         val _index = findParentRelationDataIndex(datum.id)
         if (_index < 0) {
@@ -586,13 +592,13 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     Future({
       core.parentRelationDataLock.writeLock().lock()
-      val _parentRelationDataBuffer = core.parentRelationDataBuffer.clone()
+      val _parentRelationDataBuffer = core.parentRelationDataBuffer.map(_datum => _datum.copy())
 
       try {
-        val adds = diff.toAdd.map((datum) => addParentRelationData(datum))
-        val updates = diff.toUpdate.map((datum) => updateParentRelationData(datum))
-        val deletes =diff.toDelete.map((datum) => removeParentRelationData(datum))
-        adds
+        val adds = diff.toAdd.map((datum) => addParentRelationData(datum.copy()))
+        val updates = diff.toUpdate.map((datum) => updateParentRelationData(datum.copy()))
+        val deletes =diff.toDelete.map((datum) => removeParentRelationData(datum.copy()))
+        adds.map(_datum => _datum.copy())
       } catch {
         case e: Exception => {
           core.parentRelationDataBuffer = _parentRelationDataBuffer
@@ -632,7 +638,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def addAssociationData(datum: AssociationData): AssociationData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        val fDatum = AssociationData(core.associationDataBuffer.map((datum) => datum.id).addOne(0).max + 1, datum.byRelation, datum.instanceId, datum.targetInstanceId, datum.isFinal)
+        val fDatum = AssociationData(core.associationDataBuffer.toListBuffer().map((datum) => datum.id).addOne(0).max + 1, datum.byRelation, datum.instanceId, datum.targetInstanceId, datum.isFinal)
         core.associationDataBuffer += fDatum
         fDatum
       } else {
@@ -649,7 +655,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     def removeAssociationData(datum: AssociationData): AssociationData = {
       if (datum.id == 0 || datum.id.isNaN) {
-        throw new IllegalArgumentException("No id provided for removing AttributeData!")
+        throw new IllegalArgumentException("No id provided for removing AssociationData!")
       } else {
         val _index = findAssociationDataIndex(datum.id)
         if (_index < 0) {
@@ -676,13 +682,13 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
     Future({
       core.associationDataLock.writeLock().lock()
-      val _associationDataBuffer = core.associationDataBuffer.clone()
+      val _associationDataBuffer = core.associationDataBuffer.map(_datum => _datum.copy())
 
       try {
-        val adds = diff.toAdd.map((datum) => addAssociationData(datum))
-        val updates = diff.toUpdate.map((datum) => updateAssociationData(datum))
-        val deletes = diff.toDelete.map((datum) => removeAssociationData(datum))
-        adds
+        val adds = diff.toAdd.map((datum) => addAssociationData(datum.copy()))
+        val updates = diff.toUpdate.map((datum) => updateAssociationData(datum.copy()))
+        val deletes = diff.toDelete.map((datum) => removeAssociationData(datum.copy()))
+        adds.map(_datum => _datum.copy())
       } catch {
         case e: Exception => {
           core.associationDataBuffer = _associationDataBuffer
@@ -711,8 +717,8 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       core.modelElementDataLock.writeLock().lock()
       core.ruleDataLock.writeLock().lock()
 
-      val _modelElementDataBuffer = core.modelElementDataBuffer.clone()
-      val _ruleDataBuffer = core.ruleDataBuffer.clone()
+      val _modelElementDataBuffer = core.modelElementDataBuffer.map(_datum => _datum.copy())
+      val _ruleDataBuffer = core.ruleDataBuffer.map(_datum => _datum.copy())
 
       try {
         core.modelElementDataBuffer.filterInPlace((datum) => !datum.name.equals(modelElementName) || !datum.identity.equals(identity))
@@ -751,10 +757,10 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       core.parentRelationDataLock.writeLock().lock()
       core.associationDataLock.writeLock().lock()
 
-      val _instanceDataBuffer = core.instanceDataBuffer.clone()
-      val _attributeDataBuffer = core.attributeDataBuffer.clone()
-      val _parentRelationDataBuffer = core.parentRelationDataBuffer.clone()
-      val _associationDataBuffer = core.associationDataBuffer.clone()
+      val _instanceDataBuffer = core.instanceDataBuffer.map(_datum => _datum.copy())
+      val _attributeDataBuffer = core.attributeDataBuffer.map(_datum => _datum.copy())
+      val _parentRelationDataBuffer = core.parentRelationDataBuffer.map(_datum => _datum.copy())
+      val _associationDataBuffer = core.associationDataBuffer.map(_datum => _datum.copy())
 
       try {
         core.instanceDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
@@ -785,7 +791,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
 
       try {
         val data = core.instanceDataBuffer.filter((datum) => datum.identity.startsWith(identityPrefix) && datum.instanceOf.equals(typeName))
-        data.toSet
+        data.toSet.map[InstanceData](_datum => _datum.copy())
       } catch {
         case e: Exception => throw e
       } finally {
@@ -810,7 +816,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       core.modelElementDataLock.readLock()
 
       try {
-        val data = core.modelElementDataBuffer.clone()
+        val data = core.modelElementDataBuffer.toListBuffer().map(_datum => _datum.copy())
 
         // Handle easy case first
         if (query == "") {
@@ -852,7 +858,7 @@ override protected[modicio] def queryVariantsOfInstances(): Future[Seq[(Long, St
     try {
       val options = core.instanceDataBuffer.map((datum) => core.modelElementDataBuffer.find((element) => element.name.equals(datum.instanceOf) && element.identity.equals(datum.identity)))
       val data = options.filter((option) => option.isEmpty).map((option) => option.get).map((datum) => (datum.variantTime, datum.variantId))
-      data.toSeq
+      data.map(_datum => _datum.copy()).toSeq
     } catch {
       case e: Exception => throw e
     } finally {
@@ -873,7 +879,7 @@ override protected[modicio] def queryVariantsOfTypes(): Future[Seq[(Long, String
 
     try {
       val data = core.modelElementDataBuffer.map((datum) => (datum.variantTime, datum.variantId)).toSet
-      data.toSeq
+      data.map(_datum => _datum.copy()).toSeq
     } catch {
       case e: Exception => throw e
     } finally {
@@ -916,8 +922,18 @@ override protected[modicio] def queryVariantOccurrencesAndCount(): Future[Map[(L
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
   override protected[modicio] def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = {
-    //FIXME
-    Future(Set())
+    Future({
+      core.pluginDataLock.readLock().lock()
+
+      try {
+        val data = core.pluginDataBuffer.filter((datum) => datum.modelElementName == modelElementName && datum.identity == identity)
+        data.toSet.map[PluginData](_datum => _datum.copy())
+      } catch {
+        case e: Exception => throw e
+      } finally {
+        core.pluginDataLock.readLock().unlock()
+      }
+    })
   }
 
   /**
@@ -925,7 +941,7 @@ override protected[modicio] def queryVariantOccurrencesAndCount(): Future[Map[(L
    * <p> [[IODiff.toDelete]] must be removed from the storage
    * <p> [[IODiff.toAdd]] must be inserted in the storage.
    * <p> [[IODiff.toUpdate]] must be updated in the storage.
-   * <p> [[AssociationData]] has the [[PluginData.id]] as its primary key. This value can be empty or zero. In those cases,
+   * <p> [[PluginData]] has the [[PluginData.id]] as its primary key. This value can be empty or zero. In those cases,
    * the storage must assign globally unique values (UUIDs). Inserted [[PluginData]] with new ids must be returned on success.
    * <p> <strong>All operations part of the IODiff must be performed transactional! If one sub-operation fails, all
    * other operations must not be performed or rolled back.</strong>
@@ -935,7 +951,79 @@ override protected[modicio] def queryVariantOccurrencesAndCount(): Future[Map[(L
    * @return Future of inserted [[PluginData]] on success.
    */
   override protected[modicio] def writePluginData(diff: IODiff[PluginData]): Future[Set[PluginData]] = {
-    //FIXME
+    def findPluginDataIndex(id: String): Int = {
+      val data = core.pluginDataBuffer.zipWithIndex.filter((datum) => datum._1.id == id).map(datumWithIndex => datumWithIndex._2)
+      if (data.isEmpty) {
+        -1
+      } else if (data.size == 1) {
+        data.head
+      } else {
+        throw new IllegalStateException("Found more than one PluginData with the requested id!")
+      }
+    }
+
+    def addPluginData(datum: PluginData): PluginData = {
+      if (datum.id == "") {
+        val fDatum = PluginData(IdentityProvider.newRandomId(), datum.description, datum.resolver, datum.content, datum.modelElementName, datum.identity)
+        core.pluginDataBuffer += fDatum
+        fDatum
+      } else {
+        val _index = findPluginDataIndex(datum.id)
+        if (_index < 0) {
+          val fDatum = datum
+          core.pluginDataBuffer += fDatum
+          fDatum
+        } else {
+          throw new IllegalArgumentException("Id already exists!")
+        }
+      }
+    }
+
+    def removePluginData(datum: PluginData): PluginData = {
+      if (datum.id == "") {
+        throw new IllegalArgumentException("No id provided for removing PluginData!")
+      } else {
+        val _index = findPluginDataIndex(datum.id)
+        if (_index < 0) {
+          throw new NoSuchElementException("Couldn't find element!")
+        } else {
+          core.pluginDataBuffer.remove(_index)
+        }
+      }
+    }
+
+    def updatePluginData(datum: PluginData): PluginData = {
+      if (datum.id == "") {
+        throw new IllegalArgumentException("No id provided for updating PluginData!")
+      } else {
+        val _index = findPluginDataIndex(datum.id)
+        if (_index < 0) {
+          throw new NoSuchElementException("Couldn't find element!")
+        } else {
+          core.pluginDataBuffer.update(_index, datum)
+          datum
+        }
+      }
+    }
+
+    Future({
+      core.pluginDataLock.writeLock().lock()
+      val _pluginDataBuffer = core.pluginDataBuffer.map(_datum => _datum.copy())
+
+      try {
+        val adds = diff.toAdd.map((datum) => addPluginData(datum.copy()))
+        val updates = diff.toUpdate.map((datum) => updatePluginData(datum.copy()))
+        val deletes = diff.toDelete.map((datum) => removePluginData(datum.copy()))
+        adds.map(_datum => _datum.copy())
+      } catch {
+        case e: Exception => {
+          core.pluginDataBuffer = _pluginDataBuffer
+          throw e
+        }
+      } finally {
+        core.pluginDataLock.writeLock().unlock()
+      }
+    })
     Future(Set())
   }
 }

@@ -16,8 +16,8 @@
 package modicio.nativelang.defaults
 
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
-import modicio.core.util.IdentityProvider
-import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, TimeIdentity, TypeFactory, TypeHandle}
+import modicio.core.util.{IdentityProvider, IODiff}
+import modicio.core.{DeepInstance, ImmutableShape, InstanceFactory, ModelElement, Registry, Shape, ShapeWrapper, TimeIdentity, TypeFactory, TypeHandle}
 
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,8 +25,6 @@ import scala.concurrent.{ExecutionContext, Future}
 abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory)
                                          (implicit executionContext: ExecutionContext)
   extends Registry(typeFactory, instanceFactory) {
-
-  protected case class IODiff[T](toDelete: Set[T], toAdd: Set[T], toUpdate: Set[T])
 
   /*
    * ***********************************************************
@@ -492,7 +490,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
           if(typeOption.isDefined){
             val associations = mutable.Set[AssociationData]()
             associations.addAll(associationData)
-            val shape = new Shape(attributeData,  associations, parentRelationData)
+            val shape = new ShapeWrapper(attributeData,  associations, parentRelationData)
             instanceFactory.loadInstance(instanceData, shape, typeOption.get)
           }else{
             None
@@ -517,26 +515,16 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @return
    */
   override final def setInstance(deepInstance: DeepInstance): Future[Unit] = {
-    val data = deepInstance.toData
-    val instanceData = data.instanceData
-    val attributeData = data.attributes
-    val associationData = data.associations
-    val parentRelationData = data.parentRelations
-    get(deepInstance.getInstanceId) flatMap (oldInstanceOption => {
-      val oldData = {
-        if(oldInstanceOption.isDefined){
-          oldInstanceOption.get.toData
-        }else{
-          ImmutableShape(null, Set[AttributeData](), Set[AssociationData](), Set[ParentRelationData]())
-        }
-      }
-      for {
-        _ <- writeInstanceData(instanceData)
-        _ <- writeParentRelationData(applyUpdate[ParentRelationData](oldData.parentRelations, parentRelationData))
-        _ <- writeAssociationData(applyUpdate[AssociationData](oldData.associations, associationData))
-        _ <- writeAttributeData(applyUpdate[AttributeData](oldData.attributes, attributeData))
-      } yield {}
-    })
+    val instanceData = deepInstance.toData.instanceData
+    val attributeDiff = deepInstance.shape.getAttributeDiff()
+    val associationDiff = deepInstance.shape.getAssociationDiff()
+    val parentRelationDiff = deepInstance.shape.getParentRelationDiff()
+    for {
+      _ <- writeInstanceData(instanceData)
+      _ <- writeParentRelationData(parentRelationDiff)
+      _ <- writeAssociationData(associationDiff)
+      _ <- writeAttributeData(attributeDiff)
+    } yield {}
   }
 
   /**
@@ -596,10 +584,6 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     applyUpdate(old, in)
   }
 
-  type GenericData = Any{
-    val id: Long
-  }
-
   private final def applyPlugins(old: Set[PluginData], in: Set[PluginData]): IODiff[PluginData] = {
     applyUpdate(old, in)
   }
@@ -613,6 +597,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * @return
    */
   private final def applyUpdate[GenericData](old: Set[GenericData], in: Set[GenericData]): IODiff[GenericData] = {
+    //TODO: Implement Join-Intersect or fix differently
     val toUpdate = in.intersect(old)
     val toAdd = in.diff(toUpdate)
     val toDelete = old.diff(toUpdate)

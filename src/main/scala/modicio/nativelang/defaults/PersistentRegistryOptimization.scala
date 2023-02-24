@@ -1,6 +1,7 @@
 package modicio.nativelang.defaults
 
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
+import modicio.core.util.IODiff
 
 import scala.concurrent.{ExecutionContext, Future}
 

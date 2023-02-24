@@ -50,7 +50,7 @@ import scala.concurrent.Future
  */
 class DeepInstance(private[modicio] val instanceId: String,
                    private[modicio] val identity: String,
-                   private[modicio] val shape: Shape,
+                   private[modicio] val shape: ShapeWrapper,
                    private[modicio] val typeHandle: TypeHandle,
                    private[modicio] val registry: Registry) {
 
@@ -317,13 +317,7 @@ class DeepInstance(private[modicio] val instanceId: String,
    * @return Boolean - false if attribute not found
    */
   def assignValue(key: String, value: String): Boolean = {
-    val attributeOption = shape.getAttribute(key)
-    if (attributeOption.isDefined) {
-      attributeOption.get.value = value
-      true
-    } else {
-      false
-    }
+    shape.setAttributeValue(key, value)
   }
 
   /**

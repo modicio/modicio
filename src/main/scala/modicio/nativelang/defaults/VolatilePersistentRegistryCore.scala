@@ -16,11 +16,10 @@
 
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, RuleData}
+import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
 import modicio.nativelang.util.AccessCountingListBuffer
 
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import scala.collection.mutable.ListBuffer
 
 /**
  * Helper class for [[VolatilePersistentRegistry]]. Includes all required buffers and locks.
@@ -36,6 +35,7 @@ class VolatilePersistentRegistryCore {
    * 4. attributeDataLock
    * 5. parentRelationDataLock
    * 6. associationDataLock
+   * 7. pluginDataLock
    */
 
   var modelElementDataBuffer: AccessCountingListBuffer[ModelElementData] = new AccessCountingListBuffer[ModelElementData]()
@@ -55,4 +55,7 @@ class VolatilePersistentRegistryCore {
 
   var associationDataBuffer: AccessCountingListBuffer[AssociationData] = new AccessCountingListBuffer[AssociationData]()
   val associationDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
+
+  var pluginDataBuffer: AccessCountingListBuffer[PluginData] = new AccessCountingListBuffer[PluginData]()
+  val pluginDataLock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 }
