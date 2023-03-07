@@ -51,7 +51,7 @@ class RegistryPerformanceSpec extends CachingFixtureIntegrationSpec {
           todoInstance2.assignDeepValue("Title", "Todo2")
           todoInstance2.commit
 
-          fixture.internalRegistry.writeAccessCounts("RegistryPerformanceSpec")
+          fixture.internalRegistry.writeAccessCounts("RegistryPerformanceSpec_optimized")
 
           1 should be(1)
         }

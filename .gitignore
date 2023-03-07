@@ -3,3 +3,5 @@ project/target/
 target/
 .DS_Store
 .bsp
+RegistryPerformanceSpec.csv
+RegistryPerformanceSpec_optimized.csv

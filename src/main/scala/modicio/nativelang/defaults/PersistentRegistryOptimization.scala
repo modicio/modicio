@@ -1,12 +1,14 @@
 package modicio.nativelang.defaults
 
-import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
+import modicio.core.datamappings._
 import modicio.core.util.IODiff
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
 
 class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(registry.typeFactory, registry.instanceFactory)(executionContext) {
+  private val modelElementDataCache = new ListBuffer[ModelElementData]()
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
    *
@@ -15,7 +17,19 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future option of [[ModelElementData]] or None if not found
    */
   override protected[modicio] def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]] = {
-    registry.fetchModelElementData(name, identity)
+    val data = modelElementDataCache.find((datum) => datum.name.equals(name) && datum.identity.equals(identity))
+    if (data.isDefined) {
+      Future(Option(data.get))
+    } else {
+      for {
+        readyData <- registry.fetchModelElementData(name, identity)
+      } yield {
+        if (readyData.isDefined) {
+          modelElementDataCache.addOne(readyData.get)
+        }
+        readyData
+      }
+    }
   }
 
   /**
@@ -25,7 +39,19 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future option of [[ModelElementData]] or None if not found
    */
   override protected[modicio] def fetchModelElementData(identity: String): Future[Set[ModelElementData]] = {
-    registry.fetchModelElementData(identity)
+    val data = modelElementDataCache.filter((datum) => datum.identity.equals(identity))
+    if (data.nonEmpty) {
+      Future(data.toSet)
+    } else {
+      for {
+        data <- registry.fetchModelElementData(identity)
+      } yield {
+        for (d <- data) {
+          if (!modelElementDataCache.contains(d)) modelElementDataCache.addOne(d)
+        }
+        data
+      }
+    }
   }
 
   /**
@@ -115,6 +141,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future of inserted data on success.
    */
   override protected[modicio] def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
+    if (!modelElementDataCache.contains(modelElementData)) {
+      modelElementDataCache.addOne(modelElementData)
+    }
     registry.writeModelElementData(modelElementData)
   }
 
