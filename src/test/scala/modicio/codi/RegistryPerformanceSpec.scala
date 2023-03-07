@@ -16,10 +16,10 @@
 
 package modicio.codi
 
-import modicio.FixtureIntegrationSpec
+import modicio.CachingFixtureIntegrationSpec
 
 
-class RegistryPerformanceSpec extends FixtureIntegrationSpec {
+class RegistryPerformanceSpec extends CachingFixtureIntegrationSpec {
 
   "Number of database operations" must "be lower than x" in { fixture => {
       fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>
@@ -51,7 +51,7 @@ class RegistryPerformanceSpec extends FixtureIntegrationSpec {
           todoInstance2.assignDeepValue("Title", "Todo2")
           todoInstance2.commit
 
-          fixture.registry.writeAccessCounts("RegistryPerformanceSpec")
+          fixture.internalRegistry.writeAccessCounts("RegistryPerformanceSpec")
 
           1 should be(1)
         }
