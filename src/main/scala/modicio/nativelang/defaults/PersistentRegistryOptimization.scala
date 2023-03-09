@@ -2,13 +2,19 @@ package modicio.nativelang.defaults
 
 import modicio.core.datamappings._
 import modicio.core.util.IODiff
+import modicio.nativelang.util.LRUCache
 
+import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
 class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(registry.typeFactory, registry.instanceFactory)(executionContext) {
   private val modelElementDataCache = new ListBuffer[ModelElementData]()
+  val ruleDataCache = new LRUCache[(String, String), Set[RuleData]](expire = Duration(5, TimeUnit.MINUTES))
+  val instanceDataCache = new LRUCache[String, InstanceData]()
+
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
    *
@@ -72,7 +78,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future option of [[InstanceData]] or None if not found
    */
   override protected[modicio] def fetchInstanceData(instanceId: String): Future[Option[InstanceData]] = {
-    registry.fetchInstanceData(instanceId)
+    val local = instanceDataCache.get(instanceId)
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchInstanceData(instanceId)
+      } yield {
+        if (remote.isDefined) instanceDataCache.set(instanceId, remote.get)
+        remote
+      }
+    }
+    Future.successful(local)
   }
 
   /**
@@ -85,7 +100,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
   override protected[modicio] def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]] = {
-    registry.fetchRuleData(modelElementName, identity)
+    val local = ruleDataCache.get((modelElementName, identity))
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchRuleData(modelElementName, identity)
+      } yield {
+        ruleDataCache.set((modelElementName, identity), remote)
+        remote
+      }
+    }
+    Future.successful(local.get)
   }
 
   /**
@@ -156,7 +180,12 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future of inserted data on success.
    */
   override protected[modicio] def writeInstanceData(instanceData: InstanceData): Future[InstanceData] = {
-    registry.writeInstanceData(instanceData)
+    for {
+      remote <- registry.writeInstanceData(instanceData)
+    } yield {
+      instanceDataCache.set(remote.instanceId, remote)
+      remote
+    }
   }
 
   /**
@@ -174,6 +203,9 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future of inserted [[RuleData]] on success.
    */
   override protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
+    for (set <- List(diff.toAdd, diff.toDelete, diff.toUpdate)) {
+      set.map(data => (data.modelElementName, data.identity)).foreach(ruleDataCache.remove)
+    }
     registry.writeRuleData(diff)
   }
 
@@ -262,7 +294,11 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future on success
    */
   override protected[modicio] def removeModelElementWithRules(modelElementName: String, identity: String): Future[Any] = {
-    registry.removeModelElementWithRules(modelElementName, identity)
+    for {
+      _ <- registry.removeModelElementWithRules(modelElementName, identity)
+    } yield {
+      ruleDataCache.remove((modelElementName, identity))
+    }
   }
 
   /**
@@ -279,7 +315,11 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future on success
    */
   override protected[modicio] def removeInstanceWithData(instanceId: String): Future[Any] = {
-    registry.removeInstanceWithData(instanceId)
+    for {
+      _ <- registry.removeInstanceWithData(instanceId)
+    } yield {
+      instanceDataCache.remove(instanceId)
+    }
   }
 
   override protected[modicio] def queryInstanceDataByIdentityPrefixAndTypeName(identityPrefix: String, typeName: String): Future[Set[InstanceData]] = {

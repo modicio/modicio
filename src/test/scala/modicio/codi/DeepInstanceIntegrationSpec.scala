@@ -160,8 +160,6 @@ class DeepInstanceIntegrationSpec extends FixtureIntegrationSpec {
         todoOption <- fixture.registry.get(todoInstance.instanceId)
         _ <- todoOption.get.unfold()
       } yield {
-        todoInstance
-        val m = todoOption.get.getDeepAttributes
         todoOption.get.deepValue("Content").get should be("bar")
       })
     }

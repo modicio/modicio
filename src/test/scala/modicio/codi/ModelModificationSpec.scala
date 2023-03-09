@@ -18,7 +18,7 @@
 
 package modicio.codi
 
-import modicio.{IntegrationSpec, SimpleMapRegistryFixture, VolatilePersistentRegistryFixture}
+import modicio.{IntegrationSpec, OptimizedRegistryFixture, SimpleMapRegistryFixture, VolatilePersistentRegistryFixture}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -33,8 +33,14 @@ class ModelModificationSpec extends IntegrationSpec with RegistryBehaviors {
     new SimpleMapRegistryFixture
   }
 
+  def cachedRegistry = {
+    new OptimizedRegistryFixture
+  }
+
   "A SimpleMapRegistry" should behave like registry(simpleMapRegistry)
 
   "A VolatilePersistentRegistry" should behave like registry(volatilePersistentRegistry)
+
+  "A cached Registry" should behave like registry(cachedRegistry)
 
 }

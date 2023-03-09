@@ -16,7 +16,7 @@
 
 package modicio.codi
 
-import modicio.CachingFixtureIntegrationSpec
+import modicio.{CachingFixtureIntegrationSpec, FixtureIntegrationSpec}
 
 
 class RegistryPerformanceSpec extends CachingFixtureIntegrationSpec {
@@ -24,35 +24,44 @@ class RegistryPerformanceSpec extends CachingFixtureIntegrationSpec {
   "Number of database operations" must "be lower than x" in { fixture => {
       fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>
         for {
-          todoInstance1 <- fixture.instanceFactory.newInstance("Todo")
-          todoInstance2 <- fixture.instanceFactory.newInstance("Todo")
-          projectInstance1 <- fixture.instanceFactory.newInstance("Project")
-          _ <- todoInstance1.unfold()
-          _ <- todoInstance2.unfold()
-          _ <- projectInstance1.unfold()
+          (todoInstance1, todoInstance2) <- for {
+              todoInstance1 <- fixture.instanceFactory.newInstance("Todo")
+              todoInstance2 <- fixture.instanceFactory.newInstance("Todo")
+              projectInstance1 <- fixture.instanceFactory.newInstance("Project")
+              _ <- todoInstance1.unfold()
+              _ <- todoInstance2.unfold()
+              _ <- projectInstance1.unfold()
+            } yield {
+              projectInstance1.associate(todoInstance1, fixture.TODO, fixture.PROJECT_HAS_PART)
+              projectInstance1.commit
+              projectInstance1.associate(todoInstance2, fixture.TODO, fixture.PROJECT_HAS_PART)
+              projectInstance1.commit
+
+              todoInstance1.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
+              todoInstance1.commit
+              todoInstance2.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
+              todoInstance2.commit
+
+              todoInstance1.assignValue("Content", "abc")
+              todoInstance1.commit
+              todoInstance1.assignDeepValue("Title", "abc")
+              todoInstance1.commit
+
+              todoInstance2.assignValue("Content", "Todo1")
+              todoInstance2.commit
+              todoInstance2.assignDeepValue("Title", "Todo2")
+              todoInstance2.commit
+
+              (todoInstance1, todoInstance2)
+            }
+          _ <- for {
+              todoOption1 <- fixture.registry.get(todoInstance1.instanceId)
+              _ <- todoOption1.get.unfold()
+              todoOption2 <- fixture.registry.get(todoInstance2.instanceId)
+              _ <- todoOption2.get.unfold()
+            } yield {}
         } yield {
-          projectInstance1.associate(todoInstance1, fixture.TODO, fixture.PROJECT_HAS_PART)
-          projectInstance1.commit
-          projectInstance1.associate(todoInstance2, fixture.TODO, fixture.PROJECT_HAS_PART)
-          projectInstance1.commit
-
-          todoInstance1.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
-          todoInstance1.commit
-          todoInstance2.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
-          todoInstance2.commit
-
-          todoInstance1.assignValue("Content", "abc")
-          todoInstance1.commit
-          todoInstance1.assignDeepValue("Title", "abc")
-          todoInstance1.commit
-
-          todoInstance2.assignValue("Content", "Todo1")
-          todoInstance2.commit
-          todoInstance2.assignDeepValue("Title", "Todo2")
-          todoInstance2.commit
-
           fixture.internalRegistry.writeAccessCounts("RegistryPerformanceSpec_optimized")
-
           1 should be(1)
         }
       )
