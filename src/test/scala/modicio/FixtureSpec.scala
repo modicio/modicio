@@ -19,11 +19,10 @@ package modicio
 import org.scalatest.FutureOutcome
 import org.scalatest.flatspec.FixtureAsyncFlatSpec
 import org.scalatest.matchers.should
+import modicio.codi.fixtures.{OptimizedRegistryFixture, SimpleMapRegistryFixture, VolatilePersistentRegistryFixture}
 
-import modicio.{SimpleMapRegistryFixture, VolatilePersistentRegistryFixture}
-
-class FixtureIntegrationSpec extends FixtureAsyncFlatSpec with should.Matchers{
-  type FixtureParam = VolatilePersistentRegistryFixture
+class FixtureSpec extends FixtureAsyncFlatSpec with should.Matchers{
+  type FixtureParam = OptimizedRegistryFixture
 
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
     val theFixture = new FixtureParam

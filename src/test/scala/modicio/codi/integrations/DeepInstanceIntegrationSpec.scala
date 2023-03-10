@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel, Tom Felber, Johannes Gröschel
+ * Copyright 2022 Karl Kegel, Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package modicio.codi
+package modicio.codi.integrations
 
 import modicio.Spec
 
+class DeepInstanceIntegrationSpec extends Spec with DeepInstanceIntegrationBehaviors {
 
-class RegistryPerformanceSpec extends Spec with RegistryPerformanceBehaviors {
+  "The DeepInstance when paired with a SimpleMapRegistry" should behave like deepInstance(simpleMapRegistry)
 
-  "A VolatilePersistentRegistry" should behave like performance(volatilePersistentRegistry, "raw")
+  "The DeepInstance when paired with a VolatilePersistentRegistry" should behave like deepInstance(volatilePersistentRegistry)
 
-  "A cached Registry" should behave like performance(cachedRegistry, "cached")
+  "The DeepInstance when paired with a cached Registry" should behave like deepInstance(cachedRegistry)
+
 }

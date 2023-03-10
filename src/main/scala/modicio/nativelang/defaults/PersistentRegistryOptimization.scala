@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(registry.typeFactory, registry.instanceFactory)(executionContext) {

@@ -19,6 +19,7 @@ package modicio.nativelang.defaults
 import modicio.core.util.{IODiff, IdentityProvider}
 import modicio.core.datamappings.{AssociationData, AttributeData, InstanceData, ModelElementData, ParentRelationData, PluginData, RuleData}
 import modicio.core.{DeepInstance, InstanceFactory, ModelElement, TypeFactory}
+import modicio.nativelang.util.AccessCounting
 
 import java.io.{BufferedWriter, FileWriter}
 import scala.collection.immutable.HashMap
@@ -33,7 +34,7 @@ import scala.util.{Failure, Success, Try}
  */
 class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory, core: VolatilePersistentRegistryCore = new VolatilePersistentRegistryCore())
                                 (implicit executionContext: ExecutionContext)
-  extends AbstractPersistentRegistry(typeFactory, instanceFactory)(executionContext) {
+  extends AbstractPersistentRegistry(typeFactory, instanceFactory)(executionContext) with AccessCounting {
 
   def getAccessCounts(): Map[String, Map[String, Int]] = {
     core.modelElementDataLock.readLock().lock()

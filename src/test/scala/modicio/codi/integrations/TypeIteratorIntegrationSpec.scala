@@ -1,5 +1,6 @@
 /**
- * Copyright 2023 Tom Felber
+ * Copyright 2022 Karl Kegel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +15,16 @@
  * limitations under the License.
  */
 
-package modicio
+package modicio.codi.integrations
 
-import org.scalatest.FutureOutcome
-import org.scalatest.flatspec.FixtureAsyncFlatSpec
-import org.scalatest.matchers.should
+import modicio.Spec
 
-class CachingFixtureIntegrationSpec extends FixtureAsyncFlatSpec with should.Matchers{
-  type FixtureParam = OptimizedRegistryFixture
+class TypeIteratorIntegrationSpec extends Spec with TypeIteratorIntegrationBehaviors {
 
-  override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
-    val theFixture = new FixtureParam()
+  "The TypeIterator when paired with a SimpleMapRegistry" should behave like typeIterator(simpleMapRegistry)
 
-    complete {
-      super.withFixture(test.toNoArgAsyncTest(theFixture))
-    } lastly {
+  "The TypeIterator when paired with a VolatilePersistentRegistry" should behave like typeIterator(volatilePersistentRegistry)
 
-    }
-  }
+  "The TypeIterator when paired with a cached Registry" should behave like typeIterator(cachedRegistry)
+
 }
-
