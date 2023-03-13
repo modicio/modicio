@@ -5,6 +5,7 @@ import modicio.core.util.IODiff
 import modicio.nativelang.util.LRUCache
 
 import java.util.concurrent.TimeUnit
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -216,6 +217,7 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
         remote <- registry.writeModelElementData(modelElementData)
       } yield {
         modelElementDataCache.set((remote.name, remote.identity), remote)
+        modelElementDataSetCache.clear()
         remote
       }
     }
@@ -261,10 +263,26 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future of inserted [[RuleData]] on success.
    */
   override protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
-    for (set <- List(diff.toAdd, diff.toDelete, diff.toUpdate)) {
-      set.map(data => (data.modelElementName, data.identity)).foreach(ruleDataSetCache.remove)
+    val toAdd = ListBuffer[RuleData]()
+    val toUpdate = ListBuffer[RuleData]()
+//    filter unnecessary writes
+    for (rule <- diff.toAdd) {
+      val rules = ruleDataSetCache.get(rule.modelElementName, rule.identity)
+      if (rules.isDefined) if (!rules.get.contains(rule)) toAdd.addOne(rule)
     }
-    registry.writeRuleData(diff)
+    for (rule <- diff.toUpdate) {
+      val rules = ruleDataSetCache.get(rule.modelElementName, rule.identity)
+      if (rules.isDefined) if (!rules.get.contains(rule)) toUpdate.addOne(rule)
+    }
+//    write
+    if (toAdd.nonEmpty || toUpdate.nonEmpty || diff.toDelete.nonEmpty) {
+      for (set <- List(toAdd, diff.toDelete, toUpdate)) {
+        set.map(data => (data.modelElementName, data.identity)).foreach(ruleDataSetCache.remove)
+      }
+      registry.writeRuleData(IODiff(diff.toDelete, toAdd.toSet, toUpdate.toSet))
+    } else {
+      Future.successful(Set[RuleData]())
+    }
   }
 
   /**
