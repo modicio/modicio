@@ -22,8 +22,11 @@ class LRUCacheSpec extends AnyFlatSpec with should.Matchers{
     cache.size() should be(10) withClue cache.size()
     for (number <- Range(1, 11)) {
       val result = cache.get(number.toString)
-      noException should be thrownBy result.get withClue "\nCould not be retrieved: " + number.toString + "\nElements: " + cache.getAll()
+      noException should be thrownBy result.get withClue "\nCould not be retrieved: " + number.toString + "\nElements: " + cache.getAll
       result.get should be(number)
     }
+    val (map, list) = cache.getAll
+    map.contains("0") should be(false)
+    list.contains(0) should be(false)
   }
 }

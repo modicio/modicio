@@ -9,14 +9,14 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
 
   private var list: List[(K, V, Long)] = List[(K, V, Long)]()
   private var map: HashMap[K, (K,V, Long)] = HashMap[K, (K, V, Long)]()
-  private val lock: ReentrantReadWriteLock = new ReentrantReadWriteLock();
+  private val lock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
   def set(key: K, value: V): Boolean = {
     lock.writeLock().lock()
     try {
       val item = (key, value, getTime)
       if (map.contains(key)) {
-        val node = map.get(key).get
+        val node = map(key)
         list = updateAndMoveToFront(node, item)
       } else {
         if (size() >= size) {
@@ -25,6 +25,7 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
           list = _list
         }
         list = list.appended(item)
+        list = updateAndMoveToFront(item, item)
       }
       map = map.updated(key, item)
       true
@@ -52,12 +53,16 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
     }
   }
 
-  def getAll(): (HashMap[K, (K, V, Long)], List[(K, V, Long)]) = {
+  def getAll: (HashMap[K, (K, V, Long)], List[(K, V, Long)]) = {
     lock.readLock().lock()
     try {
       (map, list)
     }
+    finally {
+      lock.readLock().unlock()
+    }
   }
+
   def size(): Int = {
     list.size
   }
@@ -87,7 +92,7 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
   private def evictElement(): (HashMap[K, (K, V, Long)], List[(K, V, Long)]) = {
     lock.writeLock().lock()
     try {
-      val item = list.head
+      val item = list.last
       (map.removed(item._1), list.init)
     } finally {
       lock.writeLock().unlock()
@@ -97,7 +102,7 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
   private def evictElement(key: K): (HashMap[K, (K, V, Long)], List[(K, V, Long)]) = {
     list.span(_._1 != key) match {
       case (as, _ :: bs) => ( map.removed(key), as ++ bs)
-      case (_) => (map, list)
+      case _ => (map, list)
     }
   }
 
@@ -120,7 +125,7 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
 
   }
 
-  private def getTime(): Long = {
+  private def getTime: Long = {
     System.currentTimeMillis()
   }
 

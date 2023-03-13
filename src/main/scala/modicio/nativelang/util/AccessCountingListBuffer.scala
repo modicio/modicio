@@ -94,6 +94,6 @@ class AccessCountingListBuffer[T](private val internalBuffer: ListBuffer[T] = ne
   }
 
   def toListBuffer(): ListBuffer[T] = {
-    return internalBuffer
+    internalBuffer
   }
 }

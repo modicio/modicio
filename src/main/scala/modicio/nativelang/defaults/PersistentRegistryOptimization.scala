@@ -5,16 +5,20 @@ import modicio.core.util.IODiff
 import modicio.nativelang.util.LRUCache
 
 import java.util.concurrent.TimeUnit
-import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(registry.typeFactory, registry.instanceFactory)(executionContext) {
-  private val modelElementDataCache = new ListBuffer[ModelElementData]()
-  val ruleDataCache = new LRUCache[(String, String), Set[RuleData]](expire = Duration(5, TimeUnit.MINUTES))
-  val instanceDataCache = new LRUCache[String, InstanceData]()
+  private val modelElementDataCache = new LRUCache[(String, String), ModelElementData]()
+  private val modelElementDataSetCache = new LRUCache[String, Set[ModelElementData]]()
+  private val ruleDataSetCache = new LRUCache[(String, String), Set[RuleData]](expire = Duration(5, TimeUnit.MINUTES))
+  private val instanceDataCache = new LRUCache[String, InstanceData]()
+  private val instanceDataSetCache = new LRUCache[String, Set[InstanceData]]()
+  private val pluginDataSetCache = new LRUCache[(String, String), Set[PluginData]]()
+  private val attributeDataSetCache = new LRUCache[String, Set[AttributeData]]()
+  private val parentRelationDataSetCache = new LRUCache[String, Set[ParentRelationData]]()
+  private val associationDataSetCache = new LRUCache[String, Set[AssociationData]]()
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
@@ -23,21 +27,20 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @param identity identity of the [[ModelElement]]
    * @return Future option of [[ModelElementData]] or None if not found
    */
+
   override protected[modicio] def fetchModelElementData(name: String, identity: String): Future[Option[ModelElementData]] = {
-    val data = modelElementDataCache.find((datum) => datum.name.equals(name) && datum.identity.equals(identity))
-    if (data.isDefined) {
-      Future(Option(data.get))
-    } else {
-      for {
-        readyData <- registry.fetchModelElementData(name, identity)
+    val local = modelElementDataCache.get((name, identity))
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchModelElementData(name, identity)
       } yield {
-        if (readyData.isDefined) {
-          modelElementDataCache.addOne(readyData.get)
-        }
-        readyData
+        if (remote.isDefined) modelElementDataCache.set((name, identity), remote.get)
+        remote
       }
     }
+    Future.successful(local)
   }
+
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.
@@ -46,19 +49,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future option of [[ModelElementData]] or None if not found
    */
   override protected[modicio] def fetchModelElementData(identity: String): Future[Set[ModelElementData]] = {
-    val data = modelElementDataCache.filter((datum) => datum.identity.equals(identity))
-    if (data.nonEmpty) {
-      Future(data.toSet)
-    } else {
-      for {
-        data <- registry.fetchModelElementData(identity)
+    val local = modelElementDataSetCache.get(identity)
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchModelElementData(identity)
       } yield {
-        for (d <- data) {
-          if (!modelElementDataCache.contains(d)) modelElementDataCache.addOne(d)
-        }
-        data
+        modelElementDataSetCache.set(identity, remote)
+        remote
       }
     }
+    Future.successful(local.get)
   }
 
   /**
@@ -69,7 +69,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of [[InstanceData]] matching the given type name
    */
   override protected[modicio] def fetchInstanceDataOfType(typeName: String): Future[Set[InstanceData]] = {
-    registry.fetchInstanceDataOfType(typeName)
+    val local = instanceDataSetCache.get(typeName)
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchInstanceDataOfType(typeName)
+      } yield {
+        instanceDataSetCache.set(typeName, remote)
+        remote
+      }
+    }
+    Future.successful(local.get)
   }
 
   /**
@@ -101,12 +110,12 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
   override protected[modicio] def fetchRuleData(modelElementName: String, identity: String): Future[Set[RuleData]] = {
-    val local = ruleDataCache.get((modelElementName, identity))
+    val local = ruleDataSetCache.get((modelElementName, identity))
     if (local.isEmpty) {
       return for {
         remote <- registry.fetchRuleData(modelElementName, identity)
       } yield {
-        ruleDataCache.set((modelElementName, identity), remote)
+        ruleDataSetCache.set((modelElementName, identity), remote)
         remote
       }
     }
@@ -123,7 +132,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of all [[RuleData]] associated by the given parameters
    */
   override protected[modicio] def fetchPluginData(modelElementName: String, identity: String): Future[Set[PluginData]] = {
-    registry.fetchPluginData(modelElementName, identity)
+    val local = pluginDataSetCache.get((modelElementName, identity))
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchPluginData(modelElementName, identity)
+      } yield {
+        pluginDataSetCache.set((modelElementName, identity), remote)
+        remote
+      }
+    }
+    Future.successful(local.get)
   }
 
   /**
@@ -133,7 +151,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of all matching [[AttributeData]]
    */
   override protected[modicio] def fetchAttributeData(instanceId: String): Future[Set[AttributeData]] = {
-    registry.fetchAttributeData(instanceId)
+    val local = attributeDataSetCache.get(instanceId)
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchAttributeData(instanceId)
+      } yield {
+        attributeDataSetCache.set(instanceId, remote)
+        remote
+      }
+    }
+    Future.successful(local.get)
   }
 
   /**
@@ -143,7 +170,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of all matching [[ParentRelationData]]
    */
   override protected[modicio] def fetchParentRelationData(instanceId: String): Future[Set[ParentRelationData]] = {
-    registry.fetchParentRelationData(instanceId)
+    val local = parentRelationDataSetCache.get(instanceId)
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchParentRelationData(instanceId)
+      } yield {
+        parentRelationDataSetCache.set(instanceId, remote)
+        remote
+      }
+    }
+    Future.successful(local.get)
   }
 
   /**
@@ -153,7 +189,16 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future set of all matching [[AssociationData]]
    */
   override protected[modicio] def fetchAssociationData(instanceId: String): Future[Set[AssociationData]] = {
-    registry.fetchAssociationData(instanceId)
+    val local = associationDataSetCache.get(instanceId)
+    if (local.isEmpty) {
+      return for {
+        remote <- registry.fetchAssociationData(instanceId)
+      } yield {
+        associationDataSetCache.set(instanceId, remote)
+        remote
+      }
+    }
+    Future.successful(local.get)
   }
 
   /**
@@ -166,10 +211,22 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    * @return Future of inserted data on success.
    */
   override protected[modicio] def writeModelElementData(modelElementData: ModelElementData): Future[ModelElementData] = {
-    if (!modelElementDataCache.contains(modelElementData)) {
-      modelElementDataCache.addOne(modelElementData)
+    def writeModelElementData0(modelElementData: ModelElementData): Future[ModelElementData] = {
+      for {
+        remote <- registry.writeModelElementData(modelElementData)
+      } yield {
+        modelElementDataCache.set((remote.name, remote.identity), remote)
+        remote
+      }
     }
-    registry.writeModelElementData(modelElementData)
+    modelElementDataCache.get((modelElementData.name, modelElementData.identity)) match {
+      case Some(value) => if (value == modelElementData) {
+        Future.successful(value)
+      } else {
+        writeModelElementData0(modelElementData)
+      }
+      case None => writeModelElementData0(modelElementData)
+    }
   }
 
   /**
@@ -205,7 +262,7 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
    */
   override protected[modicio] def writeRuleData(diff: IODiff[RuleData]): Future[Set[RuleData]] = {
     for (set <- List(diff.toAdd, diff.toDelete, diff.toUpdate)) {
-      set.map(data => (data.modelElementName, data.identity)).foreach(ruleDataCache.remove)
+      set.map(data => (data.modelElementName, data.identity)).foreach(ruleDataSetCache.remove)
     }
     registry.writeRuleData(diff)
   }
@@ -298,7 +355,7 @@ class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(impli
     for {
       _ <- registry.removeModelElementWithRules(modelElementName, identity)
     } yield {
-      ruleDataCache.remove((modelElementName, identity))
+      ruleDataSetCache.remove((modelElementName, identity))
     }
   }
 
