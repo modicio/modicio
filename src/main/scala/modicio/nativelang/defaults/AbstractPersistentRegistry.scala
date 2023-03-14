@@ -544,6 +544,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
       removeModelElementWithRules(name, identity)
+      incrementRunning // TODO: check if this is right here
 
     } else if (identity == ModelElement.SINGLETON_IDENTITY) {
       //In case of a singleton identity modelElement

@@ -64,6 +64,7 @@ class AccessCountingListBuffer[T](private val internalBuffer: ListBuffer[T] = ne
 
   def filterInPlace(p: T => Boolean): AccessCountingListBuffer[T] = {
     readCount += 1
+    writeCount += 1
     internalBuffer.filterInPlace(p)
     this
   }
