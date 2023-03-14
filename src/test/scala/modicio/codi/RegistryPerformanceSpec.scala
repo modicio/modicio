@@ -16,10 +16,10 @@
 
 package modicio.codi
 
-import modicio.Spec
+import modicio.{AsyncSpec, Spec}
 
 
-class RegistryPerformanceSpec extends Spec with RegistryPerformanceBehaviors {
+class RegistryPerformanceSpec extends AsyncSpec with RegistryPerformanceBehaviors {
 
   "A VolatilePersistentRegistry" should behave like performance(volatilePersistentRegistry, "raw")
 

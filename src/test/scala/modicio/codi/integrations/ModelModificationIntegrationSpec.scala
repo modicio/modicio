@@ -18,9 +18,9 @@
 
 package modicio.codi.integrations
 
-import modicio.Spec
+import modicio.{AsyncSpec, Spec}
 
-class ModelModificationIntegrationSpec extends Spec with ModelModificationIntegrationBehaviors {
+class ModelModificationIntegrationSpec extends AsyncSpec with ModelModificationIntegrationBehaviors {
 
   "A SimpleMapRegistry" should behave like registry(simpleMapRegistry)
 

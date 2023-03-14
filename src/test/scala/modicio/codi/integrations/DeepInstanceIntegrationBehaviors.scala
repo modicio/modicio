@@ -1,10 +1,9 @@
 package modicio.codi.integrations
 
-import modicio.{Spec, RegistryFixture}
+import modicio.{AsyncSpec, RegistryFixture, Spec}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-trait DeepInstanceIntegrationBehaviors { this: Spec =>
+trait DeepInstanceIntegrationBehaviors { this: AsyncSpec =>
 
   def deepInstance (newFixture: => RegistryFixture): Unit = {
     it must "change the value of the correspondent key for assignValue" in {

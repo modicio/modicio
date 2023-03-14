@@ -16,10 +16,10 @@
 
 package modicio.codi.integrations
 
-import modicio.Spec
+import modicio.{AsyncSpec, Spec}
 
 
-class ConnectionInterfaceIntegrationSpec extends Spec with ConnectionInterfaceIntegrationBehaviors {
+class ConnectionInterfaceIntegrationSpec extends AsyncSpec with ConnectionInterfaceIntegrationBehaviors {
   "The ConnectionInterface when paired with a SimpleMapRegistry" should behave like connectionInterface(simpleMapRegistry)
 
   "The ConnectionInterface when paired with a VolatilePersistentRegistry" should behave like connectionInterface(volatilePersistentRegistry)

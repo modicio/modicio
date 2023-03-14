@@ -6,11 +6,18 @@ import modicio.core.util.IODiff
 import modicio.core.values.ConcreteValue
 import modicio.verification.DefinitionVerifier
 
-class DefinitionWrapper(definitionVerifier: DefinitionVerifier)
+import scala.collection.mutable
+
+class DefinitionWrapper
+(
+  definitionVerifier: DefinitionVerifier,
+  private val inRules: Set[Rule] = Set(),
+  private val inPlugins: Set[Plugin] = Set()
+)
   extends Definition(definitionVerifier) {
 
-  private val hotDefinition = new Definition(definitionVerifier)
-  private val coldDefinition = new Definition(definitionVerifier)
+  private val hotDefinition = new Definition(definitionVerifier, inRules, inPlugins)
+  private val coldDefinition = new Definition(definitionVerifier, inRules, inPlugins)
 
   override def isVolatile: Boolean = hotDefinition.isVolatile
 

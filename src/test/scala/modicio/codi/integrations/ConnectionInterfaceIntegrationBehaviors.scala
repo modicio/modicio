@@ -1,10 +1,8 @@
 package modicio.codi.integrations
 
-import modicio.{Spec, RegistryFixture}
+import modicio.{AsyncSpec, RegistryFixture, Spec}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
-trait ConnectionInterfaceIntegrationBehaviors { this: Spec =>
+trait ConnectionInterfaceIntegrationBehaviors { this: AsyncSpec =>
 
   def connectionInterface(newFixture: => RegistryFixture): Unit = {
     it must "create correct AssociationData if a matching Slot is found upon DeepInstance.associate()" in {

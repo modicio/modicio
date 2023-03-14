@@ -18,13 +18,12 @@ package modicio.codi.integrations
 
 import modicio.core.ModelElement
 import modicio.core.rules.{AssociationRule, AttributeRule, ConnectionInterface, ParentRelationRule}
-import modicio.{Spec, RegistryFixture}
+import modicio.{AsyncSpec, RegistryFixture}
 import org.scalatest.AppendedClues.convertToClueful
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait ModelModificationIntegrationBehaviors { this: Spec =>
+trait ModelModificationIntegrationBehaviors { this: AsyncSpec =>
 
   def registry (newFixture: => RegistryFixture) {
     it should "correctly add a new Type to the model" in {
@@ -39,7 +38,7 @@ trait ModelModificationIntegrationBehaviors { this: Spec =>
           model.foreach(typeHandle => names = names + typeHandle.getTypeName + ", ")
           model.size should be(6) withClue names
         }
-        )
+      )
     }
 
     it should "correctly remove a type from the model" in {

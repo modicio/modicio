@@ -34,7 +34,7 @@ import scala.util.{Failure, Success, Try}
  */
 class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory, core: VolatilePersistentRegistryCore = new VolatilePersistentRegistryCore())
                                 (implicit executionContext: ExecutionContext)
-  extends AbstractPersistentRegistry(typeFactory, instanceFactory)(executionContext) with AccessCounting {
+  extends AbstractPersistentRegistry(typeFactory, instanceFactory) with AccessCounting {
 
   def getAccessCounts(): Map[String, Map[String, Int]] = {
     core.modelElementDataLock.readLock().lock()
@@ -722,7 +722,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       val _ruleDataBuffer = core.ruleDataBuffer.map(_datum => _datum.copy())
 
       try {
-        core.modelElementDataBuffer.filterInPlace((datum) => !datum.name.equals(modelElementName) || !datum.identity.equals(identity))
+        core.modelElementDataBuffer.filterInPlace((datum) => !(datum.name == modelElementName) || !(datum.identity == identity))
         core.ruleDataBuffer.filterInPlace((datum) => !datum.modelElementName.equals(modelElementName) || !datum.identity.equals(identity))
         Success()
       } catch {
@@ -764,10 +764,10 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       val _associationDataBuffer = core.associationDataBuffer.map(_datum => _datum.copy())
 
       try {
-        core.instanceDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
-        core.attributeDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
-        core.parentRelationDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
-        core.associationDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
+        core.instanceDataBuffer = core.instanceDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
+        core.attributeDataBuffer = core.attributeDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
+        core.parentRelationDataBuffer = core.parentRelationDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
+        core.associationDataBuffer = core.associationDataBuffer.filterInPlace((datum) => !datum.instanceId.equals(instanceId))
         Success()
       } catch {
         case e: Exception => {
@@ -817,7 +817,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
       core.modelElementDataLock.readLock()
 
       try {
-        val data = core.modelElementDataBuffer.toListBuffer().map(_datum => _datum.copy())
+        var data = core.modelElementDataBuffer.toListBuffer().map(_datum => _datum.copy())
 
         // Handle easy case first
         if (query == "") {

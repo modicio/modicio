@@ -1,10 +1,9 @@
 package modicio.codi.integrations
 
-import modicio.{Spec, RegistryFixture}
+import modicio.{AsyncSpec, RegistryFixture, Spec}
 import org.scalatest.AppendedClues.convertToClueful
 
-import scala.concurrent.ExecutionContext.Implicits.global
-trait NativeInputTransformerBehaviors { this: Spec =>
+trait NativeInputTransformerBehaviors { this: AsyncSpec =>
 
   def nativeInputTransformer(newFixture: => RegistryFixture) {
     it must "load the input model and extend the registry" in {

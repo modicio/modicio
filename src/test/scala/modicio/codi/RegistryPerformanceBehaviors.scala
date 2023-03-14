@@ -2,10 +2,9 @@ package modicio.codi
 
 import modicio.codi.fixtures.{OptimizedRegistryFixture, VolatilePersistentRegistryFixture}
 import modicio.nativelang.util.AccessCounting
-import modicio.{RegistryFixture, Spec}
+import modicio.{AsyncSpec, RegistryFixture, Spec}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-trait RegistryPerformanceBehaviors { this: Spec =>
+trait RegistryPerformanceBehaviors { this: AsyncSpec =>
 
   def performance(newFixture: => RegistryFixture with AccessCounting, fileNameModifier: String) {
     it must "perform a number of database operations" in {

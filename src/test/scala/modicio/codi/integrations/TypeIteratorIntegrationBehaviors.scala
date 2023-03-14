@@ -1,12 +1,11 @@
 package modicio.codi.integrations
 
 import modicio.core.TypeIterator
-import modicio.{Spec, RegistryFixture}
+import modicio.{AsyncSpec, RegistryFixture, Spec}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait TypeIteratorIntegrationBehaviors { this: Spec =>
+trait TypeIteratorIntegrationBehaviors { this: AsyncSpec =>
 
   def typeIterator(newFixture: => RegistryFixture) {
     it must "create new TypeIterator of the current element for split()" in {

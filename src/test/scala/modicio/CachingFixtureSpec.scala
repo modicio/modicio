@@ -21,7 +21,7 @@ import org.scalatest.FutureOutcome
 import org.scalatest.flatspec.FixtureAsyncFlatSpec
 import org.scalatest.matchers.should
 
-class CachingFixtureSpec extends FixtureAsyncFlatSpec with should.Matchers{
+abstract class CachingFixtureSpec extends FixtureAsyncFlatSpec with should.Matchers{
   type FixtureParam = OptimizedRegistryFixture
 
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {

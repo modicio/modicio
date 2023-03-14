@@ -17,9 +17,9 @@
 
 package modicio.codi.integrations
 
-import modicio.Spec
+import modicio.{AsyncSpec, Spec}
 
-class TypeIteratorIntegrationSpec extends Spec with TypeIteratorIntegrationBehaviors {
+class TypeIteratorIntegrationSpec extends AsyncSpec with TypeIteratorIntegrationBehaviors {
 
   "The TypeIterator when paired with a SimpleMapRegistry" should behave like typeIterator(simpleMapRegistry)
 

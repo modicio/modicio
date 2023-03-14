@@ -17,9 +17,9 @@
  */
 package modicio.codi.integrations
 
-import modicio.Spec
+import modicio.{AsyncSpec, Spec}
 
-class NativeInputTransformerIntegrationSpec extends Spec with NativeInputTransformerBehaviors {
+class NativeInputTransformerIntegrationSpec extends AsyncSpec with NativeInputTransformerBehaviors {
 
   "The NativeInputTransformer paired with a SimpleMapRegistry" should behave like nativeInputTransformer(simpleMapRegistry)
 

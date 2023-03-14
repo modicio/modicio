@@ -64,9 +64,9 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
   }
 
   def loadType(modelElementData: ModelElementData, ruleData: Set[RuleData], pluginData: Set[PluginData]): TypeHandle = {
-    val definition = new DefinitionWrapper(definitionVerifier)
-    ruleData.foreach(data => definition.applyRule(loadRule(data)))
-    pluginData.foreach(data => definition.applyPlugin(Plugin.formatData(data)))
+    val rules = ruleData.map(data => loadRule(data))
+    val plugins = pluginData.map(data => Plugin.formatData(data))
+    val definition = new DefinitionWrapper(definitionVerifier, rules, plugins)
 
     val timeIdentity = TimeIdentity.fromModelElementData(modelElementData)
     val modelElement = new ModelElement(modelElementData.name, modelElementData.identity, modelElementData.isTemplate, timeIdentity)

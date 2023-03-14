@@ -16,9 +16,9 @@
 
 package modicio.codi.integrations
 
-import modicio.Spec
+import modicio.{AsyncSpec, Spec}
 
-class DeepInstanceIntegrationSpec extends Spec with DeepInstanceIntegrationBehaviors {
+class DeepInstanceIntegrationSpec extends AsyncSpec with DeepInstanceIntegrationBehaviors {
 
   "The DeepInstance when paired with a SimpleMapRegistry" should behave like deepInstance(simpleMapRegistry)
 

@@ -5,7 +5,7 @@ import org.scalatest.FutureOutcome
 import org.scalatest.flatspec.FixtureAsyncFlatSpec
 import org.scalatest.matchers.should
 
-class VolatileFixtureSpec extends FixtureAsyncFlatSpec with should.Matchers{
+abstract class VolatileFixtureSpec extends FixtureAsyncFlatSpec with should.Matchers{
   type FixtureParam = VolatilePersistentRegistryFixture
 
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
