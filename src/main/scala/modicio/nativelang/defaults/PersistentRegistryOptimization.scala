@@ -7,17 +7,28 @@ import modicio.nativelang.util.LRUCache
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ExecutionContext, Future}
 
-class PersistentRegistryOptimization(registry: AbstractPersistentRegistry)(implicit executionContext: ExecutionContext)
+class PersistentRegistryOptimization(registry: AbstractPersistentRegistry,
+                                     modelElementDataCacheSize: Int = 100,
+                                     modelElementDataSetCacheSize: Int = 100,
+                                     ruleDataSetCacheSize: Int = 100,
+                                     instanceDataCacheSize: Int = 100,
+                                     instanceDataSetCacheSize: Int = 100,
+                                     pluginDataSetCacheSize: Int = 100,
+                                     attributeDataSetCacheSize: Int = 100,
+                                     parentRelationDataSetCacheSize: Int = 100,
+                                     associationDataSetCacheSize: Int = 100,
+                                    )
+                                    (implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(registry.typeFactory, registry.instanceFactory)(executionContext) {
-  private val modelElementDataCache = new LRUCache[(String, String), ModelElementData](100)
-  private val modelElementDataSetCache = new LRUCache[String, Set[ModelElementData]](100)
-  private val ruleDataSetCache = new LRUCache[(String, String), Set[RuleData]](100)
-  private val instanceDataCache = new LRUCache[String, InstanceData](100)
-  private val instanceDataSetCache = new LRUCache[String, Set[InstanceData]](100)
-  private val pluginDataSetCache = new LRUCache[(String, String), Set[PluginData]](100)
-  private val attributeDataSetCache = new LRUCache[String, Set[AttributeData]](100)
-  private val parentRelationDataSetCache = new LRUCache[String, Set[ParentRelationData]](100)
-  private val associationDataSetCache = new LRUCache[String, Set[AssociationData]](100)
+  private val modelElementDataCache = new LRUCache[(String, String), ModelElementData](modelElementDataCacheSize)
+  private val modelElementDataSetCache = new LRUCache[String, Set[ModelElementData]](modelElementDataSetCacheSize)
+  private val ruleDataSetCache = new LRUCache[(String, String), Set[RuleData]](ruleDataSetCacheSize)
+  private val instanceDataCache = new LRUCache[String, InstanceData](instanceDataCacheSize)
+  private val instanceDataSetCache = new LRUCache[String, Set[InstanceData]](instanceDataSetCacheSize)
+  private val pluginDataSetCache = new LRUCache[(String, String), Set[PluginData]](pluginDataSetCacheSize)
+  private val attributeDataSetCache = new LRUCache[String, Set[AttributeData]](attributeDataSetCacheSize)
+  private val parentRelationDataSetCache = new LRUCache[String, Set[ParentRelationData]](parentRelationDataSetCacheSize)
+  private val associationDataSetCache = new LRUCache[String, Set[AssociationData]](associationDataSetCacheSize)
 
   /**
    * Get the [[ModelElementData]] of a type matching the provided parameters.

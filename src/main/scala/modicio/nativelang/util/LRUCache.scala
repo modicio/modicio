@@ -12,6 +12,9 @@ class LRUCache[K, V](size: Int = 10, expire: Duration = Duration(365, TimeUnit.D
   private val lock: ReentrantReadWriteLock = new ReentrantReadWriteLock()
 
   def set(key: K, value: V): Boolean = {
+    if (size == 0) {
+      return true
+    }
     lock.writeLock().lock()
     try {
       val item = (key, value, getTime)
