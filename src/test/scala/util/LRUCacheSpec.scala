@@ -29,4 +29,13 @@ class LRUCacheSpec extends AnyFlatSpec with should.Matchers{
     map.contains("0") should be(false)
     list.contains(0) should be(false)
   }
+
+  "Setting existing element" must "override it with new value" in {
+    val cache = new LRUCache[String, Int]()
+    cache.set("1", 1)
+    cache.get("1").get should be(1)
+    cache.set("1", 2)
+    cache.get("1").get should be(2)
+    cache.size() should be(1)
+  }
 }
