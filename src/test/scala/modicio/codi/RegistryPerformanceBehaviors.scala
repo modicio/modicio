@@ -1,8 +1,7 @@
 package modicio.codi
 
-import modicio.codi.fixtures.{OptimizedRegistryFixture, VolatilePersistentRegistryFixture}
 import modicio.nativelang.util.AccessCounting
-import modicio.{AsyncSpec, RegistryFixture, Spec}
+import modicio.{AsyncSpec, RegistryFixture}
 
 trait RegistryPerformanceBehaviors { this: AsyncSpec =>
 

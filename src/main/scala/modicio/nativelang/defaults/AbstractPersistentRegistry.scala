@@ -336,7 +336,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   override final def incrementRunning: Future[Any] = {
     val runningTime = IdentityProvider.newTimestampId()
     val runningId = IdentityProvider.newRandomId()
-    getReferences map (referenceHandles => {
+    getReferences flatMap (referenceHandles => {
       referenceHandles.foreach(_.getModelElement.incrementRunning(runningTime, runningId))
 
       Future.sequence(referenceHandles.map(handle => {
@@ -543,8 +543,12 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
     if (identity == ModelElement.REFERENCE_IDENTITY) {
       //In case of reference identity, remove model-element locally. FIXME The model may become invalid
-      removeModelElementWithRules(name, identity)
-      incrementRunning // TODO: check if this is right here
+      for {
+        result <- removeModelElementWithRules(name, identity)
+        _ <- incrementRunning
+      } yield {
+        result
+      }
 
     } else if (identity == ModelElement.SINGLETON_IDENTITY) {
       //In case of a singleton identity modelElement

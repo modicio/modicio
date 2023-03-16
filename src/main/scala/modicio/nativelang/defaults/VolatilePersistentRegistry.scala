@@ -729,7 +729,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
         case e: Exception => {
           core.modelElementDataBuffer = _modelElementDataBuffer
           core.ruleDataBuffer = _ruleDataBuffer
-          throw e
+          Failure(e)
         }
       } finally {
         core.ruleDataLock.writeLock().unlock()
