@@ -34,7 +34,7 @@ import scala.util.{Failure, Success, Try}
  */
 class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFactory, core: VolatilePersistentRegistryCore = new VolatilePersistentRegistryCore())
                                 (implicit executionContext: ExecutionContext)
-  extends AbstractPersistentRegistry(typeFactory, instanceFactory) with AccessCounting {
+  extends AbstractPersistentRegistry(typeFactory, instanceFactory)(executionContext) with AccessCounting {
 
   def getAccessCounts(): Map[String, Map[String, Int]] = {
     core.modelElementDataLock.readLock().lock()
@@ -814,30 +814,31 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
    */
   override protected[modicio] def queryTypes(query: String): Future[Set[ModelElementData]] = {
     Future({
-      core.modelElementDataLock.readLock()
+      core.modelElementDataLock.readLock().lock()
 
       try {
-        var data = core.modelElementDataBuffer.toListBuffer().map(_datum => _datum.copy())
+        val data = core.modelElementDataBuffer.toListBuffer().map(_datum => _datum.copy())
 
         // Handle easy case first
         if (query == "") {
-          Future.successful(data)
-        }
+          data.toSet
+        } else {
+          // Handle harder case second
 
-        // Handle harder case second
-        val termStrings = query.split(" & ")
-        val termTuples = termStrings.map((term) => term.split("="))
+          val termStrings = query.split(" & ")
+          val termTuples = termStrings.map((term) => term.split("="))
 
-        for (termTuple <- termTuples) {
-          if (termTuple(0).toLowerCase() == "identity") {
-            data.filterInPlace((datum) => datum.identity.equals(termTuple(1)))
-          } else if (termTuple(0).toLowerCase() == "name") {
-            data.filterInPlace((datum) => datum.name.equals(termTuple(1)))
-          } else {
-            throw new IllegalArgumentException("Query did not satisfy syntax!")
+          for (termTuple <- termTuples) {
+            if (termTuple(0).toLowerCase() == "identity") {
+              data.filterInPlace((datum) => datum.identity.equals(termTuple(1)))
+            } else if (termTuple(0).toLowerCase() == "name") {
+              data.filterInPlace((datum) => datum.name.equals(termTuple(1)))
+            } else {
+              throw new IllegalArgumentException("Query did not satisfy syntax! Query: " + query)
+            }
           }
+          data.toSet
         }
-        data.toSet
       } catch {
         case e: Exception => throw e
       } finally {
@@ -863,6 +864,7 @@ override protected[modicio] def queryVariantsOfInstances(): Future[Seq[(Long, St
     } catch {
       case e: Exception => throw e
     } finally {
+      core.instanceDataLock.readLock().unlock()
       core.modelElementDataLock.readLock().unlock()
     }
   })
