@@ -109,10 +109,18 @@ trait DeepInstanceIntegrationBehaviors { this: AsyncSpec =>
       fixture.importProjectSetupFromFile("model_deepInstance_01.json") flatMap (_ =>
         for {
           todoInstance <- fixture.instanceFactory.newInstance("Todo")
+          _ <- todoInstance.unfold()
+          _ <- todoInstance.commit
+          preRegistry <- fixture.registry.getReferenceTimeIdentity
+          preInstance <- Future.successful(todoInstance.typeHandle.getTimeIdentity.variantTime)
           _ <- fixture.registry.incrementVariant
-          post <- fixture.registry.getReferenceTimeIdentity
+          todoInstanceOption <- fixture.registry.get(todoInstance.instanceId)
+          todoInstance <- Future.successful(todoInstanceOption.get)
+          postInstance <- Future.successful(todoInstance.typeHandle.getTimeIdentity.variantTime)
+          postRegistry <- fixture.registry.getReferenceTimeIdentity
         } yield {
-          todoInstance.typeHandle.getTimeIdentity.variantTime should be < post.variantTime
+          preInstance should be(postInstance)
+          preRegistry.variantTime should be < postRegistry.variantTime
         }
         )
     }
