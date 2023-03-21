@@ -30,8 +30,8 @@ class AccessCountingListBuffer[T](
   def getWriteCount: Int = writeCount
   def getMemSize: Long = memSize
 
-  def updateMemSize(): Unit = {
-    var runtime = Runtime.getRuntime
+  private def updateMemSize(): Unit = {
+    val runtime = Runtime.getRuntime
     memSize = memSize.max(runtime.totalMemory() - runtime.freeMemory())
   }
 

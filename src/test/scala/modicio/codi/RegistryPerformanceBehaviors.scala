@@ -95,23 +95,23 @@ trait RegistryPerformanceBehaviors { this: AsyncSpec =>
           projectInstance1 <- fixture.instanceFactory.newInstance("Project")
           _ <- projectInstance1.unfold()
           _ <- projectInstance1.commit
-          _ <- Future.sequence(for (_ <- 1 to 100) yield createAndModifyTodoInstance(fixture, projectInstance1))
+          _ <- Future.sequence(for (_ <- 1 to 200) yield createAndModifyTodoInstance(fixture, projectInstance1))
           projectType <- fixture.registry.getType("Project", "#")
 
           t <- createAndModifyType(fixture, projectType.get)
-          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+          _ <- Future.sequence(for (_ <- 1 to 20) yield createInstance(fixture, t.getTypeName))
 
           t <- createAndModifyType(fixture, projectType.get)
-          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+          _ <- Future.sequence(for (_ <- 1 to 20) yield createInstance(fixture, t.getTypeName))
 
           t <- createAndModifyType(fixture, projectType.get)
-          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+          _ <- Future.sequence(for (_ <- 1 to 20) yield createInstance(fixture, t.getTypeName))
 
           t <- createAndModifyType(fixture, projectType.get)
-          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+          _ <- Future.sequence(for (_ <- 1 to 20) yield createInstance(fixture, t.getTypeName))
 
           t <- createAndModifyType(fixture, projectType.get)
-          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+          _ <- Future.sequence(for (_ <- 1 to 20) yield createInstance(fixture, t.getTypeName))
 
         } yield {
           fixture.writeAccessCounts("registry_performance_best_case_" + fileNameModifier, ".")
@@ -131,7 +131,7 @@ trait RegistryPerformanceBehaviors { this: AsyncSpec =>
           projectInstance <- Future.successful(projectInstanceOption.get)
           _ <- projectInstance.unfold()
 
-          todos <- Future.sequence(for (_ <- 1 to 100) yield createInstance(fixture, "Todo"))
+          todos <- Future.sequence(for (_ <- 1 to 200) yield createInstance(fixture, "Todo"))
 
           _ <- Future.successful(for (todo <- todos) {
             projectInstance.associate(todo, fixture.TODO, fixture.PROJECT_HAS_PART)
@@ -158,7 +158,7 @@ trait RegistryPerformanceBehaviors { this: AsyncSpec =>
 
           projectType <- fixture.registry.getType("Project", "#")
 
-          types <- Future.sequence(for (_ <- 1 to 50) yield createAndModifyType(fixture, projectType.get))
+          types <- Future.sequence(for (_ <- 1 to 100) yield createAndModifyType(fixture, projectType.get))
           _ <- Future.sequence(for (t <- types) yield createInstance(fixture, t.getTypeName))
 
         } yield {
