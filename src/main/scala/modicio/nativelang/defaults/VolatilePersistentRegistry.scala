@@ -72,6 +72,7 @@ class VolatilePersistentRegistry(typeFactory: TypeFactory, instanceFactory: Inst
         for ((buffer, values) <- getAccessCounts()) {
           writer.write(s"${buffer}, ${values.getOrElse("ReadCount", 0)}, ${values.getOrElse("WriteCount", 0)}\n")
         }
+        writer.write(String.valueOf(core.modelElementDataBuffer.getMemSize))
         writer.close()
       } match {
         case f@Failure(_) =>
