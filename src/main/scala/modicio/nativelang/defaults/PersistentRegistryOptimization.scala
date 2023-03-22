@@ -11,15 +11,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PersistentRegistryOptimization(registry: AbstractPersistentRegistry,
                                      ttl: Duration = Duration(365, TimeUnit.DAYS),
-                                     modelElementDataCacheSize: Int = 100,
-                                     modelElementDataSetCacheSize: Int = 100,
-                                     ruleDataSetCacheSize: Int = 100,
-                                     instanceDataCacheSize: Int = 100,
-                                     instanceDataSetCacheSize: Int = 100,
-                                     pluginDataSetCacheSize: Int = 100,
-                                     attributeDataSetCacheSize: Int = 100,
-                                     parentRelationDataSetCacheSize: Int = 100,
-                                     associationDataSetCacheSize: Int = 100,
+                                     modelElementDataCacheSize: Int = 50,
+                                     modelElementDataSetCacheSize: Int = 50,
+                                     ruleDataSetCacheSize: Int = 50,
+                                     instanceDataCacheSize: Int = 50,
+                                     instanceDataSetCacheSize: Int = 50,
+                                     pluginDataSetCacheSize: Int = 50,
+                                     attributeDataSetCacheSize: Int = 50,
+                                     parentRelationDataSetCacheSize: Int = 50,
+                                     associationDataSetCacheSize: Int = 50,
                                     )
                                     (implicit executionContext: ExecutionContext)
   extends AbstractPersistentRegistry(registry.typeFactory, registry.instanceFactory)(executionContext) {

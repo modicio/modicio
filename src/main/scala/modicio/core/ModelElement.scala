@@ -176,7 +176,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
    */
   def fork(identity: String, persist: Boolean = true): Future[ModelElement] = {
     val newModelElement = new ModelElement(name, identity, isTemplate, TimeIdentity.fork(timeIdentity))
-    Future.sequence(parentRelations.map(parentRelation => parentRelation.fork(identity))) flatMap (_ => {
+    Future.sequence(parentRelations.map(parentRelation => parentRelation.fork(identity, persist))) flatMap (_ => {
       newModelElement.setRegistry(registry)
       newModelElement.setDefinition(definition.fork(identity))
       if(persist) {

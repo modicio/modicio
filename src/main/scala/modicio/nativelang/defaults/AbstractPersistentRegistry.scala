@@ -321,7 +321,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
   override final def incrementVariant: Future[Any] = {
     val variantTime = IdentityProvider.newTimestampId()
     val variantId = IdentityProvider.newRandomId()
-    getReferences map (referenceHandles => {
+    getReferences flatMap (referenceHandles => {
       referenceHandles.foreach(_.getModelElement.incrementVariant(variantTime, variantId))
 
       Future.sequence(referenceHandles.map(handle => {

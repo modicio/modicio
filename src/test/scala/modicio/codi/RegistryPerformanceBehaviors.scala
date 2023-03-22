@@ -1,94 +1,171 @@
 package modicio.codi
 
+import modicio.core.rules.{AssociationRule, AttributeRule, ConnectionInterface, ParentRelationRule}
+import modicio.core.util.IdentityProvider.newRandomId
+import modicio.core.{DeepInstance, TypeHandle}
 import modicio.nativelang.util.AccessCounting
 import modicio.{AsyncSpec, RegistryFixture}
 
+import scala.concurrent.Future
+
 trait RegistryPerformanceBehaviors { this: AsyncSpec =>
 
-  def performance(newFixture: => RegistryFixture with AccessCounting, fileNameModifier: String) {
-    it must "perform a number of database operations" in {
-      val fixture = newFixture
-      fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>
-        for {
-          (todoInstance1, todoInstance2) <- for {
-            todoInstance1 <- fixture.instanceFactory.newInstance("Todo")
-            todoInstance2 <- fixture.instanceFactory.newInstance("Todo")
-            projectInstance1 <- fixture.instanceFactory.newInstance("Project")
-            _ <- todoInstance1.unfold()
-            _ <- todoInstance2.unfold()
-            _ <- projectInstance1.unfold()
-          } yield {
-            projectInstance1.associate(todoInstance1, fixture.TODO, fixture.PROJECT_HAS_PART)
-            projectInstance1.commit
-            projectInstance1.associate(todoInstance2, fixture.TODO, fixture.PROJECT_HAS_PART)
-            projectInstance1.commit
+  def createAndModifyTodoInstance(fixture: RegistryFixture, projectInstance: DeepInstance): Future[DeepInstance] = {
+    for {
+      todoInstance <- fixture.instanceFactory.newInstance("Todo")
+      _ <- todoInstance.unfold()
 
-            todoInstance1.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
-            todoInstance1.commit
-            todoInstance2.associate(projectInstance1, fixture.PROJECT, fixture.IS_PART_OF)
-            todoInstance2.commit
+      _ <- Future.successful(projectInstance.associate(todoInstance, fixture.TODO, fixture.PROJECT_HAS_PART))
+      _ <- projectInstance.commit
+      projectInstanceOption <- fixture.registry.get(projectInstance.instanceId)
+      projectInstance <- Future.successful(projectInstanceOption.get)
+      _ <- projectInstance.unfold()
 
-            todoInstance1.assignValue("Content", "abc")
-            todoInstance1.commit
-            todoInstance1.assignDeepValue("Title", "abc")
-            todoInstance1.commit
+      _ <- Future.successful(todoInstance.associate(projectInstance, fixture.PROJECT, fixture.IS_PART_OF))
+      _ <- todoInstance.commit
+      todoInstanceOption <- fixture.registry.get(todoInstance.instanceId)
+      todoInstance <- Future.successful(todoInstanceOption.get)
+      _ <- todoInstance.unfold()
 
-            todoInstance2.assignValue("Content", "Todo1")
-            todoInstance2.commit
-            todoInstance2.assignDeepValue("Title", "Todo2")
-            todoInstance2.commit
+      _ <- Future.successful(todoInstance.assignValue("Content", newRandomId()))
+      _ <- todoInstance.commit
+      todoInstanceOption <- fixture.registry.get(todoInstance.instanceId)
+      todoInstance <- Future.successful(todoInstanceOption.get)
+      _ <- todoInstance.unfold()
 
-            (todoInstance1, todoInstance2)
-          }
-          _ <- for {
-            todoOption1 <- fixture.registry.get(todoInstance1.instanceId)
-            _ <- todoOption1.get.unfold()
-            todoOption2 <- fixture.registry.get(todoInstance2.instanceId)
-            _ <- todoOption2.get.unfold()
-          } yield {}
-        } yield {
-          fixture.writeAccessCounts("registry_performance_" + fileNameModifier, ".")
-          1 should be(1)
-        }
-      )
+      _ <- Future.successful(todoInstance.assignDeepValue("Title", newRandomId()))
+      _ <- todoInstance.commit
+      todoInstanceOption <- fixture.registry.get(todoInstance.instanceId)
+      todoInstance <- Future.successful(todoInstanceOption.get)
+      _ <- todoInstance.unfold()
+    } yield {
+      todoInstance
     }
   }
 
-  /*  "BenchmarkMapRegistry" should "correctly record the number of function calls" in { fixture => {
-        val modelVerifier = new SimpleModelVerifier()
-        val definitionVerifier = new SimpleDefinitionVerifier()
+  def createInstance(fixture: RegistryFixture, typeName: String): Future[DeepInstance] = {
+    for {
+      instance <- fixture.instanceFactory.newInstance(typeName)
+      _ <- instance.unfold()
+      _ <- instance.commit
+      instanceOption <- fixture.registry.get(instance.instanceId)
+      instance <- Future.successful(instanceOption.get)
+      _ <- instance.unfold()
+    } yield {
+      instance
+    }
+  }
 
-        val typeFactory: TypeFactory = new TypeFactory(definitionVerifier, modelVerifier)
-        val instanceFactory: InstanceFactory = new InstanceFactory(definitionVerifier, modelVerifier)
+  def createAndModifyType(fixture: RegistryFixture, projectType: TypeHandle): Future[TypeHandle] = {
+    val typeName = newRandomId() + "Type"
+    for {
+      testType <- fixture.typeFactory.newType(typeName, "#", isTemplate = false, Some(fixture.TIME_IDENTITY))
+      _ <- fixture.registry.setType(testType)
+      _ <- Future.successful({
+        testType.applyRule(AssociationRule.create("testRule", "Todo", "*", ConnectionInterface.parseInterface(fixture.TIME_IDENTITY.variantTime.toString, "Todo")))
+        testType.applyRule(AttributeRule.create("ABC", "String", nonEmpty = true))
+        testType.applyRule(ParentRelationRule.create(projectType.getTypeName, projectType.getTypeIdentity))
+      })
+      _ <- testType.commit()
+      testTypeOption <- fixture.registry.getType(typeName, "#")
+      testType <- Future.successful(testTypeOption.get)
+    } yield {
+      testType
+    }
+  }
 
-        val registry: BenchmarkMapRegistry = new BenchmarkMapRegistry(typeFactory, instanceFactory)
-        typeFactory.setRegistry(registry)
-        instanceFactory.setRegistry(registry)
+  def createType(fixture: RegistryFixture): Future[TypeHandle] = {
+    val typeName = newRandomId() + "Type"
+    for {
+      testType <- fixture.typeFactory.newType(typeName, "#", isTemplate = false, Some(fixture.TIME_IDENTITY))
+      _ <- fixture.registry.setType(testType)
+      _ <- testType.commit()
+      testTypeOption <- fixture.registry.getType(typeName, "#")
+      testType <- Future.successful(testTypeOption.get)
+    } yield {
+      testType
+    }
+  }
 
-        val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
-
-        val count = 11
-
-        def addType(number: Number): Future[Any] = {
-          for {
-            newType <- typeFactory.newType(number.toString, ModelElement.REFERENCE_IDENTITY, isTemplate = false, Some(TIME_IDENTITY))
-            _ <- registry.setType(newType)
-          } yield {
-          }
-        }
-
+  def performance(newFixture: => RegistryFixture with AccessCounting, fileNameModifier: String): Unit = {
+    it must "perform a set of best case database operations" in {
+      val fixture = newFixture
+      fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>
         for {
-          root <- typeFactory.newType (ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY, isTemplate = true, Some(TIME_IDENTITY) )
-          _ <- registry.setType (root)
-          _ <- Future.sequence(Range(0,count-1).map((number) => addType(number)))
-          model <- registry.getReferences
+          projectInstance1 <- fixture.instanceFactory.newInstance("Project")
+          _ <- projectInstance1.unfold()
+          _ <- projectInstance1.commit
+          _ <- Future.sequence(for (_ <- 1 to 100) yield createAndModifyTodoInstance(fixture, projectInstance1))
+          projectType <- fixture.registry.getType("Project", "#")
+
+          t <- createAndModifyType(fixture, projectType.get)
+          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+
+          t <- createAndModifyType(fixture, projectType.get)
+          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+
+          t <- createAndModifyType(fixture, projectType.get)
+          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+
+          t <- createAndModifyType(fixture, projectType.get)
+          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+
+          t <- createAndModifyType(fixture, projectType.get)
+          _ <- Future.sequence(for (_ <- 1 to 10) yield createInstance(fixture, t.getTypeName))
+
         } yield {
-          var hint: String = "Elements in the model: "
-          model.foreach(typeHandle => hint = hint + typeHandle.getTypeName + ", ")
-          hint = hint + "\n" + "Attempted calls to setType: " + count + "\n Registered calls to setType: " + registry.benchmarkCounter.getOrElse("setType", 0)
-          model.size should be(11) withClue hint
-          registry.benchmarkCounter.getOrElse("setType", 0) should be(count)
+          fixture.writeAccessCounts("registry_performance_best_case_" + fileNameModifier, ".")
+          1 should be(1)
         }
-      }
-    }*/
+        )
+    }
+
+    it must "perform a set of worst case database operations" in {
+      val fixture = newFixture
+      fixture.importProjectSetupFromFile("model_02.json") flatMap (_ =>
+        for {
+          projectInstance <- fixture.instanceFactory.newInstance("Project")
+          _ <- projectInstance.unfold()
+          _ <- projectInstance.commit
+          projectInstanceOption <- fixture.registry.get(projectInstance.instanceId)
+          projectInstance <- Future.successful(projectInstanceOption.get)
+          _ <- projectInstance.unfold()
+
+          todos <- Future.sequence(for (_ <- 1 to 100) yield createInstance(fixture, "Todo"))
+
+          _ <- Future.successful(for (todo <- todos) {
+            projectInstance.associate(todo, fixture.TODO, fixture.PROJECT_HAS_PART)
+            todo.associate(projectInstance, fixture.PROJECT, fixture.IS_PART_OF)
+          })
+          _ <- Future.sequence(for (todo <- todos) yield todo.commit)
+          _ <- Future.sequence(for (_ <- todos) yield projectInstance.commit)
+          todosOptions <- Future.sequence(for (todo <- todos) yield fixture.registry.get(todo.instanceId))
+          todos <- Future.successful(for (todoOption <- todosOptions) yield todoOption.get)
+          _ <- Future.sequence(for (todo <- todos) yield todo.unfold())
+
+          _ <- Future.successful(for (todo <- todos) {
+            todo.assignValue("Content", newRandomId())
+          })
+          _ <- Future.sequence(for (todo <- todos) yield todo.commit)
+          todosOptions <- Future.sequence(for (todo <- todos) yield fixture.registry.get(todo.instanceId))
+          todos <- Future.successful(for (todoOption <- todosOptions) yield todoOption.get)
+          _ <- Future.sequence(for (todo <- todos) yield todo.unfold())
+
+          _ <- Future.successful(for (todo <- todos) {
+            todo.assignDeepValue("Title", newRandomId())
+          })
+          _ <- Future.sequence(for (todo <- todos) yield todo.commit)
+
+          projectType <- fixture.registry.getType("Project", "#")
+
+          types <- Future.sequence(for (_ <- 1 to 100) yield createAndModifyType(fixture, projectType.get))
+          _ <- Future.sequence(for (t <- types) yield createInstance(fixture, t.getTypeName))
+
+        } yield {
+          fixture.writeAccessCounts("registry_performance_worst_case_" + fileNameModifier, ".")
+          1 should be(1)
+        }
+        )
+    }
+  }
 }
