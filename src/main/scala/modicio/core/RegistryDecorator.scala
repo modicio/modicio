@@ -2,14 +2,14 @@ package modicio.core
 
 import scala.concurrent.Future
 
-class RegistryDecorator(registry: Registry)
-	extends Registry(registry.typeFactory, registry.instanceFactory){
+class RegistryDecorator(registry: Registry, typeFactory: TypeFactory, instanceFactory: InstanceFactory)
+	extends Registry(typeFactory, instanceFactory){
 	
 	override def get(instanceId: String): Future[Option[DeepInstance]] = registry.get(instanceId)
 
 	override def getAll(typeName: String): Future[Set[DeepInstance]] = registry.getAll(typeName)
 
-	override def setInstance(deepInstance: DeepInstance): Future[Any] = registry.setInstance(deepInstance)
+	override def setInstance(deepInstance: DeepInstance): Future[Any] = { registry.setInstance(deepInstance) }
 	
 	override def getReferenceTimeIdentity: Future[TimeIdentity] = registry.getReferenceTimeIdentity
 	
@@ -71,7 +71,7 @@ class RegistryDecorator(registry: Registry)
 	 * @param typeHandle [[TypeHandle TypeHandle]] of a dynamic or forked model-element to store/register
 	 * @return TODO doc
 	 */
-	override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = registry.setNode(typeHandle, importMode)
+	override protected[modicio] def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any] = registry.setNode(typeHandle, importMode)
 	
 	override def getRootOf(instance: DeepInstance): Future[DeepInstance] = registry.getRootOf(instance)
 }

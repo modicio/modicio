@@ -428,7 +428,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Unit] = {
+  override protected[modicio] final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Unit] = {
     for{
       oldRuleData <- fetchRuleData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)
       oldPluginData <- fetchPluginData(typeHandle.getModelElement.name, typeHandle.getTypeIdentity)

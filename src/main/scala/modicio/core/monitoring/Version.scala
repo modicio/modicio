@@ -3,14 +3,15 @@ package modicio.core.monitoring
 import modicio.core.TypeHandle
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 /*
 	A Version includes an unique versionId, versionTime, a number of Instances and a list of  associations with another classes
  */
 class Version(var versionId: String, var versionTime: Long) {
-	var instances: List[String] = _
-	var associations: List[String] = _
-	var parentRelations: mutable.Map[String, String] = _
+	var instances: ListBuffer[String] = new ListBuffer[String]
+	var associations: ListBuffer[String] = new ListBuffer[String]
+	var parentRelations: mutable.Map[String, String] = mutable.Map[String, String]()
 	def increase(instanceId: String): Unit = {
 		if (!this.instances.contains(instanceId)) {
 			instances :+= instanceId
@@ -29,4 +30,5 @@ class Version(var versionId: String, var versionTime: Long) {
 		}
 	}
 	
+	override def toString(): String = "version: " + versionId + ", " + associations.toString()
 }

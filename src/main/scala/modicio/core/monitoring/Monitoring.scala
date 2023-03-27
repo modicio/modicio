@@ -1,15 +1,15 @@
 package modicio.core.monitoring
 import modicio.core.rules.ParentRelationRule
-import modicio.core.{DeepInstance, Registry, RegistryDecorator, TypeHandle}
+import modicio.core.{DeepInstance, InstanceFactory, Registry, RegistryDecorator, TypeFactory, TypeHandle}
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-class Monitoring(registry: Registry) extends RegistryDecorator(registry){
+class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: InstanceFactory) extends RegistryDecorator(registry, typeFactory, instanceFactory){
 	
-	var classes: ListBuffer[Class] = _
+	var classes: ListBuffer[Class] = new ListBuffer[Class]
 	
 	override def get(instanceId: String): Future[Option[DeepInstance]] = {
 		val deepInstance = super.get(instanceId)
@@ -17,57 +17,56 @@ class Monitoring(registry: Registry) extends RegistryDecorator(registry){
 		deepInstance
 	}
 	
-	def detectType(deepInstance: DeepInstance): Unit = {
-		val identity = deepInstance.getIdentity
+	def detectType(deepInstance: DeepInstance): DeepInstance = {
 		val typeHandle: TypeHandle = deepInstance.getTypeHandle
-		val timeIdentity = deepInstance.getTypeHandle.getTimeIdentity
+		val timeIdentity = typeHandle.getTimeIdentity
 		val versionTime = timeIdentity.versionTime
-		val versionId: String = timeIdentity.versionId
+		val versionId = timeIdentity.versionId
 		val variantTime = timeIdentity.variantTime
 		val variantId = timeIdentity.variantId
-		val parentRelations: Set[ParentRelationRule] = typeHandle.getParentRelations
-		val associated: Set[TypeHandle] = typeHandle.getAssociated
-		
-		println("Successed with: ")
-		println(deepInstance.toString + identity)
-		println("TimeIdentity: " + versionTime + versionId + variantTime + variantId)
-		
-		if (classes.exists(c => c.identity == identity)) {
+
+		println("Successed with: " + typeHandle.getTypeName + ", " + typeHandle.getTypeIdentity)
+		println("variant: " + variantTime + ", " + variantId)
+		println("version: " + versionTime + ", " + versionId)
+
+
+		if (classes.exists(c => c.typeName == typeHandle.getTypeName)) {
+			val c: Class = classes.find(c => c.typeName == typeHandle.getTypeName).get
+			var variant: Variant = null
+			var version: Version = null
 			//check variant and version
-			val variant: Option[Variant] = classes.find(c => c.variants.contains(variantId)).get.getVariant(variantId)
-			val version: Option[Version] = variant.get.getVersion(versionId)
-			if (variant.isDefined && version.isEmpty) {
-				// add new Version
-				variant.get.addVersion(versionId, versionTime)
+			if (c.getVariant(variantId).isDefined) {
+				variant = c.getVariant(variantId).get
+				if (variant.getVersion(versionId).isEmpty) {
+					version = variant.addVersion(versionId, versionTime)
+				}else {
+					version = variant.getVersion(versionId).get
+				}
 			} else {
 				// add new Variant with Version
-				val newVariant = classes.find(c => c.identity == identity).get.addVariant(variantId, variantTime)
-				newVariant.addVersion(versionId, versionTime)
+				variant = classes.find(c => c.typeName == typeHandle.getTypeName).get.addVariant(variantId, variantTime)
+				version = variant.addVersion(versionId, versionTime)
 			}
-			//add associations and parentRelations
-			parentRelations.foreach(p => {
-				version.get.addParentRelations(p.parentName, p.parentIdentity)
-			} )
-			associated.foreach(t => {
-				version.get.addAssocaited(t.getTypeIdentity)
-			})
-		}else {
-			//unknown class
-			val newClass: Class = new Class(identity)
+			detectRelations(version, typeHandle.getParentRelations, typeHandle.getAssociated)
+		} else {
+			val newClass: Class = new Class(typeName = typeHandle.getTypeName, typeIdentity = typeHandle.getTypeIdentity)
 			val newVariant = newClass.addVariant(variantId, variantTime)
 			val newVersion = newVariant.addVersion(versionId, versionTime)
 			classes.addOne(newClass)
-			//add associations and parentRelations
-			parentRelations.foreach(p => {
-				newVersion.addParentRelations(p.parentName, p.parentIdentity)
-			})
-			associated.foreach(t => {
-				newVersion.addAssocaited(t.getTypeIdentity)
-			})
+			detectRelations(newVersion, typeHandle.getParentRelations, typeHandle.getAssociated)
 		}
 		detectInstance(deepInstance)
 	}
 	
+	def detectRelations(version: Version, parentRelations: Set[ParentRelationRule], associated: Set[TypeHandle]): Unit = {
+		//add associations and parentRelations
+		parentRelations.foreach(p => {
+			version.addParentRelations(p.parentName, p.parentIdentity)
+		})
+		associated.foreach(t => {
+			version.addAssocaited(t.getTypeIdentity)
+		})
+	}
 	def extractor(result: Try[Option[DeepInstance]]): Unit = result match {
 		case Failure(exception) => println("Failed with: " + exception.getMessage)
 		case Success(deepInstance) =>
@@ -88,22 +87,31 @@ class Monitoring(registry: Registry) extends RegistryDecorator(registry){
 	
 	
 	override def setInstance(deepInstance: DeepInstance): Future[Any] = {
-		println("setInstance")
-		detectType(deepInstance)
-		super.setInstance(deepInstance)
+		super.setInstance(detectType(deepInstance))
 	}
 	
-	def detectInstance(deepInstance: DeepInstance): Unit = {
+	def detectInstance(deepInstance: DeepInstance): DeepInstance = {
 		val instanceId = deepInstance.getInstanceId
 		val versionId: String = deepInstance.getTypeHandle.getTimeIdentity.versionId
 		val variantId = deepInstance.getTypeHandle.getTimeIdentity.variantId
 		
-		val version: Option[Version] = classes.find(c => c.variants.contains(variantId)).get.getVariant(variantId).get.getVersion(versionId)
+		val version: Option[Version] = classes.find(c => c.typeName == deepInstance.typeHandle.getTypeName).get.getVariant(variantId).get.getVersion(versionId)
 		if (version.isDefined) {
 			version.get.increase(instanceId)
 		}
+		
+//		println(version.get.versionId + "instances: " + version.get.instances.toString())
+//		println(version.get.versionId + "parentRelations:" + version.get.parentRelations.toString())
+		
 		classes.foreach(c => c.accept(ConcreteVisitor))
+		deepInstance
 	}
 	
-	def getRegistry(): Registry = this.registry
+	override def toString(): String = {
+		"classes: " + classes.foreach(c => {
+			println(c.typeName +c.variants.foreach(vs => {
+				println( vs.toString() + vs.versions.foreach(vi => println(vi.toString())))
+			})
+			)})
+	}
 }
