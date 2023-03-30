@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel, Tom Felber, Johannes Gröschel
+ * Copyright 2022 Karl Kegel
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package modicio.codi
+package modicio.codi.integrations
 
 import modicio.{AsyncSpec, Spec}
 
 
-class RegistryPerformanceSpec extends AsyncSpec with RegistryPerformanceBehaviors {
+class ConnectionInterfaceIntegrationSpec extends AsyncSpec with ConnectionInterfaceIntegrationBehaviors {
+  "The ConnectionInterface when paired with a SimpleMapRegistry" should behave like connectionInterface(simpleMapRegistry)
 
-  "A VolatilePersistentRegistry" should behave like performance(volatilePersistentRegistry, "raw")
+  "The ConnectionInterface when paired with a VolatilePersistentRegistry" should behave like connectionInterface(volatilePersistentRegistry)
 
-  "A cached Registry" should behave like performance(cachedRegistry, "cached")
+  "The ConnectionInterface when paired with a cached Registry" should behave like connectionInterface(cachedRegistry)
 }

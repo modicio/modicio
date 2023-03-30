@@ -325,4 +325,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
   }
 
+  def writeAccessCounts(input: String) = {}
+
 }

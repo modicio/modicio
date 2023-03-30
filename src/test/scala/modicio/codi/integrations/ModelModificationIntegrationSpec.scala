@@ -16,25 +16,16 @@
  * limitations under the License.
  */
 
-package modicio.codi
+package modicio.codi.integrations
 
-import modicio.{IntegrationSpec, SimpleMapRegistryFixture, VolatilePersistentRegistryFixture}
-import org.scalatest.flatspec.AsyncFlatSpec
-import org.scalatest.matchers.should
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import modicio.{AsyncSpec, Spec}
 
-class ModelModificationSpec extends IntegrationSpec with RegistryBehaviors {
-
-  def volatilePersistentRegistry = {
-    new VolatilePersistentRegistryFixture
-  }
-
-  def simpleMapRegistry = {
-    new SimpleMapRegistryFixture
-  }
+class ModelModificationIntegrationSpec extends AsyncSpec with ModelModificationIntegrationBehaviors {
 
   "A SimpleMapRegistry" should behave like registry(simpleMapRegistry)
 
   "A VolatilePersistentRegistry" should behave like registry(volatilePersistentRegistry)
+
+  "A cached Registry" should behave like registry(cachedRegistry)
 
 }

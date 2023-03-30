@@ -38,7 +38,9 @@ import scala.collection.mutable
  */
 class Definition
 (
-  val definitionVerifier: DefinitionVerifier
+  val definitionVerifier: DefinitionVerifier,
+  private val inRules: Set[Rule] = Set(),
+  private val inPlugins: Set[Plugin] = Set()
 ) extends Observable with Base {
 
   private val attributes: mutable.Set[AttributeRule] = mutable.Set()
@@ -49,6 +51,8 @@ class Definition
 
   private val plugins: mutable.Set[Plugin] = mutable.Set()
 
+  inRules.foreach(applyRule(_))
+  inPlugins.foreach(applyPlugin(_))
 
   private var volatile: Boolean = false
 
