@@ -15,11 +15,12 @@ case class Class(var typeName: String, var typeIdentity: String, var variants: L
 		newVariant
 	}
 	
-	def deleteVariant(variantId: String): Unit = {
-		variants = variants.filter(_.variantId != variantId)
+	def deleteVariant(variant: Variant): Unit = {
+		this.variants = variants.filter(_ != variant)
 	}
 	
 	def getVariant(variantId: String): Option[Variant] = variants.find(vs => vs.variantId == variantId)
 	
+	override def toString: String = "classes: " + this.typeName + this.typeIdentity
 }
 

@@ -14,7 +14,7 @@ import java.time._
 
 class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: InstanceFactory) extends RegistryDecorator(registry, typeFactory, instanceFactory){
 	
-	private var classes: ListBuffer[Class] = new ListBuffer[Class]
+	var classes: ListBuffer[Class] = new ListBuffer[Class]
 	
 	private def detectType(deepInstance: DeepInstance): DeepInstance = {
 		val typeHandle: TypeHandle = deepInstance.getTypeHandle
@@ -62,7 +62,7 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 			version.addParentRelations(p.parentName, p.parentIdentity)
 		})
 		associated.foreach(t => {
-			version.addAssociated(t.getTypeIdentity)
+			version.addAssociated(t.getTypeName)
 		})
 	}
 	
@@ -103,13 +103,6 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 		deepInstance
 	}
 	
-	override def toString(): String = {
-		"classes: " + classes.foreach(c => {
-			println(c.typeName +c.variants.foreach(vs => {
-				println( vs.toString() + vs.versions.foreach(vi => println(vi.toString())))
-			})
-			)})
-	}
 	
 	private def getExpiryTime(days: Long): Long = {
 		val cvdate: LocalDateTime = LocalDateTime.now.minusDays(days)
@@ -121,11 +114,18 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 		val expiryTime: Long = getExpiryTime(7)
 		classes.foreach(c => {
 			c.variants.foreach(vs => {
-				vs.versions = vs.versions.filter(vi => {
-					vi.versionTime <= expiryTime
-				})
+				for(vi <- vs.versions) {
+					if (vi.versionTime <= expiryTime) {
+						vs.deleteVersion(vi)
+					}
+				}
 			})
-			c.variants = c.variants.filter(vs => {vs.variantTime <= expiryTime})
+			for(vs <- c.variants) {
+				if(vs.variantTime <= expiryTime || vs.versions.isEmpty) {
+					c.deleteVariant(vs)
+				}
+			}
+			this.classes = classes.filter(_.variants.nonEmpty)
 		})
 	}
 	

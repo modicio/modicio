@@ -21,6 +21,10 @@ case class Version(var versionId: String,
 		}
 	}
 	
+	def decrease(instanceId: String): Unit = {
+		this.instances = instances.filter(_ != instanceId)
+	}
+	
 	def addParentRelations(parentName: String, parentIdentity: String): Unit = {
 		if (!parentRelations.contains(parentName)) {
 			parentRelations.addOne(parentName, parentIdentity)
@@ -33,5 +37,5 @@ case class Version(var versionId: String,
 		}
 	}
 	
-	override def toString(): String = "version: " + versionId + ", " + associations.toString()
+	override def toString: String = "version: " + versionId + ", " + associations.toString()
 }

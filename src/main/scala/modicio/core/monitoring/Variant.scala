@@ -16,12 +16,12 @@ case class Variant(var variantTime: Long, var variantId: String, var versions: L
 		newVersion
 	}
 	
-	def deleteVersion(versionId: String): Unit = {
-		versions = versions.filter(_.versionId != versionId)
+	def deleteVersion(version: Version): Unit = {
+		versions = versions.filter(_ != version)
 	}
 	
 	def getVersion(versionId: String): Option[Version] = versions.find(vi => vi.versionId == versionId)
 	
-	override def toString(): String = "variant: " + variantId + ", "+ variantTime
+	override def toString: String = "variant: " + variantId + ", "+ variantTime
 	
 }
