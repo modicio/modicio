@@ -77,8 +77,8 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
     val modelElement = typeHandle.getModelElement
     containsRoot flatMap (root => {
       if(root || (modelElement.name == ModelElement.ROOT_NAME && modelElement.identity == ModelElement.REFERENCE_IDENTITY)){
-        println("SET TYPE")
-        println(typeHandle.getTypeName, typeHandle.getTypeIdentity)
+        //println("SET TYPE")
+        //println(typeHandle.getTypeName, typeHandle.getTypeIdentity)
         setNode(typeHandle, importMode) flatMap (_ => {
           if(!importMode && modelElement.identity == ModelElement.REFERENCE_IDENTITY){
             incrementRunning
@@ -87,8 +87,8 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
           }
         })
       }else{
-        println("SET TYPE")
-        println("failed for",typeHandle.getTypeName, typeHandle.getTypeIdentity)
+        //println("SET TYPE")
+        //println("failed for",typeHandle.getTypeName, typeHandle.getTypeIdentity)
         Future.failed(throw new IllegalArgumentException("Registry must contain ROOT element"))
       }
     })

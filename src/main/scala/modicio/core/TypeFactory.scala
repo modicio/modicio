@@ -37,8 +37,8 @@ class TypeFactory(private[modicio] val definitionVerifier: DefinitionVerifier,
   def newType(name: String, identity: String, isTemplate: Boolean, defaultTimeIdentity: Option[TimeIdentity] = None):
   Future[TypeHandle] = {
 
-    println("CREATE NEW TYPE")
-    println(name, identity, isTemplate, defaultTimeIdentity)
+    //println("CREATE NEW TYPE")
+    //println(name, identity, isTemplate, defaultTimeIdentity)
 
     val definition = new DefinitionWrapper(definitionVerifier)
 

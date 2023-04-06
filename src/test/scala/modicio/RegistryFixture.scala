@@ -81,7 +81,7 @@ abstract class RegistryFixture {
   def importProjectSetupFromFile(file: String): Future[Any] = {
     val source = Source.fromResource(file)
     val fileContents = source.getLines.mkString
-    println(fileContents)
+    //println(fileContents)
     source.close()
     val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
     val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)

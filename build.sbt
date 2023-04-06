@@ -20,3 +20,5 @@ scalacOptions ++= Seq(
   "-Xlog-implicits",
   "-deprecation"
 )
+
+parallelExecution in Test := false
