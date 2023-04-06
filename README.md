@@ -1,7 +1,7 @@
 ![Scala CI](https://github.com/modicio/modicio/workflows/Scala%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/modicio/modicio/branch/main/graph/badge.svg?token=TY4TLWUGSG)](https://codecov.io/gh/modicio/modicio)
 
-> :ambulance: **As of right now, modicio is a scientific prototype and under frequent refactoring, so please refrain from using it in production yet. Stable releases will be marked accordingly.**
+> :ambulance: **As of right now, modicio is a scientific prototype and under frequent refactoring, so please refrain from using it in production yet. Stable releases will be marked accordingly. The metamodel will be finalised in an upcoming release.**
 
 # modicio
 
