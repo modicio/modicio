@@ -67,9 +67,9 @@ class NativeDSLTransformer(registry: Registry,
     val name = NativeModelElement.parseName(statement)
     val identity = NativeModelElement.parseIdentity(statement)
 
-    println("EVALUATE MODEL ELEMENT")
-    println(statement)
-    println(defaultTimeIdentity)
+    //println("EVALUATE MODEL ELEMENT")
+    //println(statement)
+    //println(defaultTimeIdentity)
 
     val timeIdentity = {
       if (statement.timeDescriptor.isDefined) {

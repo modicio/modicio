@@ -430,10 +430,10 @@ class DeepInstance(private[modicio] val instanceId: String,
     val instanceTypes: Set[String] = deepInstance.getTypeClosure
     val instanceTimeIdentity = deepInstance.getTypeHandle.getTimeIdentity
 
-    println("Association Candidate: " + instanceTypes)
-    println("Association Target: " + getTypeClosure)
-    println("byRelation: " + byRelation)
-    println("associateAs: " + associateAs)
+    //println("Association Candidate: " + instanceTypes)
+    //println("Association Target: " + getTypeClosure)
+    //println("byRelation: " + byRelation)
+    //println("associateAs: " + associateAs)
 
     if (instanceTypes.contains(associateAs)) {
       //check if the proposed relation is defined on top of a type which is in the instance type hierarchy

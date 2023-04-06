@@ -280,7 +280,7 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
         isConcrete = false
       }
     })
-    println("DEBUG >> " + name + " isConcrete = " + isConcrete)
+    //println("DEBUG >> " + name + " isConcrete = " + isConcrete)
     isConcrete
   }
 
