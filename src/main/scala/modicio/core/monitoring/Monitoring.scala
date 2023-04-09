@@ -4,6 +4,7 @@ import io.circe.generic.semiauto.deriveEncoder
 import io.circe.{Encoder, Json}
 import modicio.core.rules.ParentRelationRule
 import io.circe.syntax._
+import modicio.core.util.IdentityProvider
 import modicio.core.{DeepInstance, InstanceFactory, Registry, RegistryDecorator, TypeFactory, TypeHandle}
 
 import scala.collection.mutable.ListBuffer
@@ -24,12 +25,20 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 		val variantTime = timeIdentity.variantTime
 		val variantId = timeIdentity.variantId
 		
-//		println("Succeed with: " + typeHandle.getTypeName + ", " + typeHandle.getTypeIdentity)
-//		println("variant: " + variant.variantId + ", " + variant.variantTime)
-//		println("version: " + version.versionId + ", " + version.versionTime)
+		println("Succeed with: " + typeHandle.getTypeName + ", " + typeHandle.getTypeIdentity)
+		println("Succeed with: " + deepInstance.getIdentity + ", " + deepInstance.getInstanceId)
+		//		println("variant: " + variant.variantId + ", " + variant.variantTime)
+		//		println("version: " + version.versionId + ", " + version.versionTime)
 		
 		if (classes.exists(c => c.typeName == typeHandle.getTypeName)) {
 			val c: Class = classes.find(c => c.typeName == typeHandle.getTypeName).get
+//			if (classes.find(n => n.typeIdentity == typeHandle.getTypeIdentity).isDefined) {
+//
+//				val n: Class = classes.find(n => n.typeIdentity == typeHandle.getTypeIdentity).get
+//				c.typeIdentity = typeHandle.getTypeIdentity
+//				n.typeIdentity = "upperclass"
+//			}
+			
 			var variant: Variant = null
 			var version: Version = null
 			//check variant and version
@@ -62,7 +71,7 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 			version.addParentRelations(p.parentName, p.parentIdentity)
 		})
 		associated.foreach(t => {
-			version.addAssociated(t.getTypeName)
+			version.addAssociated(t.getTypeName, t.getTimeIdentity.variantId, t.getTimeIdentity.versionId)
 		})
 	}
 	
@@ -71,21 +80,25 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 		deepInstance.onComplete({
 			case Failure(exception) => println("Failed with: " + exception.getMessage)
 			case Success(deepInstance) =>
-				if (deepInstance.isDefined) detectType(deepInstance.get)
+				if (deepInstance.isDefined && !classes.exists(c => c.typeIdentity == deepInstance.get.getIdentity)) detectType(deepInstance.get)
 		})
 		deepInstance
 	}
 	
 	override def getAll(typeName: String): Future[Set[DeepInstance]] = {
 		val deepInstances = super.getAll(typeName)
-		super.getAll(typeName).onComplete({
+		deepInstances.onComplete({
 			case Failure(exception) => println("Failed with: " + exception.getMessage)
-			case Success(deepInstances) => deepInstances.foreach(d => detectType(d))
+			case Success(deepInstances) => deepInstances.foreach(deepInstance => {
+				if (!classes.exists(c => c.typeIdentity == deepInstance.getIdentity)) detectType(deepInstance)
+			})
 		})
 		deepInstances
 	}
 	
 	override def setInstance(deepInstance: DeepInstance): Future[Any] = {
+		println("setInstance")
+		println("deepInstance: ", deepInstance.typeHandle.getTypeName)
 		super.setInstance(detectType(deepInstance))
 	}
 	
@@ -96,22 +109,21 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 		
 		val version: Option[Version] = classes.find(c => c.typeName == deepInstance.typeHandle.getTypeName).get.getVariant(variantId).get.getVersion(versionId)
 		if (version.isDefined) {
-			version.get.increase(instanceId)
+			version.get.increase(instanceId, IdentityProvider.newTimestampId())
 		}
 		
-		deleteObsoleteKnowledge()
+		val minutes: Int = 30
+		deleteObsoleteKnowledge(minutes)
+		
+		val size: Int = 10
+		if (classes.length > size) {
+			deleteObsoleteKnowledgeBySize(size)
+		}
 		deepInstance
 	}
 	
-	
-	private def getExpiryTime(days: Long): Long = {
-		val cvdate: LocalDateTime = LocalDateTime.now.minusDays(days)
-		val zonedDateTime = ZonedDateTime.of(cvdate, ZoneId.systemDefault)
-		zonedDateTime.toInstant.toEpochMilli
-	}
-	
-	private def deleteObsoleteKnowledge(): Unit = {
-		val expiryTime: Long = getExpiryTime(7)
+	private def deleteObsoleteKnowledge(minutes: Int): Unit = {
+		val expiryTime: Long = getExpiryTime(minutes)
 		classes.foreach(c => {
 			c.variants.foreach(vs => {
 				for(vi <- vs.versions) {
@@ -127,6 +139,34 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 			}
 			this.classes = classes.filter(_.variants.nonEmpty)
 		})
+	}
+	
+	private def deleteObsoleteKnowledgeBySize(size: Int): Unit = {
+		while (classes.length > size) {
+			classes.foreach(c => {
+				c.variants.foreach(vs => {
+					var latestVersion: Version = vs.versions.last
+					for (vi <- vs.versions) {
+						if (vi.versionTime > latestVersion.versionTime) {
+							latestVersion = vi
+						}
+					}
+					vs.deleteVersion(latestVersion)
+				})
+				for (vs <- c.variants) {
+					if (vs.versions.isEmpty) {
+						c.deleteVariant(vs)
+					}
+				}
+				this.classes = classes.filter(_.variants.nonEmpty)
+			})
+		}
+	}
+	
+	private def getExpiryTime(minutes: Long): Long = {
+		val cvdate: LocalDateTime = LocalDateTime.now.minusMinutes(minutes)
+		val zonedDateTime = ZonedDateTime.of(cvdate, ZoneId.systemDefault)
+		zonedDateTime.toInstant.toEpochMilli
 	}
 	
 	def produceJson(): Json = {

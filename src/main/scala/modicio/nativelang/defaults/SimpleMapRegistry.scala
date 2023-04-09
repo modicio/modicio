@@ -163,7 +163,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override protected def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[TimeIdentity] = {
+  override protected[modicio] def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[TimeIdentity] = {
     val name = typeHandle.getTypeName
     val identity = typeHandle.getTypeIdentity
     if (!typeRegistry.contains(name)) {

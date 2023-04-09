@@ -3,7 +3,6 @@ package modicio.core.monitoring
 import io.circe.generic.JsonCodec
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 /*
 	A Version includes an unique versionId, versionTime, a number of Instances and a list of  associations with another classes
@@ -11,29 +10,32 @@ import scala.collection.mutable.ListBuffer
 @JsonCodec
 case class Version(var versionId: String,
 									 var versionTime: Long,
-									 var instances: ListBuffer[String] = new ListBuffer[String],
-									 var associations: ListBuffer[String] = new ListBuffer[String],
-									 var parentRelations: mutable.Map[String, String] = mutable.Map[String, String]()
+									 var instances: mutable.Set[Set[String]] = mutable.Set[Set[String]](),
+									 var associations: mutable.Set[Set[String]] = mutable.Set[Set[String]](),
+									 var parentRelations: mutable.Set[Set[String]] = mutable.Set[Set[String]](),
 									) {
-	def increase(instanceId: String): Unit = {
-		if (!this.instances.contains(instanceId)) {
-			instances :+= instanceId
+	def increase(instanceId: String, instanceTime: Long): Unit = {
+		val newInstance = Set(instanceId, instanceTime.toString)
+		if (!this.instances.exists(i => i.contains(instanceId))) {
+			instances.addOne(newInstance)
 		}
 	}
 	
 	def decrease(instanceId: String): Unit = {
-		this.instances = instances.filter(_ != instanceId)
+		this.instances = instances.filter(instance => !instance.contains(instanceId))
 	}
 	
 	def addParentRelations(parentName: String, parentIdentity: String): Unit = {
-		if (!parentRelations.contains(parentName)) {
-			parentRelations.addOne(parentName, parentIdentity)
+		val newParentRelation = Set(parentName, parentIdentity)
+		if (!parentRelations.contains(newParentRelation)) {
+			parentRelations.addOne(newParentRelation)
 		}
 	}
 	
-	def addAssociated(identity: String): Unit = {
-		if (!associations.contains(identity)) {
-			associations :+= identity
+	def addAssociated(typeName: String, variantId: String, versionId: String): Unit = {
+		val newAssociation = Set(typeName, variantId, versionId)
+		if (!associations.contains(newAssociation)) {
+			associations.addOne(newAssociation)
 		}
 	}
 	
