@@ -1,12 +1,12 @@
 package modicio.codi
 
-import modicio.FixtureIntegrationForMonitoringSpec
+import modicio.FixtureForMonitoringSpec
 import modicio.core.ModelElement
 import modicio.core.rules.{AssociationRule, ConnectionInterface, ParentRelationRule}
 
 import scala.concurrent.Future
 
-class MonitoringPerformanceSpec extends FixtureIntegrationForMonitoringSpec {
+class MonitoringPerformanceSpec extends FixtureForMonitoringSpec {
 
 	"Monitoring" must "add types and instances" in { fixture => {
 		val newRule = AssociationRule.create("dueBy", fixture.DEADLINE, fixture.SINGLE, ConnectionInterface.parseInterface(fixture.TIME_IDENTITY.variantTime.toString, fixture.DEADLINE))
