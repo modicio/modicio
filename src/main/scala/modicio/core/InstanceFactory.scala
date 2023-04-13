@@ -98,7 +98,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
       }
     }
     val parentRelations = createParentRelations(typeHandle, identity, instanceId, deepValueSet, instanceBuffer)
-    val shape = new Shape(
+    val shape = new ShapeWrapper(
       deriveAttributes(typeHandle, instanceId, deepValueSet),
       mutable.Set.from(deriveAssociations(typeHandle, instanceId, deepValueSet)),
       parentRelations)
@@ -169,7 +169,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
    * @param typeHandle
    * @return
    */
-  def loadInstance(instanceData: InstanceData, shape: Shape, typeHandle: TypeHandle): Option[DeepInstance] = {
+  def loadInstance(instanceData: InstanceData, shape: ShapeWrapper, typeHandle: TypeHandle): Option[DeepInstance] = {
     //TODO maybe some verification or remove the option return
     Some(new DeepInstance(instanceData.instanceId, instanceData.identity, shape, typeHandle, registry))
   }

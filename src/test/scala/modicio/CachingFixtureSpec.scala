@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel, Tom Felber, Johannes Gröschel
+ * Copyright 2023 Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 
-package modicio.codi
+package modicio
 
-import modicio.{AsyncSpec, Spec}
+import modicio.codi.fixtures.OptimizedRegistryFixture
+import org.scalatest.FutureOutcome
+import org.scalatest.flatspec.FixtureAsyncFlatSpec
+import org.scalatest.matchers.should
 
+abstract class CachingFixtureSpec extends FixtureAsyncFlatSpec with should.Matchers{
+  type FixtureParam = OptimizedRegistryFixture
 
-class RegistryPerformanceSpec extends AsyncSpec with RegistryPerformanceBehaviors {
+  override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
+    val theFixture = new FixtureParam()
 
-  "A VolatilePersistentRegistry" should behave like performance(volatilePersistentRegistry, "raw")
+    complete {
+      super.withFixture(test.toNoArgAsyncTest(theFixture))
+    } lastly {
 
-  "A cached Registry" should behave like performance(cachedRegistry, "cached")
+    }
+  }
 }
+

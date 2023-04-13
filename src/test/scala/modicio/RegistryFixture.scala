@@ -16,9 +16,9 @@
 
 package modicio
 
-import modicio.core.{InstanceFactory, ModelElement, Registry, TimeIdentity, TypeFactory}
 import modicio.core.rules.{AssociationRule, AttributeRule, ConnectionInterface, ParentRelationRule}
-import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleMapRegistry, SimpleModelVerifier, VolatilePersistentRegistry}
+import modicio.core._
+import modicio.nativelang.defaults.{SimpleDefinitionVerifier, SimpleModelVerifier}
 import modicio.nativelang.input.{NativeDSL, NativeDSLParser, NativeDSLTransformer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -81,7 +81,7 @@ abstract class RegistryFixture {
   def importProjectSetupFromFile(file: String): Future[Any] = {
     val source = Source.fromResource(file)
     val fileContents = source.getLines.mkString
-    println(fileContents)
+    //println(fileContents)
     source.close()
     val initialInput: NativeDSL = NativeDSLParser.parse(fileContents)
     val transformer = new NativeDSLTransformer(registry, definitionVerifier, modelVerifier)

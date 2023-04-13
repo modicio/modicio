@@ -43,4 +43,13 @@ class Shape(attributes: Set[AttributeData], associations: mutable.Set[Associatio
 
   def getParentRelations: Set[ParentRelationData] = parentRelations
 
+  def setAttributeValue(key: String, value: String): Boolean = {
+    val attributeOption = getAttribute(key)
+    if (attributeOption.isDefined) {
+      attributeOption.get.value = value
+      true
+    } else {
+      false
+    }
+  }
 }
