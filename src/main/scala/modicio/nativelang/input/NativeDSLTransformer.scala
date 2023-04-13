@@ -17,7 +17,7 @@ package modicio.nativelang.input
 
 import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule}
 import modicio.core.values.ConcreteValue
-import modicio.core.{DeepInstance, ImmutableShape, ModelElement, Plugin, Registry, Shape, TimeIdentity, Transformer, TypeHandle}
+import modicio.core.{DeepInstance, ImmutableShape, ModelElement, Plugin, Registry, Shape, ShapeWrapper, TimeIdentity, Transformer, TypeHandle}
 import modicio.verification.{DefinitionVerifier, ModelVerifier}
 
 import scala.collection.mutable
@@ -52,7 +52,7 @@ class NativeDSLTransformer(registry: Registry,
 
       val instanceFuture = Future.sequence(instancePart.map(data => {
         val (instanceData, parentRelationData, attributeData, associationData) = data
-        val shape = new Shape(attributeData, mutable.Set.from(associationData), parentRelationData)
+        val shape = new ShapeWrapper(attributeData, mutable.Set.from(associationData), parentRelationData)
         registry.getType(instanceData.instanceOf, instanceData.identity) map (typeHandleOption => {
             new DeepInstance(instanceData.instanceId, instanceData.identity, shape, typeHandleOption.get, registry)
         })
@@ -67,9 +67,9 @@ class NativeDSLTransformer(registry: Registry,
     val name = NativeModelElement.parseName(statement)
     val identity = NativeModelElement.parseIdentity(statement)
 
-    println("EVALUATE MODEL ELEMENT")
-    println(statement)
-    println(defaultTimeIdentity)
+    //println("EVALUATE MODEL ELEMENT")
+    //println(statement)
+    //println(defaultTimeIdentity)
 
     val timeIdentity = {
       if (statement.timeDescriptor.isDefined) {

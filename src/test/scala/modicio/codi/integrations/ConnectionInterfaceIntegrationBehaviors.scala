@@ -1,26 +1,12 @@
-/**
- * Copyright 2022 Karl Kegel
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package modicio.codi.integrations
 
-package modicio.codi
+import modicio.{AsyncSpec, RegistryFixture, Spec}
 
-import modicio.FixtureIntegrationSpec
+trait ConnectionInterfaceIntegrationBehaviors { this: AsyncSpec =>
 
-
-class ConnectionInterfaceIntegrationSpec extends FixtureIntegrationSpec {
-  "DeepInstance.associate()" must "create correct AssociationData if a matching Slot is found" in { fixture => {
+  def connectionInterface(newFixture: => RegistryFixture): Unit = {
+    it must "create correct AssociationData if a matching Slot is found upon DeepInstance.associate()" in {
+      val fixture = newFixture
       fixture.initProjectSetup() flatMap (_ =>
         for {
           todoInstance <- fixture.instanceFactory.newInstance(fixture.TODO)
@@ -31,9 +17,9 @@ class ConnectionInterfaceIntegrationSpec extends FixtureIntegrationSpec {
         }
       )
     }
-  }
 
-  "DeepInstance.associate()" must "fail if no matching Slot is found by targetName" in {  fixture => {
+    it must "fail if no matching Slot is found by targetName upon DeepInstance.associate()" in {
+      val fixture = newFixture
       fixture.initProjectSetup() flatMap (_ =>
         for {
           todoInstance <- fixture.instanceFactory.newInstance(fixture.TODO)

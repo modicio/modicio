@@ -1,5 +1,7 @@
 /**
- * Copyright 2022 Karl Kegel, Tom Felber, Johannes Gröschel
+ * Copyright 2022 Karl Kegel
+ * Johannes Gröschel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package modicio.codi
+package modicio.codi.integrations
 
 import modicio.{AsyncSpec, Spec}
 
+class NativeInputTransformerIntegrationSpec extends AsyncSpec with NativeInputTransformerBehaviors {
 
-class RegistryPerformanceSpec extends AsyncSpec with RegistryPerformanceBehaviors {
+  "The NativeInputTransformer paired with a SimpleMapRegistry" should behave like nativeInputTransformer(simpleMapRegistry)
 
-  "A VolatilePersistentRegistry" should behave like performance(volatilePersistentRegistry, "raw")
+  "The NativeInputTransformer paired with a VolatilePersistenRegistry" should behave like nativeInputTransformer(volatilePersistentRegistry)
 
-  "A cached Registry" should behave like performance(cachedRegistry, "cached")
+  "The NativeInputTransformer paired with a cached Registry" should behave like nativeInputTransformer(cachedRegistry)
+
 }

@@ -86,4 +86,29 @@ class AccessCountingBufferSpec extends AnyFlatSpec with should.Matchers {
     buffer.getByIndex(0) should be(1)
     buffer.getByIndex(1) should be(5)
   }
+
+  "remove" must "remove the right element" in {
+    val buffer = new AccessCountingListBuffer[Int]()
+    buffer += 1
+    buffer += 2
+    val item = buffer.remove(0)
+    item should be(1)
+    buffer.getByIndex(0) should be(2)
+  }
+
+  "clone" must "create a correct copy of the buffer" in {
+    val buffer = new AccessCountingListBuffer[Int]()
+    buffer += 1
+    val clone = buffer.clone()
+    clone.size should be(1)
+    clone.find(_item => _item == 1).isDefined should be(true)
+  }
+
+  "toSet" must "return a set containing all the items of the original list" in {
+    val buffer = new AccessCountingListBuffer[Int]()
+    buffer += 1
+    val set = buffer.toSet()
+    set.find(_item => _item == 1).isDefined should be(true)
+    set.size should be(1)
+  }
 }

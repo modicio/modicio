@@ -1,5 +1,6 @@
 /**
- * Copyright 2022 Karl Kegel, Tom Felber, Johannes Gröschel
+ * Copyright 2022 Karl Kegel
+ * Tom Felber
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +15,16 @@
  * limitations under the License.
  */
 
-package modicio.codi
+package modicio.codi.integrations
 
 import modicio.{AsyncSpec, Spec}
 
+class TypeIteratorIntegrationSpec extends AsyncSpec with TypeIteratorIntegrationBehaviors {
 
-class RegistryPerformanceSpec extends AsyncSpec with RegistryPerformanceBehaviors {
+  "The TypeIterator when paired with a SimpleMapRegistry" should behave like typeIterator(simpleMapRegistry)
 
-  "A VolatilePersistentRegistry" should behave like performance(volatilePersistentRegistry, "raw")
+  "The TypeIterator when paired with a VolatilePersistentRegistry" should behave like typeIterator(volatilePersistentRegistry)
 
-  "A cached Registry" should behave like performance(cachedRegistry, "cached")
+  "The TypeIterator when paired with a cached Registry" should behave like typeIterator(cachedRegistry)
+
 }
