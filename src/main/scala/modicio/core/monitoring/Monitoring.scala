@@ -16,6 +16,8 @@ import java.time._
 class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: InstanceFactory) extends RegistryDecorator(registry, typeFactory, instanceFactory){
 	
 	var classes: ListBuffer[Class] = new ListBuffer[Class]
+	var minutes: Int = 30
+	var size: Int = 10
 	
 	private def detectType(deepInstance: DeepInstance): DeepInstance = {
 		val typeHandle: TypeHandle = deepInstance.getTypeHandle
@@ -25,19 +27,8 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 		val variantTime = timeIdentity.variantTime
 		val variantId = timeIdentity.variantId
 		
-		println("Succeed with: " + typeHandle.getTypeName + ", " + typeHandle.getTypeIdentity)
-		println("Succeed with: " + deepInstance.getIdentity + ", " + deepInstance.getInstanceId)
-		//		println("variant: " + variant.variantId + ", " + variant.variantTime)
-		//		println("version: " + version.versionId + ", " + version.versionTime)
-		
 		if (classes.exists(c => c.typeName == typeHandle.getTypeName)) {
 			val c: Class = classes.find(c => c.typeName == typeHandle.getTypeName).get
-//			if (classes.find(n => n.typeIdentity == typeHandle.getTypeIdentity).isDefined) {
-//
-//				val n: Class = classes.find(n => n.typeIdentity == typeHandle.getTypeIdentity).get
-//				c.typeIdentity = typeHandle.getTypeIdentity
-//				n.typeIdentity = "upperclass"
-//			}
 			
 			var variant: Variant = null
 			var version: Version = null
@@ -97,8 +88,6 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 	}
 	
 	override def setInstance(deepInstance: DeepInstance): Future[Any] = {
-		println("setInstance")
-		println("deepInstance: ", deepInstance.typeHandle.getTypeName)
 		super.setInstance(detectType(deepInstance))
 	}
 	
@@ -112,58 +101,74 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 			version.get.increase(instanceId, IdentityProvider.newTimestampId())
 		}
 		
-		val minutes: Int = 30
-		deleteObsoleteKnowledge(minutes)
+		if (minutes > 0) {
+			deleteObsoleteKnowledge(minutes)
+		}
 		
-		val size: Int = 10
-		if (classes.length > size) {
+		if (classes.length > size && size > 0) {
 			deleteObsoleteKnowledgeBySize(size)
 		}
 		deepInstance
 	}
 	
-	private def deleteObsoleteKnowledge(minutes: Int): Unit = {
-		val expiryTime: Long = getExpiryTime(minutes)
-		classes.foreach(c => {
-			c.variants.foreach(vs => {
-				for(vi <- vs.versions) {
-					if (vi.versionTime <= expiryTime) {
-						vs.deleteVersion(vi)
-					}
-				}
-			})
-			for(vs <- c.variants) {
-				if(vs.variantTime <= expiryTime || vs.versions.isEmpty) {
-					c.deleteVariant(vs)
-				}
-			}
-			this.classes = classes.filter(_.variants.nonEmpty)
-		})
-	}
-	
-	private def deleteObsoleteKnowledgeBySize(size: Int): Unit = {
-		while (classes.length > size) {
+	def deleteObsoleteKnowledge(minutes: Int): Unit = {
+		if (minutes != this.minutes) {
+			this.minutes = minutes
+		}
+		if (minutes >= 0) {
+			val expiryTime: Long = getExpiryTime(minutes)
 			classes.foreach(c => {
 				c.variants.foreach(vs => {
-					var latestVersion: Version = vs.versions.last
 					for (vi <- vs.versions) {
-						if (vi.versionTime > latestVersion.versionTime) {
-							latestVersion = vi
-						}
+							for (instance <- vi.instances) {
+								if (instance.last.toLong <= expiryTime) {
+									vi.decrease(instance)
+								}
+							}
+							if (vi.instances.isEmpty) {
+								vs.deleteVersion(vi)
+							}
 					}
-					vs.deleteVersion(latestVersion)
-				})
-				for (vs <- c.variants) {
 					if (vs.versions.isEmpty) {
 						c.deleteVariant(vs)
 					}
-				}
+				})
 				this.classes = classes.filter(_.variants.nonEmpty)
 			})
 		}
 	}
 	
-	private def getExpiryTime(minutes: Long): Long = {
+	def deleteObsoleteKnowledgeBySize(size: Int): Unit = {
+		if (size != this.size) {
+			this.size = size
+		}
+		if (size > 0) {
+			while (classes.length > size) {
+				classes.foreach(c => {
+					c.variants.foreach(vs => {
+						for (vi <- vs.versions) {
+							var latestInstance = vi.instances.last
+							for (instance <- vi.instances) {
+								if (instance.last.toLong > latestInstance.last.toLong) {
+									latestInstance = instance
+								}
+							}
+							vi.decrease(latestInstance)
+							if (vi.instances.isEmpty) {
+								vs.deleteVersion(vi)
+							}
+						}
+						if (vs.versions.isEmpty) {
+							c.deleteVariant(vs)
+						}
+					})
+					this.classes = classes.filter(_.variants.nonEmpty)
+				})
+			}
+		}
+	}
+	
+	def getExpiryTime(minutes: Long): Long = {
 		val cvdate: LocalDateTime = LocalDateTime.now.minusMinutes(minutes)
 		val zonedDateTime = ZonedDateTime.of(cvdate, ZoneId.systemDefault)
 		zonedDateTime.toInstant.toEpochMilli

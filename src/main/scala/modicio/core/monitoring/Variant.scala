@@ -22,6 +22,4 @@ case class Variant(var variantTime: Long, var variantId: String, var versions: L
 	
 	def getVersion(versionId: String): Option[Version] = versions.find(vi => vi.versionId == versionId)
 	
-	override def toString: String = "variant: " + variantId + ", "+ variantTime
-	
 }

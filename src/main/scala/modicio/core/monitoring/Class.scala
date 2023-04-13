@@ -21,6 +21,5 @@ case class Class(var typeName: String, var typeIdentity: String, var variants: L
 	
 	def getVariant(variantId: String): Option[Variant] = variants.find(vs => vs.variantId == variantId)
 	
-	override def toString: String = "classes: " + this.typeName + this.typeIdentity
 }
 
