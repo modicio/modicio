@@ -426,7 +426,7 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
     }
   }
 
-  override protected final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Unit] = {
+  override protected[modicio] final def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Unit] = {
     val modelElement = typeHandle.getModelElement
     val (modelElementData, ruleData, pluginData) = modelElement.toData
     for{

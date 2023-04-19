@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Karl Kegel
+ * Copyright 2022 Karl Kegel, Minji Kim
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
    * @param typeHandle [[TypeHandle TypeHandle]] of a dynamic or forked model-element to store/register
    * @return TODO doc
    */
-  protected def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any]
+  protected[modicio] def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[Any]
 
   /**
    * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity
