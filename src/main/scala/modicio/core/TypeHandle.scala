@@ -15,7 +15,7 @@
  */
 package modicio.core
 
-import modicio.core.rules.{ParentRelationRule, Slot}
+import modicio.core.rules.{AssociationRule, AttributeRule, ParentRelationRule, Slot}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -66,6 +66,14 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
    * @return Set[ParentRelationRule] - direct parent relations
    */
   def getParentRelations: Set[ParentRelationRule] = modelElement.definition.getParentRelationRules
+
+  def getAttributes: Set[AttributeRule] = modelElement.definition.getAttributeRules
+
+  def getDeepAttributes: Set[AttributeRule] = modelElement.deepAttributeRuleSet
+
+  def getAssociations: Set[AssociationRule] = modelElement.definition.getAssociationRules
+
+  def getDeepAssociations: Set[AssociationRule] = modelElement.deepAssociationRuleSet
 
   def applyRule(rule: Rule): Unit = {
     if (!static || importMode) {
