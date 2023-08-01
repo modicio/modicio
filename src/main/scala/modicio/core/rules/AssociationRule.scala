@@ -38,14 +38,13 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
 
   val associationName: String = parseName
   val targetName: String = parseTarget
-  val multiplicity: String = parseMultiplicity
 
   if(interface.isEmpty){
     val parts = nativeValue.split(":")
-    if(parts.length < 5) {
+    if(parts.length < 4) {
       interface = Some(new ConnectionInterface(mutable.Buffer[Slot]()))
     }else{
-      interface = Some(ConnectionInterface.parseInterface(parts(4), targetName))
+      interface = Some(ConnectionInterface.parseInterface(parts(3), targetName))
     }
   }
 
@@ -83,15 +82,6 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
    */
   private def parseTarget: String = nativeValue.split(":")(2)
 
-  /**
-   * <p>Helper to retrieve the multiplicity from the serialised value
-   * TODO multiplicities should be covered by a separate class and an numeric representation
-   *
-   * @param nativeValue serialised rule representation
-   * @return String of multiplicity
-   */
-  private def parseMultiplicity: String = nativeValue.split(":")(3)
-
 
   /**
    * <p>Implementation of [[Rule#serialise Rule.serialise()]]
@@ -99,7 +89,7 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
    * @return String of serialised rule
    */
   override def serialise(): String = {
-    id + ":" + associationName + ":" + targetName + ":" + multiplicity + ":" + ConnectionInterface.serialise(interface.get)
+    id + ":" + associationName + ":" + targetName + ":" + ConnectionInterface.serialise(interface.get)
   }
 
   /**
@@ -109,7 +99,7 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
    * @return String of simplified serialisation
    */
   override def serialiseSimple(): String = {
-    "..." + id.takeRight(5) + ":" + associationName + ":" + targetName + ":" + multiplicity
+    "..." + id.takeRight(5) + ":" + associationName + ":" + targetName
   }
 
   /**
@@ -128,7 +118,7 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
    * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
-  override def fork(identity: String): Rule = AssociationRule.create(associationName, targetName, multiplicity, interface.get, Some(Rule.UNKNOWN_ID))
+  override def fork(identity: String): Rule = AssociationRule.create(associationName, targetName, interface.get, Some(Rule.UNKNOWN_ID))
 
   /**
    *
@@ -140,7 +130,7 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
       case rule: AssociationRule => {
         //TODO some sophisticated reasoning must be made here!
         // it has especially to be checked that the target is a child of the parent target
-        rule.associationName == associationName && rule.multiplicity == multiplicity && rule.targetName == targetName
+        rule.associationName == associationName && rule.targetName == targetName
       }
       case _ => false
     }
@@ -148,23 +138,6 @@ class AssociationRule(nativeValue: String, private var interface: Option[Connect
 
   override def getDataType: Int = RuleDataType.ASSOCIATION
 
-  /**
-   *
-   * @return
-   */
-  def hasIntMultiplicity: Boolean = multiplicity.toIntOption.isDefined
-
-  /**
-   *
-   * @return
-   */
-  def getIntMultiplicity: Int = {
-    if (!hasIntMultiplicity) {
-      throw new UnsupportedOperationException("Cannot convert non-int multiplicity to int")
-    } else {
-      multiplicity.toIntOption.get
-    }
-  }
 
 }
 
@@ -187,9 +160,9 @@ object AssociationRule {
    * @param idOption        id value if known, set to default otherwise
    * @return AssociationRule created from provided values
    */
-  def create(associationName: String, target: String, multiplicity: String, interface: ConnectionInterface, idOption: Option[String] = None): AssociationRule = {
+  def create(associationName: String, target: String, interface: ConnectionInterface, idOption: Option[String] = None): AssociationRule = {
     var id = Rule.UNKNOWN_ID
     if (idOption.isDefined) id = idOption.get
-    new AssociationRule(id + ":" + associationName + ":" + target + ":" + multiplicity + ":" + ConnectionInterface.serialise(interface))
+    new AssociationRule(id + ":" + associationName + ":" + target + ":" + ConnectionInterface.serialise(interface))
   }
 }

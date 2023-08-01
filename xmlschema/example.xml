@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<mio:Definition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mio="http://modic.io/ns"
+                   xsi:schemaLocation="http://modic.io/ns modicio_lang.xsd" name="TestModel">
+    
+  
+
+</mio:Definition>

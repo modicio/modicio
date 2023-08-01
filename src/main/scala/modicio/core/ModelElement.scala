@@ -15,7 +15,6 @@
  */
 package modicio.core
 
-import modicio.core.ModelElement.composeSingletonIdentity
 import modicio.core.datamappings.{ModelElementData, PluginData, RuleData}
 import modicio.core.rules.{AssociationRule, AttributeRule}
 import modicio.core.util.Observer
@@ -244,71 +243,6 @@ class ModelElement(val name: String, val identity: String, val isTemplate: Boole
   }
 
   /**
-   * FIXME this is a dummy implementation and needs to be moved to a verification or reasoning module in the future.
-   *  No verification is done here, if a non-existent association is given, it will be accepted!
-   * @return
-   */
-  def isConcrete: Boolean = {
-    //TODO check if every attribute and association with mult 1 has one final value
-    //val associationRules = get
-
-    val associationRules = deepAssociationRuleSet
-    val attributeRules = deepAttributeRuleSet
-    val values = deepValueSet
-    val associationValues = values.filter(_.isAssociationValue)
-    val attributeValues = values.filter(_.isAttributeValue)
-
-    var isConcrete: Boolean = true
-
-    //each association must have a fixed int-value multiplicity.
-    //the number of values fulfilling this association must match the multiplicity
-    associationRules.foreach(associationRule => {
-      val relation = associationRule.associationName
-      if(associationRule.hasIntMultiplicity){
-        val multiplicity = associationRule.getIntMultiplicity
-        if(associationValues.count(value => value.valueName == relation) != multiplicity){
-          isConcrete = false
-        }
-      }else{
-        isConcrete = false
-      }
-    })
-
-    //each attribute rule must be fulfilled by exactly one value
-    attributeRules.foreach(attributeRule => {
-      if(attributeValues.count(value => value.valueName == attributeRule.name) != 1){
-        isConcrete = false
-      }
-    })
-    //println("DEBUG >> " + name + " isConcrete = " + isConcrete)
-    isConcrete
-  }
-
-  def hasSingleton: Future[Boolean] = {
-    registry.getSingletonRefsOf(name) map(_.nonEmpty)
-  }
-
-  def hasSingletonRoot: Future[Boolean] = {
-    registry.getType(name, composeSingletonIdentity(name)) map (_.isDefined)
-  }
-
-  def updateSingletonRoot(): Future[Option[DeepInstance]] = {
-    unfold() flatMap (_ => removeSingleton() flatMap (_ => {
-      if (!isConcrete) {
-        Future.successful(None)
-      } else {
-        val factory = new InstanceFactory(definitionVerifier.get, modelVerifier.get)
-        factory.setRegistry(registry)
-        factory.newInstance(name, ModelElement.composeSingletonIdentity(name)) map (instance => Some(instance))
-      }
-    }))
-  }
-
-  private def removeSingleton(): Future[Any] = {
-    registry.autoRemove(name, ModelElement.composeSingletonIdentity(name))
-  }
-
-  /**
    * <p> Checks if this ModelElement is valid by the means of the provided [[ModelVerifier ModelVerifier]]
    * and [[DefinitionVerifier DefinitionVerifier]].
    * <p> TODO as of right now, error logs cannot be propagated apart from throwing exceptions.
@@ -501,22 +435,8 @@ object ModelElement {
    */
   val REFERENCE_IDENTITY: String = "#"
 
-  /**
-   * <p> The built-in constant string value used to represent singleton identities. I.e. objects/instances
-   * that can and must exist only once in a registry-context.
-   */
-  val SINGLETON_IDENTITY: String = "$"
-
   val ROOT_NAME: String = "ROOT"
 
-  val SINGLETON_PREFIX: String = SINGLETON_IDENTITY + "_"
-
-  def composeSingletonIdentity(typeName: String): String = SINGLETON_PREFIX + typeName
-
-  def decomposeSingletonIdentity(identity: String): String = {
-    identity.split("_")(1)
-  }
-
-  def isSingletonIdentity(identity: String): Boolean = identity.startsWith(SINGLETON_IDENTITY)
+  val RESOLVE: String = "$"
 
 }

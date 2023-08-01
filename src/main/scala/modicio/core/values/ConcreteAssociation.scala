@@ -20,11 +20,9 @@ package modicio.core.values
  */
 class ConcreteAssociation(nativeValue: String) extends ValueDescriptor(nativeValue) {
 
-  def targetIdentity: String = elements.head
+  def targetModelElement: String = elements.head + ":" + elements(1)
 
-  def targetModelElement: String = elements(1)
-
-  override def serializeSimple: String = targetIdentity + ":" + targetModelElement + " final=" + isFinal
+  override def serializeSimple: String = targetModelElement + " final=" + isFinal
 
 
 }

@@ -153,16 +153,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
     }
   }
 
-  override def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = {
-    val typeGroup = typeRegistry.get(name)
-    if (typeGroup.isEmpty) {
-      Future.successful(Set())
-    } else {
-      val identitiesOfSingletons = typeGroup.get.filter(element => ModelElement.isSingletonIdentity(element._1)).values.map(_.getTypeIdentity).toSet
-      Future.successful(identitiesOfSingletons.map(instanceRegistry.get).filter(_.isDefined).map(_.get))
-    }
-  }
-
   override protected[modicio] def setNode(typeHandle: TypeHandle, importMode: Boolean = false): Future[TimeIdentity] = {
     val name = typeHandle.getTypeName
     val identity = typeHandle.getTypeIdentity
@@ -193,14 +183,7 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
 
 
   override def get(instanceId: String): Future[Option[DeepInstance]] = {
-    if (DeepInstance.isSingletonRoot(instanceId)) {
-      Future.successful(instanceRegistry.get(
-        DeepInstance.deriveRootSingletonInstanceId(
-          ModelElement.decomposeSingletonIdentity(instanceId))))
-    } else {
-      Future.successful(instanceRegistry.get(instanceId))
-    }
-
+    Future.successful(instanceRegistry.get(instanceId))
   }
 
   override def getAll(typeName: String): Future[Set[DeepInstance]] = {
@@ -254,36 +237,6 @@ class SimpleMapRegistry(typeFactory: TypeFactory, instanceFactory: InstanceFacto
         Future.failed(new IllegalArgumentException("AUTO DELETE: No type group found"))
       }
 
-    } else if (identity == ModelElement.SINGLETON_IDENTITY) {
-      //In case of a singleton identity modelElement
-
-      val singletonInstanceId = DeepInstance.deriveSingletonInstanceId(identity, name)
-
-      //get the associated singleton deep instance
-      val deepInstanceOption = instanceRegistry.get(singletonInstanceId)
-      if (deepInstanceOption.isDefined) {
-        //unfold the singleton deep-instance
-
-        deepInstanceOption.get.unfold() flatMap (unfoldedInstance => {
-          val parentRelations = unfoldedInstance.getTypeHandle.getModelElement.getParents
-          //delete all parent model-elements of the singleton deep-instance
-
-          //delete the actual deep-instance and trigger deletion of its parents
-          instanceRegistry.remove(singletonInstanceId)
-          val mapOfFutures = parentRelations.map(parentRelation => autoRemove(parentRelation.name, ModelElement.SINGLETON_IDENTITY))
-          Future.sequence(mapOfFutures)
-
-        }) map (_ => {
-          //delete the corresponding model-elements
-          val typeGroupOption = typeRegistry.get(name)
-          if (typeGroupOption.isDefined) {
-            typeGroupOption.get.remove(identity)
-          }
-        })
-
-      } else {
-       Future.failed(new IllegalArgumentException("AUTO DELETE: No such singleton instance found"))
-      }
     } else {
       Future.failed(new IllegalArgumentException("AUTO DELETE: No operation available for: " + identity))
     }

@@ -16,8 +16,8 @@
             ],
             "associations": [],
             "attributes": [
-                "cd95ca29-992f-420f-ba2a-e7ea08178cc2:State:BOOLEAN:false",
-                "59270614-30cb-4de8-a731-d340d118cc28:Content:STRING:false"
+                "cd95ca29-992f-420f-ba2a-e7ea08178cc2:State:BOOLEAN",
+                "59270614-30cb-4de8-a731-d340d118cc28:Content:STRING"
             ],
             "values": []
         },
@@ -36,11 +36,11 @@
                 "37038068-f9fd-426c-8815-9582b8a81690:#:NamedElement"
             ],
             "associations": [
-                "3a522fcc-c5c7-4b5b-9c5f-4a07ed4ed438:hasPart:ProjectItem:*:"
+                "3a522fcc-c5c7-4b5b-9c5f-4a07ed4ed438:hasPart:ProjectItem:"
             ],
             "attributes": [
-                "a9f0ba82-e3d0-40dd-b5cb-b0484b843126:Responsible:STRING:true",
-                "379cca94-3863-46bf-ba06-6e79519bce06:Deadline:DATETIME:false"
+                "a9f0ba82-e3d0-40dd-b5cb-b0484b843126:Responsible:STRING",
+                "379cca94-3863-46bf-ba06-6e79519bce06:Deadline:DATETIME"
             ],
             "values": []
         },
@@ -59,10 +59,10 @@
                 "e0b6c5d6-3e42-4ecc-a960-fb5aeecfa7c6:#:NamedElement"
             ],
             "associations": [
-                "5cfe85a1-5135-4bff-8dfa-fbfbe2429c85:partOf:Project:1:"
+                "5cfe85a1-5135-4bff-8dfa-fbfbe2429c85:partOf:Project:"
             ],
             "attributes": [
-                "442423ef-37c1-4e4d-92fb-3eeb476dc520:Title:STRING:true"
+                "442423ef-37c1-4e4d-92fb-3eeb476dc520:Title:STRING"
             ],
             "values": []
         },

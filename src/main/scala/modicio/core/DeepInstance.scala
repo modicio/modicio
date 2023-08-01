@@ -445,7 +445,7 @@ class DeepInstance(private[modicio] val instanceId: String,
         shape.addAssociation(AssociationData(0, byRelation, instanceId, deepInstance.getPolymorphSubtype(associateAs).get.getInstanceId, isFinal = false))
         true
       } else {
-        throw new Exception("The allowed association types does not contain the given type or the instance does not intersect with the given type")
+        throw new Exception("The allowed association types do not contain the given type or the instance does not intersect with the given type")
       }
     } else {
       throw new Exception("The proposed relation is not defined on top of a type which is in the instance type hierarchy")
@@ -458,28 +458,6 @@ class DeepInstance(private[modicio] val instanceId: String,
 
   def getDeepPlugins: Set[Plugin] = {
     getPlugins union unfoldedParentRelations.flatMap(_.getDeepPlugins)
-  }
-
-}
-
-object DeepInstance {
-
-  def deriveSingletonInstanceId(identity: String, modelElementName: String): String = {
-    identity + ":" + modelElementName
-  }
-
-  def isSingletonInstanceId(instanceId: String): Boolean = {
-    instanceId.startsWith("$")
-  }
-
-  def isSingletonRoot(instanceIdPrefix: String): Boolean = {
-    isSingletonInstanceId(instanceIdPrefix) &&
-      instanceIdPrefix.split("_").length > 1 &&
-      instanceIdPrefix.split(":").length == 1
-  }
-
-  def deriveRootSingletonInstanceId(modelElementName: String): String = {
-    ModelElement.composeSingletonIdentity(modelElementName) + ":" + modelElementName
   }
 
 }

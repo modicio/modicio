@@ -49,10 +49,7 @@ abstract class RegistryFixture {
   val PROJECT_DUE_BY_DEADLINE: String = "dueBy"
   val IS_PART_OF: String = "partOf"
 
-  val SINGLE: String = "1"
-  val MULTIPLE: String = "*"
   val STRING: String = "String"
-  val NONEMPTY: Boolean = true
 
   val TIME_IDENTITY: TimeIdentity = TimeIdentity.create
 
@@ -69,8 +66,8 @@ abstract class RegistryFixture {
       _ <- registry.setType(specialProject)
       _ <- registry.setType(specialTodo)
       _ <- Future.successful({
-        project.applyRule(AssociationRule.create(PROJECT_CONTAINS_TODO, TODO, MULTIPLE, ConnectionInterface.parseInterface(TIME_IDENTITY.variantTime.toString, TODO)))
-        project.applyRule(AttributeRule.create(TITLE, STRING, NONEMPTY))
+        project.applyRule(AssociationRule.create(PROJECT_CONTAINS_TODO, TODO, ConnectionInterface.parseInterface(TIME_IDENTITY.variantTime.toString, TODO)))
+        project.applyRule(AttributeRule.create(TITLE, STRING))
         specialProject.applyRule(ParentRelationRule.create(project.getTypeName, project.getTypeIdentity))
       })
       _ <- project.commit()
