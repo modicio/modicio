@@ -49,13 +49,7 @@ class RegistryDecorator(registry: Registry, typeFactory: TypeFactory, instanceFa
 	override def getTypeVariants: Future[Seq[(Long, String)]] = registry.getTypeVariants
 	
 	override def getVariantMap: Future[Map[(Long, String), Int]] = registry.getVariantMap
-	
-	/**
-	 *
-	 * @param name
-	 * @return
-	 */
-	override def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = registry.getSingletonRefsOf(name)
+
 	
 	/**
 	 * Remove parts of the model in a way producing a minimal number of overall deletions while trying to retain integrity

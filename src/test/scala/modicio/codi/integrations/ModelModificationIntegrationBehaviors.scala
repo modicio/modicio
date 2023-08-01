@@ -57,7 +57,7 @@ trait ModelModificationIntegrationBehaviors { this: AsyncSpec =>
 
     it should "correctly add an AssociationRule to the model" in {
       val fixture = newFixture
-      val newRule = AssociationRule.create("dueBy", fixture.DEADLINE, fixture.SINGLE, ConnectionInterface.parseInterface(fixture.TIME_IDENTITY.variantTime.toString, fixture.DEADLINE))
+      val newRule = AssociationRule.create("dueBy", fixture.DEADLINE, ConnectionInterface.parseInterface(fixture.TIME_IDENTITY.variantTime.toString, fixture.DEADLINE))
       fixture.initProjectSetup() flatMap (_ =>
         for {
           typeOption <- fixture.registry.getType(fixture.TODO, ModelElement.REFERENCE_IDENTITY)
@@ -126,7 +126,7 @@ trait ModelModificationIntegrationBehaviors { this: AsyncSpec =>
 
     it should "correctly add an AttributeRule to the model" in {
       val fixture = newFixture
-      val newRule = AttributeRule.create("IntegrationTest", fixture.STRING, fixture.NONEMPTY)
+      val newRule = AttributeRule.create("IntegrationTest", fixture.STRING)
       fixture.initProjectSetup() flatMap (_ =>
         for {
           typeOption <- fixture.registry.getType(fixture.PROJECT, ModelElement.REFERENCE_IDENTITY)

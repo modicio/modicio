@@ -17,7 +17,7 @@
         ":#:NamedElement"
       ],
       "associations": [
-        ":partOf:Project:1:"
+        ":partOf:Project:"
       ],
       "attributes": [
         ":Name:STRING:false"
@@ -31,11 +31,11 @@
         ":#:NamedElement"
       ],
       "associations": [
-        ":hasPart:ProjectItem:*:"
+        ":hasPart:ProjectItem:"
       ],
       "attributes": [
-        ":Responsible:STRING:true",
-        ":Deadline:DATETIME:false"
+        ":Responsible:STRING",
+        ":Deadline:DATETIME"
       ],
       "values": []
     },
@@ -47,8 +47,8 @@
       ],
       "associations": [],
       "attributes": [
-        ":Content:STRING:false",
-        ":State:BOOLEAN:false"
+        ":Content:STRING",
+        ":State:BOOLEAN"
       ],
       "values": []
     }

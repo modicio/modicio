@@ -90,13 +90,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
                              identity: String,
                              deepValueSet: Set[ConcreteValue],
                              instanceBuffer: mutable.Set[DeepInstance]): DeepInstance = {
-    val instanceId: String = {
-      if(ModelElement.isSingletonIdentity(identity)){
-        DeepInstance.deriveSingletonInstanceId(identity, typeHandle.getTypeName)
-      }else{
-        IdentityProvider.newRandomId()
-      }
-    }
+    val instanceId: String = IdentityProvider.newRandomId()
     val parentRelations = createParentRelations(typeHandle, identity, instanceId, deepValueSet, instanceBuffer)
     val shape = new ShapeWrapper(
       deriveAttributes(typeHandle, instanceId, deepValueSet),
@@ -145,7 +139,7 @@ class InstanceFactory(private[modicio] val definitionVerifier: DefinitionVerifie
         val concreteAssociation = value.getAssociationDescriptor
         val target = concreteAssociation.targetModelElement
         //val targetIdentity = concreteAssociation.targetIdentity // we assume only singleton identities here!
-        result.add(AssociationData(0, relationName, instanceId, DeepInstance.deriveRootSingletonInstanceId(target), isFinal = true))
+        result.add(AssociationData(0, relationName, instanceId, ModelElement.RESOLVE, isFinal = true))
       })
     })
     result.toSet

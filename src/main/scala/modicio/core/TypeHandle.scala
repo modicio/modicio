@@ -39,15 +39,7 @@ class TypeHandle(private val modelElement: ModelElement, val static: Boolean) {
 
   def getIsTemplate: Boolean = modelElement.isTemplate
 
-  def isConcrete: Boolean = modelElement.isConcrete
-
   def getTimeIdentity: TimeIdentity = modelElement.getTimeIdentity
-
-  def hasSingleton: Future[Boolean] = modelElement.hasSingleton
-
-  def hasSingletonRoot: Future[Boolean] = modelElement.hasSingletonRoot
-
-  def updateSingletonRoot(): Future[Any] = modelElement.updateSingletonRoot()
 
   private[modicio] def getModelElement: ModelElement = modelElement
 

@@ -62,8 +62,8 @@ trait RegistryPerformanceBehaviors { this: AsyncSpec =>
       testType <- fixture.typeFactory.newType(typeName, "#", isTemplate = false, Some(fixture.TIME_IDENTITY))
       _ <- fixture.registry.setType(testType)
       _ <- Future.successful({
-        testType.applyRule(AssociationRule.create("testRule", "Todo", "*", ConnectionInterface.parseInterface(fixture.TIME_IDENTITY.variantTime.toString, "Todo")))
-        testType.applyRule(AttributeRule.create("ABC", "String", nonEmpty = true))
+        testType.applyRule(AssociationRule.create("testRule", "Todo", ConnectionInterface.parseInterface(fixture.TIME_IDENTITY.variantTime.toString, "Todo")))
+        testType.applyRule(AttributeRule.create("ABC", "String"))
         testType.applyRule(ParentRelationRule.create(projectType.getTypeName, projectType.getTypeIdentity))
       })
       _ <- testType.commit()

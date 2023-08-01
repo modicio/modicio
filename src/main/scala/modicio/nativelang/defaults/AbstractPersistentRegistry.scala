@@ -385,11 +385,6 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
 
   final def getRoot: Future[Option[TypeHandle]] = getType(ModelElement.ROOT_NAME, ModelElement.REFERENCE_IDENTITY)
 
-  override final def getSingletonRefsOf(name: String): Future[Set[DeepInstance]] = {
-    queryInstanceDataByIdentityPrefixAndTypeName(ModelElement.SINGLETON_PREFIX, name) flatMap (instanceData =>
-      Future.sequence(instanceData.map(_.instanceId).map(get))) map (results => results.filter(_.isDefined).map(_.get))
-  }
-
   override final def getType(name: String, identity: String): Future[Option[TypeHandle]] = {
     for {
       modelElementDataOption <- fetchModelElementData(name, identity)
@@ -533,8 +528,6 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
    * <p> <strong>Experimental Feature</strong>
    * <p> In case of a reference-identity ModelElement, the ModelElement is deleted only. In consequence, children pointing to that ModelElement
    * and other ModelElements associating this ModelElement become invalid and must be repaired manually.
-   * <p> In case of a singleton-identity ModelElement, the whole singleton-fork of the ModelElement tree and the corresponding
-   * [[DeepInstance DeepInstance]] tree are removed.
    * <p> In case of a user-space identity, nothing happens yet => TODO
    *
    * @param name     of the [[ModelElement ModelElement]] trying to remove
@@ -551,33 +544,6 @@ abstract class AbstractPersistentRegistry(typeFactory: TypeFactory, instanceFact
       } yield {
         result
       }
-
-    } else if (identity == ModelElement.SINGLETON_IDENTITY) {
-      //In case of a singleton identity modelElement
-
-      val singletonInstanceId = DeepInstance.deriveSingletonInstanceId(identity, name)
-
-      //get the associated singleton deep instance
-      get(singletonInstanceId) flatMap  (deepInstanceOption => {
-        if (deepInstanceOption.isDefined) {
-          //unfold the singleton deep-instance
-
-          deepInstanceOption.get.unfold() flatMap (unfoldedInstance => {
-            val parentRelations = unfoldedInstance.getTypeHandle.getModelElement.getParents
-
-            //delete all parent model-elements of the singleton deep-instance
-            //delete the actual deep-instance and trigger deletion of its parents
-            for {
-              _ <- removeInstanceWithData(singletonInstanceId)
-              _ <- Future.sequence(parentRelations.map(parentRelation => autoRemove(parentRelation.name, ModelElement.SINGLETON_IDENTITY)))
-              _ <- removeModelElementWithRules(name, identity)
-            } yield {}
-          })
-
-        } else {
-          Future.failed(new IllegalArgumentException("AUTO DELETE: No such singleton instance found"))
-        }
-      })
 
     } else {
       //TODO

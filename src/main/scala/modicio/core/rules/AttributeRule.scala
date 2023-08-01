@@ -26,7 +26,6 @@ import modicio.core.datamappings.RuleData
  * <P> where ID is the unique technical identifier of the [[Rule Rule]]
  * <p> where NAME is the arbitrary name of the attribute
  * <p> where DATATYPE is the type-value of the attribute ["STRING", "NUMBER", "DATETIME"]
- * <P> where NON_EMPTY describes if a concrete attribute must always have a non-empty value
  *
  * @see [[Rule]]<p>[[RuleData]]
  * @param nativeValue the string representation in the native-language format
@@ -35,7 +34,6 @@ class AttributeRule(nativeValue: String) extends Rule(nativeValue) {
 
   val name: String = parseName(nativeValue)
   val datatype: String = parseDatatype(nativeValue)
-  val nonEmpty: Boolean = parseNonEmpty(nativeValue)
 
   /**
    * <p>Helper to retrieve the attribute name from the serialised value
@@ -55,20 +53,12 @@ class AttributeRule(nativeValue: String) extends Rule(nativeValue) {
   private def parseDatatype(nativeValue: String): String = nativeValue.split(":")(2)
 
   /**
-   * <p>Helper to retrieve the nonEmpty value from the serialised value
-   *
-   * @param nativeValue serialised rule representation
-   * @return Boolean if nonEmpty
-   */
-  private def parseNonEmpty(nativeValue: String): Boolean = nativeValue.split(":")(3).toBoolean
-
-  /**
    * <p>Implementation of [[Rule#serialise Rule.serialise()]]
    *
    * @return String of serialised rule
    */
   override def serialise(): String = {
-    id + ":" + name + ":" + datatype + ":" + nonEmpty.toString
+    id + ":" + name + ":" + datatype
   }
 
   /**
@@ -78,7 +68,7 @@ class AttributeRule(nativeValue: String) extends Rule(nativeValue) {
    * @return String of simplified serialisation
    */
   override def serialiseSimple(): String = {
-    "..." + id.takeRight(5) + ":" + name + ":" + datatype + ":" + nonEmpty.toString
+    "..." + id.takeRight(5) + ":" + name + ":" + datatype
   }
 
   /**
@@ -97,7 +87,7 @@ class AttributeRule(nativeValue: String) extends Rule(nativeValue) {
    * @param identity the identity of an instantiated [[ModelElement ModelElement]]
    * @return [[Rule Rule]] - copy of this Rule with changed identity value and new ID
    */
-  override def fork(identity: String): Rule = AttributeRule.create(name, datatype, nonEmpty, Some(Rule.UNKNOWN_ID))
+  override def fork(identity: String): Rule = AttributeRule.create(name, datatype, Some(Rule.UNKNOWN_ID))
 
   /**
    *
@@ -131,13 +121,12 @@ object AttributeRule {
    *
    * @param name     name of the attribute
    * @param datatype datatype of the attribute, see [[AttributeRule AttributeRule]]
-   * @param nonEmpty see [[AttributeRule AttributeRule]]
    * @param idOption id value if known, set to default otherwise
    * @return AttributeRules created from provided values
    */
-  def create(name: String, datatype: String, nonEmpty: Boolean, idOption: Option[String] = None): AttributeRule = {
+  def create(name: String, datatype: String, idOption: Option[String] = None): AttributeRule = {
     var id = Rule.UNKNOWN_ID
     if (idOption.isDefined) id = idOption.get
-    new AttributeRule(id + ":" + name + ":" + datatype + ":" + nonEmpty)
+    new AttributeRule(id + ":" + name + ":" + datatype)
   }
 }

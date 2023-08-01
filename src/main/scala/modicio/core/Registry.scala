@@ -52,12 +52,6 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
 
   def getRootOf(instance: DeepInstance): Future[DeepInstance]
 
-  /**
-   *
-   * @param name
-   * @return
-   */
-  def getSingletonRefsOf(name: String): Future[Set[DeepInstance]]
 
   /**
    * Add a [[ModelElement ModelElement]] to this Registry.
@@ -126,6 +120,7 @@ abstract class Registry(val typeFactory: TypeFactory, val instanceFactory: Insta
   def autoRemove(instanceId: String): Future[Any]
 
   def get(instanceId: String): Future[Option[DeepInstance]]
+  //FIXME resolve ModelElement.RESOLVE identities
 
   def getAll(typeName: String): Future[Set[DeepInstance]]
 

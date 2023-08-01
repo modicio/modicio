@@ -116,16 +116,17 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 			version.get.increase(instanceId, IdentityProvider.newTimestampId())
 		}
 		
-		if (minutes > 0) {
+		/*if (minutes > 0) {
 			deleteObsoleteKnowledge(minutes)
-		}
+		}*/
 		
-		if (classes.length > size && size > 0) {
+		/*if (classes.length > size && size > 0) {
 			deleteObsoleteKnowledgeBySize(size)
-		}
+		}*/
 		deepInstance
 	}
-	
+
+	/* FIXME: DOES NOT WORK! (random test fails)
 	def deleteObsoleteKnowledge(minutes: Int): Unit = {
 		if (minutes != this.minutes) {
 			this.minutes = minutes
@@ -152,7 +153,7 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 			})
 		}
 	}
-	
+
 	def deleteObsoleteKnowledgeBySize(size: Int): Unit = {
 		if (size != this.size) {
 			this.size = size
@@ -177,11 +178,12 @@ class Monitoring(registry: Registry, typeFactory: TypeFactory, instanceFactory: 
 							c.deleteVariant(vs)
 						}
 					})
-					this.classes = classes.filter(_.variants.nonEmpty)
 				})
+				this.classes = classes.filter(_.variants.nonEmpty)
 			}
 		}
 	}
+	*/
 	
 	def getExpiryTime(minutes: Long): Long = {
 		val cvdate: LocalDateTime = LocalDateTime.now.minusMinutes(minutes)
