@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<mio:Fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mio="http://modic.io/ns"
+    xsi:schemaLocation="http://modic.io/ns modicio_lang.xsd"
+    open="true">
+
+    <mio:Model runningTime="2002-05-30T09:00:00" runningID="1">
+
+        <mio:Node name="Project" uri="modicio:demo.project" abstract="false">
+            <mio:Annotation>
+                <mio:versionTime>2023-08-10T09:00:00</mio:versionTime>
+                <mio:versionID>1</mio:versionID>
+                <mio:variantTime>2023-08-10T09:00:00</mio:variantTime>
+                <mio:variantID>1</mio:variantID>
+            </mio:Annotation>
+            <mio:Attribute uri="modicio:demo.project.title" name="Ttle" type="phrase" />
+            <mio:Attribute uri="modicio:demo.project.deadline" name="Deadline" type="datetime" />
+            <mio:AssociationRelation uri="modicio:demo.project.todos" name="Todos"
+                target="modicio:demo.todo">
+                <mio:Interface>
+                    <mio:Point variantTime="2023-08-10T09:00:00" variantID="1" />
+                </mio:Interface>
+            </mio:AssociationRelation>
+
+            <mio:Script uri="modicio:demo.myscript1" name="myscript1">
+                <mio:AnyValue>
+                    foo script ... alot of scala code here
+                </mio:AnyValue>
+            </mio:Script>
+            <mio:Script uri="modicio:demo.myscript2" name="myscript2">
+                <mio:AnyValue>
+                    bar script ... alot of scala code here
+                </mio:AnyValue>
+            </mio:Script>
+            
+        </mio:Node>
+
+    </mio:Model>
+
+    <mio:Instance name="myProject" modelRoot="modicio:demo.project" uri="modicio:instance.myProject">
+        <mio:Header></mio:Header>
+        <mio:Object instanceOf="modicio:demo.project">
+            <mio:AttributeInstance attributeUri="modicio:demo.project.title">
+                <mio:AnyValue>My Project Title</mio:AnyValue>
+            </mio:AttributeInstance>
+            <mio:AttributeInstance attributeUri="modicio:demo.project.deadline">
+                <mio:AnyValue>My Project Description</mio:AnyValue>
+            </mio:AttributeInstance>
+        </mio:Object>
+    </mio:Instance>
+
+</mio:Fragment>

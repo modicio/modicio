@@ -2,4 +2,293 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://modic.io/ns"
     xmlns="http://modic.io/ns" xmlns:mio="http://modic.io/ns" elementFormDefault="qualified">
 
+    <!-- Root Model Definition -->
+
+    <xs:element name="Fragment">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Model">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Node" type="Node" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="runningTime" type="xs:dateTime" use="required" />
+                        <xs:attribute name="runningID" type="xs:string" use="required" />
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Instance" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Header" type="Header"/>
+                            <xs:element name="Object" type="Object" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="modelRoot" type="mio:mID" use="required" />
+                        <!-- uri of an instance must be globally unique -->
+                        <xs:attribute name="uri" type="mio:mID" use="required" />
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Trace" type="Trace" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute name="open" type="xs:boolean" use="required" />
+        </xs:complexType>
+
+        <!-- Global Value & Reference Constraints -->
+
+        <xs:key name="InstantiableNode">
+            <xs:selector xpath=".//mio:Node" />
+            <xs:field xpath="@uri" />
+        </xs:key>
+
+        <xs:key name="ReferenceableInstance">
+            <xs:selector xpath=".//mio:Instance|.//mio:CompositionInstance" />
+            <xs:field xpath="@uri" />
+        </xs:key>
+
+        <xs:key name="InstantiableAttribute">
+            <xs:selector xpath=".//mio:Attribute" />
+            <xs:field xpath="@uri" />
+        </xs:key>
+
+        <xs:keyref name="InstanceOfReference" refer="InstantiableNode">
+            <xs:selector xpath=".//mio:Object" />
+            <xs:field xpath="@instanceOf" />
+        </xs:keyref>
+
+        <xs:keyref name="HeaderObjectReference" refer="ReferenceableInstance">
+            <xs:selector xpath=".//mio:Header" />
+            <xs:field xpath="@compositeInstanceUri" />
+        </xs:keyref>
+
+        <xs:keyref name="HeaderNodeReference" refer="InstantiableNode">
+            <xs:selector xpath=".//mio:Header" />
+            <xs:field xpath="@compositeNodeUri" />
+        </xs:keyref>
+
+        <xs:keyref name="InstanceOfAttribute" refer="InstantiableAttribute">
+            <xs:selector xpath=".//mio:AttributeInstance" />
+            <xs:field xpath="@attributeUri" />
+        </xs:keyref>
+
+        <xs:keyref name="ChildOfReference" refer="InstantiableNode">
+            <xs:selector xpath=".//mio:ParentRelation" />
+            <xs:field xpath="@target" />
+        </xs:keyref>
+
+        <xs:keyref name="CompositionTargetReference" refer="InstantiableNode">
+            <xs:selector xpath=".//mio:Composition" />
+            <xs:field xpath="@target" />
+        </xs:keyref>
+
+        <xs:keyref name="ModelRootReference" refer="InstantiableNode">
+            <xs:selector xpath=".//mio:Instance|.//mio:CompositionInstance" />
+            <xs:field xpath="@modelRoot" />
+        </xs:keyref>
+
+        <xs:unique name="UniqueNodeName">
+            <xs:selector xpath="./mio:Model/*" />
+            <xs:field xpath="@name" />
+        </xs:unique>
+
+        <xs:unique name="UniqueURI">
+            <xs:selector xpath=".//*" />
+            <xs:field xpath="@uri" />
+        </xs:unique>
+
+    </xs:element>
+
+    <xs:simpleType name="mID">
+        <xs:restriction base="xs:anyURI">
+            <xs:pattern value="modicio:.*" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Reference Type Definitions-->
+
+    <!-- Metamodel -->
+
+    <xs:complexType name="Node">
+        <xs:sequence>
+            <xs:element name="Annotation" type="Annotation"/>
+
+            <!-- Attribute -->
+            <xs:element name="Attribute" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="uri" type="mio:mID" use="required"/>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="type" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+            <!-- Association Relation -->
+            <xs:element name="AssociationRelation" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Interface" type="mio:Interface"/>
+                    </xs:sequence>
+                    <xs:attribute name="uri" type="mio:mID" use="required"/>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="target" type="mio:mID" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+            <!-- Parent Relation -->
+            <xs:element name="ParentRelation" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="target" type="mio:mID" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+            <!-- Plugin -->
+            <xs:element name="Plugin" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="description" type="xs:string" use="required"/>
+                    <xs:attribute name="resolver" type="xs:string" use="required"/>
+                    <xs:attribute name="content" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+            <!-- Concretization -->
+            <xs:element name="Concretization" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="AttributeInstance" type="AttributeInstance" minOccurs="0"/>
+                    </xs:all>
+                </xs:complexType>
+            </xs:element>
+
+            <!-- Composition -->
+            <xs:element name="Composition" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="uri" type="mio:mID" use="required"/>
+                    <xs:attribute name="role" type="xs:string" use="required"/>
+                    <xs:attribute name="target" type="mio:mID" use="required"/>
+                    <xs:attribute name="public" type="xs:boolean" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="Script" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:all>
+                        <xs:element name="AnyValue" type="xs:string"/>
+                    </xs:all>
+                    <xs:attribute name="uri" type="mio:mID" use="required"/>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+        </xs:sequence>
+
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="uri" type="mio:mID" use="required"/>
+        <xs:attribute name="abstract" type="xs:boolean" use="required"/>
+
+    </xs:complexType>
+
+    <xs:complexType name="Annotation">
+        <xs:sequence>
+            <xs:element name="versionTime" type="xs:dateTime"/>
+            <xs:element name="versionID" type="xs:string"/>
+            <xs:element name="variantTime" type="xs:dateTime"/>
+            <xs:element name="variantID" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Trace">
+        <xs:sequence>
+            <xs:element name="Delta" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+                <xs:complexType>
+                    <xs:attribute name="target" type="mio:mID"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Interface">
+        <xs:sequence>
+            <xs:element name="LeftOpen" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="borderVersionTime" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="borderVersionID" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="RightOpen" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="borderVersionTime" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="borderVersionID" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Interval" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="leftBorderVersionTime" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="leftBorderVersionID" type="xs:string"/>
+                    <xs:attribute name="rightBorderVersionTime" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="rightBorderVersionID" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Point" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="variantTime" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="variantID" type="xs:string"/>
+                    <xs:attribute name="versionTime" type="xs:dateTime"/>
+                    <xs:attribute name="versionID" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+
+    <!-- Instance -->
+
+    <xs:complexType name="Object">
+        <xs:sequence>
+
+            <xs:element name="AttributeInstance" type="AttributeInstance" minOccurs="0" maxOccurs="unbounded"/>
+
+            <xs:element name="AssociationInstance" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="instanceUri" type="mio:mID" use="required"/>
+                    <xs:attribute name="NodeUri" type="mio:mID" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="CompositionInstance" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Object" type="Object" maxOccurs="unbounded"/>
+                    </xs:sequence>
+
+                    <xs:attribute name="name" type="xs:string" use="required" />
+                    <xs:attribute name="modelRoot" type="mio:mID" use="required" />
+                    <!-- uri of an instance must be globally unique -->
+                    <xs:attribute name="uri" type="mio:mID" use="required" />
+
+                    <xs:attribute name="compositionUri" type="mio:mID" use="required"/>
+                </xs:complexType>
+            </xs:element>
+
+        </xs:sequence>
+        <xs:attribute name="instanceOf" type="mio:mID" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="Header">
+        <xs:sequence>
+            <xs:element name="Element" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="compositeNodeUri" type="mio:mID"/>
+                        <xs:element name="compositeInstanceUri" type="mio:mID"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="AttributeInstance">
+        <xs:all>
+            <xs:element name="AnyValue" type="xs:string"/>
+        </xs:all>
+        <xs:attribute name="attributeUri" type="mio:mID" use="required"/>
+    </xs:complexType>
+
 </xs:schema>
