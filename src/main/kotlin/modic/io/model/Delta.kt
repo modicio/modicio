@@ -17,17 +17,27 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
 
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Delta(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val content: String,
-    @Column
-    val target: String,
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    @field:Column
+    @field:XmlAttribute(name = "content")
+    val content: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "target")
+    val target: String = "",
 ) {
 
 }

@@ -20,7 +20,7 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-class Interval(
+class Region(
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)

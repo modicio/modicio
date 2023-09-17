@@ -17,9 +17,13 @@
 package modic.io.controller
 
 import modic.io.logic.ModelService
-import modic.io.messages.MetaData
+import modic.io.model.Delta
+import modic.io.model.Fragment
+import modic.io.model.Model
+import modic.io.model.Trace
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
 
 @RestController
 class ModelController(val modelService: ModelService) {
@@ -52,10 +56,14 @@ class ModelController(val modelService: ModelService) {
     /**
      * Get the active reference model (fragment) as closed model.
      */
-    @GetMapping("model/reference", produces=[MediaType.APPLICATION_XML_VALUE])
-    fun getReferenceModel(): List<MetaData> {
-        //TODO
-        return listOf(MetaData("foo", "bar", "baz"))
+    @GetMapping("model/reference", produces = [MediaType.APPLICATION_XML_VALUE])
+    fun getReferenceModel(): Fragment {
+        // FIXME just da simple demo here
+        return Fragment(
+            null, false, Instant.now(), "0123", true,
+            Model(null, Instant.now(), "123ad", HashSet(), null), null,
+            Trace(null, mutableListOf(Delta(null, "hi", "ho")), null)
+        )
     }
 
     /**

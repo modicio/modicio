@@ -24,13 +24,13 @@ class Interface(
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var dataID: Long?,
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @OneToMany(cascade = [CascadeType.ALL])
     private val leftOpenDelimiters: MutableList<LeftOpen>,
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @OneToMany(cascade = [CascadeType.ALL])
     private val rightOpenDelimiters: MutableList<RightOpen>,
-    @ManyToOne(cascade = [CascadeType.ALL])
-    private val intervalDelimiters: MutableList<Interval>,
-    @ManyToOne(cascade = [CascadeType.ALL])
+    @OneToMany(cascade = [CascadeType.ALL])
+    private val regionDelimiters: MutableList<Region>,
+    @OneToMany(cascade = [CascadeType.ALL])
     private val pointDelimiters: MutableList<Point>,
     @Transient
     var associationRelation: AssociationRelation?
@@ -56,14 +56,14 @@ class Interface(
         rightOpenDelimiters.remove(rightOpen)
     }
 
-    fun getIntervalDelimiters(): List<Interval> = intervalDelimiters
+    fun getIntervalDelimiters(): List<Region> = regionDelimiters
 
-    fun addIntervalDelimiter(interval: Interval) {
-        if (!intervalDelimiters.contains(interval)) intervalDelimiters.add(interval)
+    fun addIntervalDelimiter(region: Region) {
+        if (!regionDelimiters.contains(region)) regionDelimiters.add(region)
     }
 
-    fun removeIntervalDelimiter(interval: Interval) {
-        intervalDelimiters.remove(interval)
+    fun removeIntervalDelimiter(region: Region) {
+        regionDelimiters.remove(region)
     }
 
     fun getPointDelimiters(): List<Point> = pointDelimiters

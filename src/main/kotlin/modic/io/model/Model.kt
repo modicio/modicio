@@ -17,23 +17,41 @@
 package modic.io.model
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
+import java.time.Instant
 
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Model(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    var runningTime: LocalDateTime,
-    @Column
-    var runningID: String,
-    @ManyToOne(cascade = [CascadeType.ALL])
-    private val nodes: MutableSet<Node>,
-    @Transient
-    var fragment: Fragment?
+
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    var dataID: Long? = null,
+
+    @field:Column
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlAttribute(name = "running_time")
+    var runningTime: Instant = Instant.MIN,
+
+    @field:Column
+    @field:XmlAttribute(name = "running_id")
+    var runningID: String = "",
+
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    private val nodes: MutableSet<Node> = HashSet(),
+
+    @field:XmlTransient
+    @field:Transient
+    var fragment: Fragment? = null
 ) {
+
+    constructor() : this(null)
 
     init {
         nodes.forEach { node -> node.model = this }

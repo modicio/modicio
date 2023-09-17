@@ -13,38 +13,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package modic.io.model
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import jakarta.xml.bind.annotation.*
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
+import java.time.Instant
+
 
 @Entity
+@XmlRootElement(name = "Fragment")
+@XmlAccessorType(XmlAccessType.NONE)
 class Fragment(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val open: Boolean,
-    @Column
-    var variantTime: LocalDateTime,
-    @Column
-    var variantID: String,
-    @Column
-    var isReference: Boolean,
-    @OneToOne(cascade = [CascadeType.ALL])
-    val model: Model?,
-    @OneToOne(cascade = [CascadeType.ALL])
+
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    @field:Column
+    @field:XmlAttribute(name = "is_open")
+    val open: Boolean = false,
+
+    @field:Column
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlAttribute(name = "variant_time")
+    var variantTime: Instant = Instant.MIN,
+
+    @field:Column
+    @field:XmlAttribute(name = "variant_id")
+    var variantID: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "is_reference")
+    var isReference: Boolean = false,
+
+    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Model")
+    val model: Model? = null,
+
+    @field:OneToOne(cascade = [CascadeType.ALL])
     val instance: Instance? = null,
-    @OneToOne(cascade = [CascadeType.ALL])
+
+    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Trace")
     val trace: Trace? = null
 ) {
+
+    constructor() : this(null)
+
+    @field:XmlAttribute(name = "xmlns:xsi")
+    private val xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+    @field:XmlAttribute(name = "xmlns")
+    private val xmlns = "http://modic.io/ns"
+
+    @field:XmlAttribute(name = "xsi:schemaLocation")
+    private val location = "http://modic.io/ns modicio_lang.xsd"
 
     init {
         if (model != null) model.fragment = this
         if (trace != null) trace.fragment = this
         if (instance != null) instance.fragment = this
+    }
+
+    companion object {
+
+        /*
+        fun validateToXSD(fragment: Fragment): Unit{
+            val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+            val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
+
+            val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
+            marshaller.schema = schema
+            marshaller.marshal(fragment, DefaultHandler())
+        }
+        */
+
     }
 
 }

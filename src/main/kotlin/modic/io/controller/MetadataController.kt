@@ -56,7 +56,7 @@ class MetadataController(val metadataService: MetadataService) {
      * Get the metadata of all known running versions of the specified variant.
      * The response size can be delimited to the k most recent versions.
      */
-    @GetMapping("model/metadata/variant", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("model/metadata/variant/versions", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVersionsOfVariantMetadata(
         @RequestParam(required = true, name = "variant_timestamp") timestamp: String,
         @RequestParam(required = true, name = "variant_UUID") variantUID: String,

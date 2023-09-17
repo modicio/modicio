@@ -17,20 +17,32 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlElement
+import jakarta.xml.bind.annotation.XmlTransient
+import java.util.*
 
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Trace(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
 
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val deltas: MutableList<Delta>,
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
 
-    @Transient
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Delta")
+    private val deltas: MutableList<Delta> = LinkedList(),
+
+    @field:XmlTransient
+    @field:Transient
     var fragment: Fragment? = null
 ) {
+
+    constructor() : this(null)
 
     fun getDeltas(): List<Delta> = deltas
 

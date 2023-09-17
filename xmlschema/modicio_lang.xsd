@@ -196,8 +196,9 @@
 
     <xs:complexType name="Trace">
         <xs:sequence>
-            <xs:element name="Delta" minOccurs="0" maxOccurs="unbounded" type="xs:string">
+            <xs:element name="Delta" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
+                    <xs:attribute name="content" type="xs:string"/>
                     <xs:attribute name="target" type="mio:mID"/>
                 </xs:complexType>
             </xs:element>
