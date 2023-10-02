@@ -17,17 +17,53 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
 
+/**
+ * The [ParentRelation] models inheritance between two [Node]s. This relation is a unidirectional edge and is owned
+ * by the child Node, i.e., the specialization.
+ * - The parent link is an open property, i.e., it is only evaluated at runtime if resolution is possible. Resolution
+ *   must be possible during instantiation.
+ * - Parents must be from the same [Fragment].
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class ParentRelation(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val uri: String,
-    @Transient
-    var node: Node?
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * The URI defines the target parent [Node] to inherit from by its URI.
+     * This reference is resolved during edit, load and store. Otherwise, the model becomes (temporarily) invalid.
+     * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     */
+    @field:Column
+    @field:XmlAttribute(name = "uri")
+    val uri: String = "",
+
+    /**
+     * Autowired link that is not part of the JPA schema (transient).
+     * This is not the parent [Node]! But the owner of this element.
+     */
+    @field:Transient
+    @field:XmlTransient
+    var node: Node? = null
 ) {
+
+    constructor() : this(null)
 
 }

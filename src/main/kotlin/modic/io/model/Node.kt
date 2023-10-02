@@ -17,39 +17,140 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.*
+import java.util.*
 
+/**
+ * The Node is the top-level model element of the modicio metamodel. It represents a class in an object-oriented sense
+ * but can also represent a Node in a typed graph.
+ * The Node as first-level element contains all further model elements such as relations to other Nodes which
+ * are always unidirectional edges.
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Node(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private var dataID: Long?,
-    @Column
-    val name: String,
-    @Column
-    val uri: String,
-    @Column
-    private var isAbstract: Boolean,
-    @OneToOne(cascade = [CascadeType.ALL])
-    val annotation: Annotation,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val attributes: MutableList<Attribute>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val associationRelations: MutableList<AssociationRelation>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val parentRelations: MutableSet<ParentRelation>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val plugins: MutableSet<Plugin>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val concretizations: MutableSet<Concretization>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val compositions: MutableSet<Composition>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val scripts: MutableList<Script>,
-    @Transient
-    var model: Model?
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @XmlTransient
+    private var dataID: Long? = null,
+
+    /**
+     * The name provides the [Node] a practical identifier.
+     * Uniqueness is optional but desired.
+     * The name should relate to the [uri] and is typically its last part.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "name")
+    val name: String = "",
+
+    /**
+     * The unique naming URI of the [Node] in its current [Model].
+     * The uri must not take variant/version into account which is stored separately.
+     * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     */
+    @field:Column
+    @field:XmlAttribute(name = "uri")
+    val uri: String = "",
+
+    /**
+     * If the [Node] is abstract, it cannot be used as the root of an [Instance].
+     * In other words, it is abstract in the sense of object-oriented programming.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "is_abstract")
+    private var isAbstract: Boolean = false,
+
+    /**
+     * The [Annotation] contains the variant and version identifiers.
+     * The Annotation is mandatory.
+     */
+    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Annotation")
+    val annotation: Annotation? = null,
+
+    /**
+     * The list of [Attribute]s define the attributes/properties of the [Node] model.
+     * Attributes must be unique (by name and uri) per Node.
+     * The list must fulfill set properties. Ordering is important for interpretation and rendering.
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Attribute")
+    private val attributes: MutableList<Attribute> = LinkedList(),
+
+    /**
+     * The list of [AssociationRelation]s define directed association relations to other [Node]s.
+     * Attributes must be unique (by name and uri) per Node.
+     * The list must fulfill set properties. Ordering is important for interpretation and rendering.
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "AssociationRelation")
+    private val associationRelations: MutableList<AssociationRelation> = LinkedList(),
+
+    /**
+     * The list of [ParentRelation]s define directed inheritance relations to other [Node]s.
+     * Attributes must be unique (by name and uri) per Node.
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "ParentRelation")
+    private val parentRelations: MutableSet<ParentRelation> = HashSet(),
+
+    /**
+     * [Plugin]s can be used to extend the [Node] with custom functionality.
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Plugin")
+    private val plugins: MutableSet<Plugin> = HashSet(),
+
+    /**
+     * [Concretization]s can be used to materialize an [Attribute] of a related parent, i.e. assigning it a
+     * constant value for all children of this [Node].
+     * This required:
+     * - The specified Attribute must exist in the scope of this model element (match by uri)
+     * - The provided value must match the Attribute type
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Concretization")
+    private val concretizations: MutableSet<Concretization> = HashSet(),
+
+    /**
+     * [Composition]s can be used to represent "part-of" relationships.
+     * The [Node] a Composition refers to must exist in the scope of the Model.
+     * Note the special scoping and visibility mechanisms explained in [Composition] and [Header].
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Composition")
+    private val compositions: MutableSet<Composition> = HashSet(),
+
+    /**
+     * [Script]s can be used to attach dynamic behaviour to a [Node].
+     * Note further details and restrictions explained in [Script].
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Script")
+    private val scripts: MutableList<Script> = LinkedList(),
+
+    /**
+     * Backlink to [Model] to improve traversal.
+     */
+    @field:Transient
+    @field:XmlTransient
+    var model: Model? = null
 ) {
 
+    constructor() : this(null)
+
+    /**
+     * Autowire backlinks that are not part of the JPA schema (transient)
+     */
     init {
         attributes.forEach { e -> e.node = this }
         associationRelations.forEach { e -> e.node = this }

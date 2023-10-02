@@ -22,22 +22,45 @@ import jakarta.xml.bind.annotation.XmlAccessorType
 import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlTransient
 
+/**
+ * The Delta represents a single change operation.
+ *
+ * Further detail will be decided during the implementation of reconstruction algorithms in the modicio engine.
+ */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
 class Delta(
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
     @field:Id
     @field:Column
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     @field:XmlTransient
     var dataID: Long? = null,
 
+    /**
+     * The textual representation of the delta operation.
+     * As of right now, no standard representation was decided upon.
+     */
     @field:Column
     @field:XmlAttribute(name = "content")
     val content: String = "",
 
+    /**
+     * The URI of the element that was changed by this delta operation.
+     * The target element must exist within the scope of the same [Fragment]
+     */
     @field:Column
     @field:XmlAttribute(name = "target")
     val target: String = "",
 ) {
+
+    constructor() : this(null)
 
 }

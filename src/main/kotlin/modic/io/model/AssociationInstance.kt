@@ -20,6 +20,14 @@ import jakarta.persistence.*
 
 @Entity
 class AssociationInstance(
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
     @Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)

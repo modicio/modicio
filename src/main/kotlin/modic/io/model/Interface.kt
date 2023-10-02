@@ -17,24 +17,77 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlElement
+import jakarta.xml.bind.annotation.XmlTransient
+import java.util.*
 
+/**
+ * The [Interface] contains the compatability information of a [AssociationRelation] target in the variability
+ * time-space.
+ * An Interface can contain multiple types of intervals and points describing subsets of time-space.
+ * An AssociationRelation regarding a certain target type is fulfilled if the target fulfils at least one of the
+ * subsets defined by this class.
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Interface(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val leftOpenDelimiters: MutableList<LeftOpen>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val rightOpenDelimiters: MutableList<RightOpen>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val regionDelimiters: MutableList<Region>,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val pointDelimiters: MutableList<Point>,
-    @Transient
-    var associationRelation: AssociationRelation?
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * The list of version-based intervals open on the left side (past).
+     * @see [LeftOpen]
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "LeftOpen")
+    private val leftOpenDelimiters: MutableList<LeftOpen> = LinkedList(),
+
+    /**
+     * The list of version-based intervals open on the right side (future).
+     * @see [RightOpen]
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "RightOpen")
+    private val rightOpenDelimiters: MutableList<RightOpen> = LinkedList(),
+
+    /**
+     * The list of version-based intervals delimited on both sides (past and future).
+     * @see [Region]
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Region")
+    private val regionDelimiters: MutableList<Region> = LinkedList(),
+
+    /**
+     * The list of variant-based (and/or version-based) points / ranges
+     * @see [Point]
+     */
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Point")
+    private val pointDelimiters: MutableList<Point> = LinkedList(),
+
+    /**
+     * Backlink to [Model] to improve traversal.
+     */
+    @field:Transient
+    @field:XmlTransient
+    var associationRelation: AssociationRelation? = null
 ) {
+
+    constructor() : this(null)
 
     fun getLeftOpenDelimiters(): List<LeftOpen> = leftOpenDelimiters
 

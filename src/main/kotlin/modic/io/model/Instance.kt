@@ -17,29 +17,53 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.*
+import java.util.*
 
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Instance(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val name: String,
-    @Column
-    val modelRoot: String,
-    @Column
-    val uri: String,
-    @OneToOne(cascade = [CascadeType.ALL])
-    val header: Header,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val objects: MutableList<IObject>,
-    @Transient
-    var fragment: Fragment?
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    @field:Column
+    @field:XmlAttribute(name = "name")
+    val name: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "model_root")
+    val modelRoot: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "uri")
+    val uri: String = "",
+
+    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Header")
+    val header: Header? = null,
+
+    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Object")
+    private val objects: MutableList<IObject> = LinkedList(),
+
+    @field:Transient
+    @field:XmlTransient
+    var fragment: Fragment? = null
 ) {
 
     init {
-        header.instance = this
+        header?.instance = this
     }
 
     fun getObjects(): List<IObject> = objects

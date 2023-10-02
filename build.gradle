@@ -6,10 +6,11 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.22'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.8.22'
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.8.22'
+    id "org.jetbrains.dokka" version "1.9.0"
 }
 
 group = 'modic.io'
-version = '0.0.1-SNAPSHOT'
+version = '0.3'
 
 java {
     sourceCompatibility = '17'
@@ -50,4 +51,23 @@ tasks.withType(KotlinCompile).configureEach {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+
+apply plugin : "org.jetbrains.dokka"
+import org.jetbrains.dokka.gradle.DokkaTask
+
+tasks.withType(DokkaTask.class) {
+    String dokkaBaseConfiguration = """
+    {
+      "footerMessage": "(c) 2022 MyOrg",
+      "separateInheritedMembers": false,
+      "templatesDir": "${file("dokka/templates")}",
+      "mergeImplicitExpectActualDeclarations": false
+    }
+    """
+    pluginsMapConfiguration.set(
+            // fully qualified plugin name to json configuration
+            ["org.jetbrains.dokka.base.DokkaBase": dokkaBaseConfiguration]
+    )
 }

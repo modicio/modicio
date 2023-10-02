@@ -17,18 +17,57 @@
 package modic.io.model
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
+import java.time.Instant
 
+/**
+ * The [LeftOpen] class represents an open interval in time over a range of version.
+ * The interval targets one particular variant that is inferred by the usage context of the interval.
+ * @see Annotation
+ * @see AssociationRelation
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class LeftOpen(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val borderVersionTime: LocalDateTime,
-    @Column
-    val borderVersionID: String? //Optional
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * Defines the timestamp of the (inclusive) left / past border of the version interval as a UTC instant.
+     * Only using a left border time allows arbitrary intervals but may be ambiguous across distributed use-cases.
+     * This field is required.
+     */
+    @field:Column
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlAttribute(name = "border_version_time")
+    val borderVersionTime: Instant = Instant.MIN,
+
+    /**
+     * Binds the [borderVersionTime] to a specific version.
+     * The specified version must exist and must be known to the system the interval is interpreted on.
+     * This field optional.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "border_version_id")
+    val borderVersionID: String? = null
 ) {
+
+    constructor() : this(null)
 
 }

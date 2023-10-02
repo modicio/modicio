@@ -60,7 +60,7 @@ class ModelController(val modelService: ModelService) {
     fun getReferenceModel(): Fragment {
         // FIXME just da simple demo here
         return Fragment(
-            null, false, Instant.now(), "0123", true,
+            null, false, "xxx", Instant.now(),  "0123", true,
             Model(null, Instant.now(), "123ad", HashSet(), null), null,
             Trace(null, mutableListOf(Delta(null, "hi", "ho")), null)
         )

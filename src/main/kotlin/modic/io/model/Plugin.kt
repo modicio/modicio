@@ -17,21 +17,68 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
 
+/**
+ * A [Plugin] is a generic [Model] extension part of a [Node].
+ * A Plugin consists of a description, content and resolver reference.
+ * The content can basically contain any string value providing information, presets, image references etc.
+ * Plugins can be executable by the modicio engine directly, if an internal resolver is used. However, the client
+ * can use custom resolvers and store required information in the Plugin. The resolver will receive the [Instance]
+ * [Fragment] to do any computation based on the Plugin.
+ * Note that for scripts / code-based plugins, there is a separate [Script] model element directly supported by the
+ * modicio engine.
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Plugin(
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    var description: String,
-    @Column
-    var resolver: String,
-    @Column
-    var content: String,
-    @Transient
-    var node: Node?
+
+    /**
+     * Technical database (JPA) identifier used for relation joins.
+     * The [dataID] is system specific and not exported to XML.
+     * It must not be used to identify elements in distributed use-cases.
+     * It should not be used to identify elements from outside the service. All model elements provide other
+     * suitable identifiers to be used.
+     */
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * The human-readable description of the plugin.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "description")
+    var description: String = "",
+
+    /**
+     * The resolver is defined by a URI specifying a resolvable interpretation algorithm.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "resolver")
+    var resolver: String = "",
+
+    /**
+     * Arbitrary content of the plugin which is passed to the resolver together with the [Node] / [Instance] it
+     * is attached to.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "content")
+    var content: String = "",
+
+    /**
+     * Backlink to [Node] to improve traversal.
+     */
+    @field:Transient
+    @field:XmlTransient
+    var node: Node? = null
 ) {
+
+    constructor() : this(null)
 
 }
