@@ -17,8 +17,24 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlElement
+import jakarta.xml.bind.annotation.XmlTransient
+import java.util.*
 
+/**
+ * The Header contains the information which [IObject]s of an [Instance] are accessible from the outside, i.e., which
+ * objects can be targeted by [AssociationRelation]s.
+ * **A Header only exists in [Fragment]s carrying an [Instance].**
+ * The individual objects are defined as [HeaderElement]s.
+ * The [Composition] defines if an object is publicly visible or not (non-composition objects are always public).
+ * As soon as a [IObject] is created that is public according to its type, it is added as a [HeaderElement]
+ * @see [Composition]
+ * @see [CompositionInstance]
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class Header(
 
     /**
@@ -28,15 +44,28 @@ class Header(
      * It should not be used to identify elements from outside the service. All model elements provide other
      * suitable identifiers to be used.
      */
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val elements: MutableList<HeaderElement>,
-    @Transient
-    var instance: Instance?
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * The list of [HeaderElement]s stored in the [Trace].
+     */
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "HeaderElement")
+    private val elements: MutableList<HeaderElement> = LinkedList(),
+
+    /**
+     * Backlink for faster traversal
+     */
+    @field:Transient
+    @field:XmlTransient
+    var instance: Instance? = null
 ) {
+
+    constructor() : this(null)
 
     init {
         elements.forEach { e -> e.header = this }

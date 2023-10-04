@@ -17,8 +17,17 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
 
+/**
+ * A [HeaderElement] describes a publicly visible entry point for [AssociationInstance]s defined by [AssociationRelation]s.
+ * A HeaderElement captures a single [IObject] and its type [Node].
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class HeaderElement(
 
     /**
@@ -28,16 +37,35 @@ class HeaderElement(
      * It should not be used to identify elements from outside the service. All model elements provide other
      * suitable identifiers to be used.
      */
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val compositeNodeUri: String,
-    @Column
-    val compositeInstanceUri: String,
-    @Transient
-    var header: Header?
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * The URI of the [Node] type of the [IObject].
+     * The Node must be present in the same [Fragment] per construction.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "composite_node_uri")
+    val compositeNodeUri: String = "",
+
+    /**
+     * The URI of the public [IObject].
+     */
+    @field:Column
+    @field:XmlAttribute(name = "composite_instance_uri")
+    val compositeInstanceUri: String = "",
+
+    /**
+     * Backlink for faster traversal.
+     */
+    @field:Transient
+    @field:XmlTransient
+    var header: Header? = null
 ) {
+
+    constructor() : this(null)
 
 }

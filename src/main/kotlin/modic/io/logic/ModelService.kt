@@ -18,6 +18,7 @@ package modic.io.logic
 
 import jakarta.transaction.Transactional
 import modic.io.messages.MetaData
+import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 
@@ -27,6 +28,27 @@ class ModelService(val fragmentRepository: FragmentRepository) {
     @Transactional
     fun getVariantMetadata(timestamp: String?, uuid: String?, name: String?): MetaData {
         return MetaData("foo", "bar", "baz")
+    }
+
+    /**
+     * Possibilities:
+     * - a variant is specified, but it does not exist
+     * - a variant is not specified
+     *
+     * 1. Check if a variant is specified. If only the name is given, this indicates a new variant.
+     * 2. If nothing is given, return an error
+     * 3. Check if the given variant exists. If yes, retrieve the most recent running version.
+     *      - take the new variant and set the new running version
+     *      - for all nodes, check their existence. If existent set the according version.
+     *        if not existent, initialize the version with 1 (independent of the provided version)
+     *        use URI for matching
+     * 4. If the variant does not exist, take the given model and initialize every version to 1
+     * 5. Validate the Fragment
+     * 6. Store the Fragment (and delete the predecessor)
+     * 7. If the predecessor was the active reference, the new variant will become active reference
+     */
+    fun pushFullVariant(newFragment: Fragment, timestamp: String?, variantUID: String?, name: String?) {
+        //existence check
     }
 
 }

@@ -20,6 +20,13 @@ import jakarta.persistence.*
 import jakarta.xml.bind.annotation.*
 import java.util.*
 
+/**
+ * The Instance class represents the instance facet of the ESI clabject ([Fragment]).
+ * The Instance contains the set of instance-objects forming a physical deep instance of the logically instantiated
+ * [Node].
+ * @see [Fragment]
+ * @see [IObject]
+ */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
 class Instance(
@@ -37,30 +44,56 @@ class Instance(
     @field:XmlTransient
     var dataID: Long? = null,
 
+    /**
+     * The (technical) name of the Instance.
+     * The name does not have to be unique, although it should be as identifying as possible.
+     */
     @field:Column
     @field:XmlAttribute(name = "name")
     val name: String = "",
 
+    /**
+     * The URI of the root [Node] of the Instance ESI.
+     * The target Node must exist within the same Fragment and its dependencies must fulfill ESI properties.
+     */
     @field:Column
     @field:XmlAttribute(name = "model_root")
     val modelRoot: String = "",
 
+    /**
+     * The URI uniquely identifying the Instance as a whole.
+     */
     @field:Column
     @field:XmlAttribute(name = "uri")
     val uri: String = "",
 
-    @field:OneToOne(cascade = [CascadeType.ALL])
+    /**
+     * The [Header] to store publicly accessible (composite) objects.
+     * @see [Composition]
+     * @see [CompositionInstance]
+     */
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Header")
     val header: Header? = null,
 
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    /**
+     * The set of instance objects to represent the instance type physically.
+     * This set is not allowed to be empty (at least the root element must exist as object)
+     * The list type is used for traversal sorting reasons, duplicates must not exist.
+     */
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Object")
     private val objects: MutableList<IObject> = LinkedList(),
 
+    /**
+     * Backlink for faster traversal.
+     */
     @field:Transient
     @field:XmlTransient
     var fragment: Fragment? = null
 ) {
+
+    constructor() : this(null)
 
     init {
         header?.instance = this

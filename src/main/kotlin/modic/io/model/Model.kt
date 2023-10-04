@@ -71,7 +71,7 @@ class Model(
      * The set of [Node]s contains all elements of the Model.
      * Practically, the set can be empty.
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Node")
     private val nodes: MutableSet<Node> = HashSet(),
 

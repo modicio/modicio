@@ -67,16 +67,43 @@ class ModelController(val modelService: ModelService) {
     }
 
     /**
-     * Create a new variant. If an existing variant is specified, the new variant will be initialized with a copy of the model.
-     * If no existing variant is specified, a new empty variant with the given name is constructed.
+     * Set a complete model ([Fragment]). If the specified variant is existent, a new running version will be created.
+     * if the variant is not present,
+     * a new variant with the given `name` is initialized with the specified model as an initial version
      *
+     * URL Params
+     * - `variant_timestamp?=STRING`
+     * - `variant_UUID?=String`
+     * - `variant_name=String`
+     *
+     * Body
+     * - XML Body (closed fragment)
+     *
+     * Checks
+     * - XML fragment verification
+     *
+     * @param timestamp
+     * @param variantUID
+     * @param name
+     * @param fragment
      */
-    @PutMapping("model", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @PutMapping("model", produces=[MediaType.APPLICATION_JSON_VALUE], consumes = [MediaType.APPLICATION_XML_VALUE])
     fun putModelOfVariant(
         @RequestParam(required = false, name = "variant_timestamp") timestamp: String?,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
-        @RequestParam(required = false, name = "variant_name") name: String?
+        @RequestParam(required = false, name = "variant_name") name: String?,
+        @RequestBody fragment: Fragment
     ): String {
+
+        if(timestamp == null && variantUID == null && name == null){
+            //Not executable
+            return "Error"
+        }
+
+        //TODO validate fragment here
+
+        modelService.pushFullVariant(fragment, timestamp, variantUID, name)
+
         return "TODO"
     }
 

@@ -116,7 +116,7 @@ class Fragment(
      *
      * @see [Model] for further information
      */
-    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Model")
     val model: Model? = null,
 
@@ -129,14 +129,14 @@ class Fragment(
      *
      * @see [Model] for further information
      */
-    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     val instance: Instance? = null,
 
     /**
      * A [Fragment] can contain a [Trace].
      * The Trace contains deltas (change operations) applied to the Model or Instance.
      */
-    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Trace")
     val trace: Trace? = null
 ) {

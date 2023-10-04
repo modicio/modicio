@@ -76,7 +76,7 @@ class AssociationRelation(
      * to fulfill this association.
      * An AssociationRelation must have an Interface.
      */
-    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Interface")
     val cInterface: Interface? = null,
 

@@ -73,7 +73,7 @@ class Node(
      * The [Annotation] contains the variant and version identifiers.
      * The Annotation is mandatory.
      */
-    @field:OneToOne(cascade = [CascadeType.ALL])
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Annotation")
     val annotation: Annotation? = null,
 
@@ -82,7 +82,7 @@ class Node(
      * Attributes must be unique (by name and uri) per Node.
      * The list must fulfill set properties. Ordering is important for interpretation and rendering.
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Attribute")
     private val attributes: MutableList<Attribute> = LinkedList(),
 
@@ -91,7 +91,7 @@ class Node(
      * Attributes must be unique (by name and uri) per Node.
      * The list must fulfill set properties. Ordering is important for interpretation and rendering.
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "AssociationRelation")
     private val associationRelations: MutableList<AssociationRelation> = LinkedList(),
 
@@ -99,14 +99,14 @@ class Node(
      * The list of [ParentRelation]s define directed inheritance relations to other [Node]s.
      * Attributes must be unique (by name and uri) per Node.
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "ParentRelation")
     private val parentRelations: MutableSet<ParentRelation> = HashSet(),
 
     /**
      * [Plugin]s can be used to extend the [Node] with custom functionality.
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Plugin")
     private val plugins: MutableSet<Plugin> = HashSet(),
 
@@ -117,7 +117,7 @@ class Node(
      * - The specified Attribute must exist in the scope of this model element (match by uri)
      * - The provided value must match the Attribute type
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Concretization")
     private val concretizations: MutableSet<Concretization> = HashSet(),
 
@@ -126,7 +126,7 @@ class Node(
      * The [Node] a Composition refers to must exist in the scope of the Model.
      * Note the special scoping and visibility mechanisms explained in [Composition] and [Header].
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Composition")
     private val compositions: MutableSet<Composition> = HashSet(),
 
@@ -134,7 +134,7 @@ class Node(
      * [Script]s can be used to attach dynamic behaviour to a [Node].
      * Note further details and restrictions explained in [Script].
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Script")
     private val scripts: MutableList<Script> = LinkedList(),
 

@@ -40,7 +40,7 @@ Get the metadata of all known running versions of the specified variant. The res
 
 ---
 
-### `/model/reference`
+### `/model/reference` @ModelController
 
 * URL Params
 * Returns
@@ -50,7 +50,17 @@ Get the active reference model (fragment) closed model.
 
 ---
 
-### `/model/reference/subspace`
+### `/model/variant/reference` @ModelController
+
+* URL Params
+  * `variant_timestamp_from=STRING`
+  * `variant_UUID_from=String`
+
+Activate the specified variant as reference model.
+
+---
+
+### `/model/reference/subspace` @ModelController
 
 * URL Params
   * `variant_timestamp=STRING`
@@ -65,7 +75,7 @@ from `root` with a specified recursion `depth`. Select a depth of 0 for the mini
 
 ---
 
-### `/model/reconstructed/`
+### `/model/reconstructed/` @ModelController
 
 * URL Params
   * `version_timestamp?=STRING`
@@ -112,15 +122,6 @@ a new variant with the given `name` is initialized with the specified model as a
 
 Create a new variant. If an existing variant is specified, the new variant will be initialized with a copy of the model.
 If no existing variant is specified, a new empty variant with the given name is constructed.
-
-### `/model/variant/reference` @ModelController
-
-* URL Params
-  * `variant_timestamp_from=STRING`
-  * `variant_UUID_from=String`
-
-Activate the specified variant as reference model.
-
 
 ---
 

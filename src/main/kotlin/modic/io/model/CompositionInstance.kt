@@ -17,8 +17,11 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.*
+import java.util.*
 
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class CompositionInstance(
 
     /**
@@ -28,23 +31,35 @@ class CompositionInstance(
      * It should not be used to identify elements from outside the service. All model elements provide other
      * suitable identifiers to be used.
      */
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val name: String,
-    @Column
-    val modelRoot: String,
-    @Column
-    val uri: String,
-    @Column
-    val compositionUri: String,
-    @OneToMany(cascade = [CascadeType.ALL])
-    private val objects: MutableList<IObject>,
-    @Transient
-    var instance: Instance?
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    @field:Column
+    @field:XmlAttribute(name = "name")
+    val name: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "model_root")
+    val modelRoot: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "uri")
+    val uri: String = "",
+
+    @field:Column
+    @field:XmlAttribute(name = "composition_uri")
+    val compositionUri: String = "",
+
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @field:XmlElement(name = "Object")
+    private val objects: MutableList<IObject> = LinkedList(),
+
 ) {
+
+    constructor() : this(null)
 
     fun addObject(iObject: IObject) {
         if (!objects.contains(iObject)) objects.add(iObject)

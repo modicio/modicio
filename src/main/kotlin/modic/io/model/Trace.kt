@@ -56,7 +56,7 @@ class Trace(
     /**
      * The sequence of [Delta]s
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Delta")
     private val deltas: MutableList<Delta> = LinkedList(),
 

@@ -17,8 +17,18 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
 
+/**
+ * The AssociationInstance represents the concretization of an [AssociationRelation].
+ * @see AssociationRelation
+ * @see Interface
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class AssociationInstance(
 
     /**
@@ -28,16 +38,34 @@ class AssociationInstance(
      * It should not be used to identify elements from outside the service. All model elements provide other
      * suitable identifiers to be used.
      */
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val instanceUri: String,
-    @Column
-    val nodeUri: String,
-    @Transient
-    val instance: Instance?
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * URI of the associated [Instance] object.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "instance_uri")
+    val instanceUri: String = "",
+
+    /**
+     * URI of the [AssociationRelation] that allows this association to happen.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "association_uri")
+    val associationUri: String = "",
+
+    /**
+     * Link to the [Fragment] containing the target [Instance] (if available).
+     */
+    @field:Transient
+    @field:XmlTransient
+    val instance: Fragment? = null
 ) {
+
+    constructor() : this(null)
 
 }

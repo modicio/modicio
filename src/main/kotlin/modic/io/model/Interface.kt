@@ -51,7 +51,7 @@ class Interface(
      * The list of version-based intervals open on the left side (past).
      * @see [LeftOpen]
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "LeftOpen")
     private val leftOpenDelimiters: MutableList<LeftOpen> = LinkedList(),
 
@@ -59,7 +59,7 @@ class Interface(
      * The list of version-based intervals open on the right side (future).
      * @see [RightOpen]
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "RightOpen")
     private val rightOpenDelimiters: MutableList<RightOpen> = LinkedList(),
 
@@ -67,7 +67,7 @@ class Interface(
      * The list of version-based intervals delimited on both sides (past and future).
      * @see [Region]
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Region")
     private val regionDelimiters: MutableList<Region> = LinkedList(),
 
@@ -75,7 +75,7 @@ class Interface(
      * The list of variant-based (and/or version-based) points / ranges
      * @see [Point]
      */
-    @field:OneToMany(cascade = [CascadeType.ALL])
+    @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Point")
     private val pointDelimiters: MutableList<Point> = LinkedList(),
 

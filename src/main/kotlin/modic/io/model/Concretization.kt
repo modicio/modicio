@@ -54,7 +54,7 @@ class Concretization(
      * It must also be checked that teh Attribute still exists after a model refactoring. In this case, the AttributeInstance
      * may become invalid.
      */
-    @field:OneToOne
+    @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "AttributeInstance")
     val attributeInstance: AttributeInstance? = null,
 

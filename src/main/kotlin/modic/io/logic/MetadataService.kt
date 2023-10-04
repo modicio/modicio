@@ -25,8 +25,11 @@ import org.springframework.stereotype.Service
 class MetadataService(val fragmentRepository: FragmentRepository) {
 
     @Transactional
-    fun getVariantMetadata(timestamp: String?, uuid: String?, name: String?): MetaData {
+    fun getVariantMetadata(timestamp: String?, uuid: String?, name: String?): MetaData? {
         return MetaData("foo", "bar", "baz")
     }
 
+    fun setReferenceFragment() {
+
+    }
 }

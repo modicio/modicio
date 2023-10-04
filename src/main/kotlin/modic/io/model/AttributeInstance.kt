@@ -17,8 +17,17 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlAttribute
+import jakarta.xml.bind.annotation.XmlTransient
 
+/**
+ * The AttributeInstance represents a concretization of an [Attribute].
+ * @see [Attribute]
+ */
 @Entity
+@XmlAccessorType(XmlAccessType.NONE)
 class AttributeInstance(
 
     /**
@@ -28,14 +37,27 @@ class AttributeInstance(
      * It should not be used to identify elements from outside the service. All model elements provide other
      * suitable identifiers to be used.
      */
-    @Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var dataID: Long?,
-    @Column
-    val attributeUri: String,
-    @Column
-    var anyValue: String
+    @field:Id
+    @field:Column
+    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
+    @field:XmlTransient
+    var dataID: Long? = null,
+
+    /**
+     * URI of the [Attribute] defining this AttributeInstances.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "attribute_uri")
+    val attributeUri: String = "",
+
+    /**
+     * Textual value representation of the Attribute.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "any_value")
+    var anyValue: String = ""
 ) {
+
+    constructor() : this(null)
 
 }
