@@ -96,7 +96,7 @@ class ModelController(val modelService: ModelService) {
     ): String {
 
         if(timestamp == null && variantUID == null && name == null){
-            //Not executable
+            //TODO Not executable
             return "Error"
         }
 

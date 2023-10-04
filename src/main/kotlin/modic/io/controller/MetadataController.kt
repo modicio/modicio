@@ -22,6 +22,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.Instant
 
 @RestController
 class MetadataController(val metadataService: MetadataService) {
@@ -35,7 +36,7 @@ class MetadataController(val metadataService: MetadataService) {
         @RequestParam(required = false, name = "delimiter") delimiter: Int?
     ): List<MetaData> {
         //TODO
-        return listOf(MetaData("foo", "bar", "baz"))
+        return listOf(MetaData(Instant.MIN, "bar", "baz"))
     }
 
     /**
@@ -49,7 +50,7 @@ class MetadataController(val metadataService: MetadataService) {
         @RequestParam(required = false, name = "variant_name") name: String?
     ): MetaData {
        //TODO
-        return MetaData("foo", "bar", "baz")
+        return MetaData(Instant.MIN, "bar", "baz")
     }
 
     /**
@@ -63,7 +64,7 @@ class MetadataController(val metadataService: MetadataService) {
         @RequestParam(required = false, name = "delimiter") delimiter: Int?
     ): List<MetaData> {
         //TODO
-        return listOf(MetaData("foo", "bar", "baz"))
+        return listOf(MetaData(Instant.MIN, "bar", "baz"))
     }
 
 }

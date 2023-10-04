@@ -21,13 +21,16 @@ import modic.io.messages.MetaData
 import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
-class ModelService(val fragmentRepository: FragmentRepository) {
+class ModelService(
+    val fragmentRepository: FragmentRepository,
+    val metadataService: MetadataService) {
 
     @Transactional
     fun getVariantMetadata(timestamp: String?, uuid: String?, name: String?): MetaData {
-        return MetaData("foo", "bar", "baz")
+        return MetaData(Instant.MIN, "bar", "baz")
     }
 
     /**
@@ -48,7 +51,13 @@ class ModelService(val fragmentRepository: FragmentRepository) {
      * 7. If the predecessor was the active reference, the new variant will become active reference
      */
     fun pushFullVariant(newFragment: Fragment, timestamp: String?, variantUID: String?, name: String?) {
-        //existence check
+        val timeInstant: Instant? = if (timestamp != null) Instant.parse(timestamp) else null
+        val metaData = metadataService.getVariantMetadata(timeInstant, variantUID, null)
+        if( metaData == null){
+            //TODO no variant present
+        }else{
+            //TODO variant present
+        }
     }
 
 }

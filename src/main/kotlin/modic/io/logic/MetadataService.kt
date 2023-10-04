@@ -16,20 +16,36 @@
 
 package modic.io.logic
 
-import jakarta.transaction.Transactional
 import modic.io.messages.MetaData
+import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
+import java.time.Instant
 
 @Service
 class MetadataService(val fragmentRepository: FragmentRepository) {
 
-    @Transactional
-    fun getVariantMetadata(timestamp: String?, uuid: String?, name: String?): MetaData? {
-        return MetaData("foo", "bar", "baz")
+    fun getVariantMetadata(timestamp: Instant?, uuid: String?, name: String?): MetaData? {
+
+        //TODO name-only not supported yet
+
+        var fragment: Fragment? = null
+        var metadata: MetaData? = null
+
+        if(uuid != null){
+            fragment = fragmentRepository.findFirstFragmentByVariantID(uuid)
+        } else if (timestamp != null){
+            fragment = fragmentRepository.findFirstFragmentByTimestamp(timestamp)
+        }
+
+        if(fragment != null){
+            metadata = MetaData(fragment.variantTime, fragment.variantID, fragment.variantName)
+        }
+
+        return metadata
     }
 
     fun setReferenceFragment() {
-
+        //TODO
     }
 }
