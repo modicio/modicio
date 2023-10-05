@@ -61,6 +61,10 @@ class CompositionInstance(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
     fun addObject(iObject: IObject) {
         if (!objects.contains(iObject)) objects.add(iObject)
     }

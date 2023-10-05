@@ -98,4 +98,9 @@ class AssociationRelation(
         cInterface?.associationRelation = this
     }
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        cInterface?.initializeZeroIDs()
+    }
+
 }

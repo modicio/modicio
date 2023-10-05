@@ -95,6 +95,12 @@ class Instance(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        header?.initializeZeroIDs()
+        objects.forEach { o -> o.initializeZeroIDs() }
+    }
+
     init {
         header?.instance = this
     }

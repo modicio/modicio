@@ -68,4 +68,8 @@ class AssociationInstance(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

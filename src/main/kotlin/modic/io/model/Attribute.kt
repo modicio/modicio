@@ -79,4 +79,8 @@ class Attribute(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

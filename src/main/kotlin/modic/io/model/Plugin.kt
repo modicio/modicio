@@ -81,4 +81,8 @@ class Plugin(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

@@ -148,6 +148,17 @@ class Node(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        annotation?.initializeZeroIDs()
+        attributes.forEach { a -> a.initializeZeroIDs() }
+        associationRelations.forEach { a -> a.initializeZeroIDs() }
+        parentRelations.forEach { a -> a.initializeZeroIDs() }
+        plugins.forEach { a -> a.initializeZeroIDs() }
+        compositions.forEach { a -> a.initializeZeroIDs() }
+        scripts.forEach { a -> a.initializeZeroIDs() }
+    }
+
     /**
      * Autowire backlinks that are not part of the JPA schema (transient)
      */

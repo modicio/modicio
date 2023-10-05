@@ -66,4 +66,8 @@ class ParentRelation(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

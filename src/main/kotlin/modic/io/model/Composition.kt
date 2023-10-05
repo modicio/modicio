@@ -108,4 +108,8 @@ class Composition(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

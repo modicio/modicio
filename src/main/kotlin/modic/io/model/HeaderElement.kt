@@ -68,4 +68,8 @@ class HeaderElement(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

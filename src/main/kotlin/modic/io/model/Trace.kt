@@ -70,6 +70,11 @@ class Trace(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        deltas.forEach { d -> d.initializeZeroIDs() }
+    }
+
     fun getDeltas(): List<Delta> = deltas
 
     fun addDelta(delta: Delta) = deltas.add(delta)

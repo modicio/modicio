@@ -71,6 +71,11 @@ class Header(
         elements.forEach { e -> e.header = this }
     }
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        elements.forEach{ e -> e.initializeZeroIDs()}
+    }
+
     fun getElements(): List<HeaderElement> = elements
 
     fun addElement(headerElement: HeaderElement) {

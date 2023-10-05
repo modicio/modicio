@@ -92,6 +92,11 @@ class Model(
         nodes.forEach { node -> node.model = this }
     }
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        nodes.forEach { n -> n.initializeZeroIDs() }
+    }
+
     fun getNodes(): Set<Node> = nodes
 
     fun addNode(node: Node): Boolean {

@@ -93,6 +93,13 @@ class IObject(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        attributeInstances.forEach { a -> a.initializeZeroIDs() }
+        associationInstances.forEach { a -> a.initializeZeroIDs() }
+        compositionInstances.forEach { c -> c.initializeZeroIDs() }
+    }
+
     fun getAttributeInstances(): List<AttributeInstance> = attributeInstances
 
     fun getAssociationInstances(): List<AssociationInstance> = associationInstances

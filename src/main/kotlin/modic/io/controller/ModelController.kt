@@ -100,8 +100,6 @@ class ModelController(val modelService: ModelService) {
             return "Error"
         }
 
-        //TODO validate fragment here
-
         modelService.pushFullVariant(fragment, timestamp, variantUID, name)
 
         return "TODO"

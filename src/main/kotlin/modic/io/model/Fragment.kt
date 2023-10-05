@@ -84,10 +84,7 @@ class Fragment(
      * The variantTime represents the creation point of the variant as UTC timestamp.
      * This information is stored redundant in [Annotation].
      */
-    @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
-    @field:XmlAttribute(name = "variant_time")
-    var variantTime: Instant = Instant.MIN,
+    variantTime: Instant = Instant.MIN,
 
     /**
      * The variantID is a unique string identifier of the variant. This implementation uses random-based UUIDs.
@@ -97,9 +94,7 @@ class Fragment(
      * The variantID can safely be used as an access identifier, also in distributed use-cases.
      * This information is stored redundant in [Annotation].
      */
-    @field:Column
-    @field:XmlAttribute(name = "variant_id")
-    var variantID: String = "",
+    variantID: String = "",
 
     /**
      * Boolean value denoting if the given [Fragment] is the current reference definition of its variant.
@@ -171,6 +166,30 @@ class Fragment(
         if (model != null) model.fragment = this
         if (trace != null) trace.fragment = this
         if (instance != null) instance.fragment = this
+    }
+
+    @field:Column
+    @field:XmlAttribute(name = "variant_id")
+    var variantID: String = variantID
+        set(value) {
+            field = value
+            model?.getNodes()?.forEach { node -> node.annotation?.variantID = value }
+        }
+
+    @field:Column
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlAttribute(name = "variant_time")
+    var variantTime: Instant = variantTime
+        set(value) {
+            field = value
+            model?.getNodes()?.forEach { node -> node.annotation?.variantTime = value }
+        }
+
+    fun initializeZeroIDs(){
+        dataID = 0
+        instance?.initializeZeroIDs()
+        trace?.initializeZeroIDs()
+        model?.initializeZeroIDs()
     }
 
     //companion object {

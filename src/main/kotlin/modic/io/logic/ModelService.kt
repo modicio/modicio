@@ -16,22 +16,16 @@
 
 package modic.io.logic
 
-import jakarta.transaction.Transactional
-import modic.io.messages.MetaData
 import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 import java.time.Instant
+import java.util.*
 
 @Service
 class ModelService(
     val fragmentRepository: FragmentRepository,
     val metadataService: MetadataService) {
-
-    @Transactional
-    fun getVariantMetadata(timestamp: String?, uuid: String?, name: String?): MetaData {
-        return MetaData(Instant.MIN, "bar", "baz")
-    }
 
     /**
      * Possibilities:
@@ -52,11 +46,21 @@ class ModelService(
      */
     fun pushFullVariant(newFragment: Fragment, timestamp: String?, variantUID: String?, name: String?) {
         val timeInstant: Instant? = if (timestamp != null) Instant.parse(timestamp) else null
-        val metaData = metadataService.getVariantMetadata(timeInstant, variantUID, null).getOrNull(0)
-        if( metaData == null){
-            //TODO no variant present
+        val metaData = metadataService.getVariantMetadata(timeInstant, variantUID, null).firstOrNull()
+
+        if(newFragment.instance != null){
+            //TODO Throw error
+        }
+
+        //TODO newFragment.validate
+
+        if( metaData != null){
+            //TODO
         }else{
-            //TODO variant present
+            newFragment.variantID = UUID.randomUUID().toString()
+            newFragment.variantTime = Instant.now()
+            newFragment.initializeZeroIDs()
+            fragmentRepository.save(newFragment)
         }
     }
 

@@ -92,4 +92,8 @@ class Annotation(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+    }
+
 }

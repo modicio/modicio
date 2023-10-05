@@ -89,6 +89,14 @@ class Interface(
 
     constructor() : this(null)
 
+    fun initializeZeroIDs(){
+        dataID = 0
+        leftOpenDelimiters.forEach { e -> e.initializeZeroIDs() }
+        rightOpenDelimiters.forEach { e -> e.initializeZeroIDs() }
+        regionDelimiters.forEach { e -> e.initializeZeroIDs() }
+        pointDelimiters.forEach { e -> e.initializeZeroIDs() }
+    }
+
     fun getLeftOpenDelimiters(): List<LeftOpen> = leftOpenDelimiters
 
     fun addOLeftOpenDelimiter(leftOpen: LeftOpen) {
