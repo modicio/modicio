@@ -146,18 +146,21 @@ class Fragment(
     /**
      * Required argument to export valid XML
      */
+    @field:Transient
     @field:XmlAttribute(name = "xmlns:xsi")
     private val xsi = "http://www.w3.org/2001/XMLSchema-instance"
 
     /**
      * Required argument to export valid XML
      */
+    @field:Transient
     @field:XmlAttribute(name = "xmlns")
     private val xmlns = "http://modic.io/ns"
 
     /**
      * Required argument to export valid XML
      */
+    @field:Transient
     @field:XmlAttribute(name = "xsi:schemaLocation")
     private val location = "http://modic.io/ns modicio_lang.xsd"
 

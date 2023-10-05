@@ -30,18 +30,40 @@ class MetadataController(val metadataService: MetadataService) {
     /**
      * Get the metadata of all known variants.
      * The result size can be delimited to the k most recently created variants.
+     * The default value for delimiter is set to 1000
+     *
+     * URL Params
+     *   - `delimiter?=INT`
+     *
+     * Returns
+     *   - JSON Body
+     *
+     * @param delimiter
      */
     @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVariantsMetadata(
         @RequestParam(required = false, name = "delimiter") delimiter: Int?
     ): List<MetaData> {
-        //TODO
-        return listOf(MetaData(Instant.MIN, "bar", "baz"))
+        return metadataService.getAllVariantsMetadata(delimiter ?: 1000)
     }
 
     /**
      * Get the complete metadata of a variant. At least one of the URL params must be provided.
-     * If the URL params are not sufficient to determine a variant, an error code is thrown.
+     * If the URL params are not sufficient to determine a variant, an error is thrown.
+     * This returns the first variant that is found matching one of the parameters in order. Please look at the
+     * behaviour of [MetadataService.getVariantMetadata] for more details.
+     *
+     * URL Params
+     *   - `variant_timestamp?=STRING`
+     *   - `variant_UUID?=String`
+     *   - `variant_name?=String`
+     *
+     * Returns
+     *   - JSON Body
+     *
+     * @param timestamp
+     * @param variantUID
+     * @param name
      */
     @GetMapping("model/metadata/variant", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVariantMetadata(
@@ -49,22 +71,41 @@ class MetadataController(val metadataService: MetadataService) {
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?
     ): MetaData {
-       //TODO
-        return MetaData(Instant.MIN, "bar", "baz")
+
+        if(timestamp == null && variantUID == null && name == null){
+            //TODO return error
+        }
+
+        val metadata = metadataService.getVariantMetadata(Instant.parse(timestamp), variantUID, name).firstOrNull()
+
+        if(metadata == null){
+            //TODO return error code
+        }
+
+        return metadata!!
     }
 
     /**
      * Get the metadata of all known running versions of the specified variant.
      * The response size can be delimited to the k most recent versions.
+     * The default value for delimiter is set to 1000
+     *
+     * URL Params
+     *   - `variant_UUID=String`
+     *   - `delimiter?=INT`
+     *
+     * Returns
+     *   - JSON Body
+     *
+     *  @param variantID
+     *  @param delimiter
      */
     @GetMapping("model/metadata/variant/versions", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVersionsOfVariantMetadata(
-        @RequestParam(required = true, name = "variant_timestamp") timestamp: String,
-        @RequestParam(required = true, name = "variant_UUID") variantUID: String,
+        @RequestParam(required = true, name = "variant_UUID") variantID: String,
         @RequestParam(required = false, name = "delimiter") delimiter: Int?
     ): List<MetaData> {
-        //TODO
-        return listOf(MetaData(Instant.MIN, "bar", "baz"))
+        return metadataService.getAllRunningVersionsOfVariant(variantID, delimiter ?: 1000)
     }
 
 }

@@ -8,12 +8,23 @@ import java.time.Instant
 
 interface FragmentRepository : CrudRepository<Fragment, Long> {
 
-    @Query("SELECT * FROM Fragment f WHERE f.variant_time = :variantTime limit 1", nativeQuery = true)
-    fun findFirstFragmentByTimestamp(
-        @Param("variantTime") variantTime: Instant): Fragment?
+    @Query("SELECT * FROM Fragment f WHERE f.variant_time = :variantTime limit :limit", nativeQuery = true)
+    fun findFragmentByTimestamp(
+        @Param("variantTime") variantTime: Instant,
+        @Param("limit") limit: Int): List<Fragment>
 
-    @Query("SELECT * FROM Fragment f WHERE f.variantID = :variantID limit 1", nativeQuery = true)
-    fun findFirstFragmentByVariantID(
-        @Param("variantID") variantID: String): Fragment?
+    @Query("SELECT * FROM Fragment f WHERE f.variantID = :variantID limit :limit", nativeQuery = true)
+    fun findFragmentByVariantID(
+        @Param("variantID") variantID: String,
+        @Param("limit") limit: Int): List<Fragment>
+
+    @Query("SELECT * FROM Fragment f WHERE f.variant_name = :variantName limit :limit", nativeQuery = true)
+    fun findFragmentByVariantName(
+        @Param("variantName") variantName: String,
+        @Param("limit") limit: Int): List<Fragment>
+
+    @Query("SELECT DISTINCT ON (variantID) * FROM Fragment f limit :limit",
+        nativeQuery = true)
+    fun findOneFragmentOfEachVariant(@Param("limit") limit: Int): List<Fragment>
 
 }

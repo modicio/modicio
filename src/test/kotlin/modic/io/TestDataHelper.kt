@@ -9,10 +9,13 @@ class TestDataHelper {
 
     companion object {
 
-        fun getSimpleFragmentOnlyModel(): Fragment {
+        fun getSimpleFragmentOnlyModel(
+            preVariantID: String? = null,
+            preRunningID: String? = null): Fragment {
 
             val variantTime = Instant.now()
-            val variantId = UUID.randomUUID().toString()
+            val variantId = preVariantID ?: UUID.randomUUID().toString()
+            val runningId = preRunningID ?: UUID.randomUUID().toString()
 
             val trace = Trace(null, LinkedList<Delta>())
 
@@ -21,7 +24,7 @@ class TestDataHelper {
             trace.addDelta(d1)
             trace.addDelta(d2)
 
-            val model = Model(0, Instant.now(), UUID.randomUUID().toString(), HashSet<Node>())
+            val model = Model(0, Instant.now(), runningId, HashSet<Node>())
 
             val node1 = Node(
                 0, "Todo", "modicio:demo.todo", false,

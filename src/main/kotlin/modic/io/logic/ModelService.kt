@@ -52,7 +52,7 @@ class ModelService(
      */
     fun pushFullVariant(newFragment: Fragment, timestamp: String?, variantUID: String?, name: String?) {
         val timeInstant: Instant? = if (timestamp != null) Instant.parse(timestamp) else null
-        val metaData = metadataService.getVariantMetadata(timeInstant, variantUID, null)
+        val metaData = metadataService.getVariantMetadata(timeInstant, variantUID, null).getOrNull(0)
         if( metaData == null){
             //TODO no variant present
         }else{
