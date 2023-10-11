@@ -16,6 +16,7 @@
 
 package modic.io.logic
 
+import jakarta.transaction.Transactional
 import modic.io.messages.MetaData
 import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
@@ -49,18 +50,18 @@ class MetadataService(
         var fragments: List<Fragment> = LinkedList()
 
         if (uuid != null) {
-            fragments = fragmentRepository.findFragmentByVariantID(uuid, limit)
+            fragments = fragmentRepository.findFragmentByVariantIDLazy(uuid, limit)
         } else if (timestamp != null) {
-            fragments = fragmentRepository.findFragmentByTimestamp(timestamp, limit)
+            fragments = fragmentRepository.findFragmentByTimestampLazy(timestamp, limit)
         } else if (name != null) {
-            fragments = fragmentRepository.findFragmentByVariantName(name, limit)
+            fragments = fragmentRepository.findFragmentByVariantNameLazy(name, limit)
         }
 
         return fragments.map { f -> MetaData(f.variantTime, f.variantID, f.variantName) }
     }
 
     fun getAllVariantsMetadata(limit: Int = 1): List<MetaData> {
-        return fragmentRepository.findOneFragmentOfEachVariant(limit).map {
+        return fragmentRepository.findOneFragmentOfEachVariantLazy(limit).map {
             f -> MetaData(f.variantTime, f.variantID, f.variantName)
         }
     }
@@ -72,7 +73,11 @@ class MetadataService(
         }
     }
 
-    fun setReferenceFragment() {
-        //TODO
+    @Transactional
+    fun setReferenceFragment(variantID: String?, variantTime: String?) {
+        val fragment = fragmentRepository.getFragmentByIdentifiers(variantID, variantTime)
+        if(fragment != null){
+            fragment.isReference = true
+        }
     }
 }

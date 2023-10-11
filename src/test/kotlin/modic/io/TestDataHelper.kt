@@ -69,7 +69,7 @@ class TestDataHelper {
 
             return Fragment(
                 0, false, "main", variantTime, variantId,
-                true, model, null, trace
+                false, model, null, trace
             )
         }
 

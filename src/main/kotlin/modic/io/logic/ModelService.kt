@@ -16,6 +16,7 @@
 
 package modic.io.logic
 
+import jakarta.transaction.Transactional
 import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
@@ -44,6 +45,7 @@ class ModelService(
      * 6. Store the Fragment (and delete the predecessor)
      * 7. If the predecessor was the active reference, the new variant will become active reference
      */
+    @Transactional
     fun pushFullVariant(newFragment: Fragment, timestamp: String?, variantUID: String?, name: String?) {
         val timeInstant: Instant? = if (timestamp != null) Instant.parse(timestamp) else null
         val metaData = metadataService.getVariantMetadata(timeInstant, variantUID, null).firstOrNull()
@@ -57,11 +59,19 @@ class ModelService(
         if( metaData != null){
             //TODO
         }else{
+            newFragment.isReference = false
             newFragment.variantID = UUID.randomUUID().toString()
             newFragment.variantTime = Instant.now()
             newFragment.initializeZeroIDs()
             fragmentRepository.save(newFragment)
         }
+    }
+
+    /**
+     * TODO doc
+     */
+    fun getReferenceFragment(): Fragment? {
+        return fragmentRepository.findFragmentByIsReferenceIsTrue().firstOrNull()
     }
 
 }

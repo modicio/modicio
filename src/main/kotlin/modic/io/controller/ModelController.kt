@@ -16,6 +16,7 @@
 
 package modic.io.controller
 
+import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
 import modic.io.model.Delta
 import modic.io.model.Fragment
@@ -26,7 +27,9 @@ import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
 @RestController
-class ModelController(val modelService: ModelService) {
+class ModelController(
+    val modelService: ModelService,
+    val metadataService: MetadataService) {
 
     /**
      * Create a new variant. If an existing variant is specified, the new variant will be initialized with a copy of the model.
@@ -50,7 +53,8 @@ class ModelController(val modelService: ModelService) {
         @RequestParam(required = false, name = "variant_timestamp") timestamp: String,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String
     ): String {
-        return "TODO"
+        metadataService.setReferenceFragment(variantUID, timestamp)
+        return "OK"
     }
 
     /**
