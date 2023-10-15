@@ -53,9 +53,24 @@ class ModelServiceTests {
         val fragment2 = TestDataHelper.getSimpleFragmentOnlyModel()
         val storedFragment1 = fragmentRepository.save(fragment1)
         val storedFragment2 = fragmentRepository.save(fragment2)
-        metadataService.setReferenceFragment(fragment2.variantID, fragment2.variantTime.toString())
+        metadataService.setReferenceFragment(fragment2.variantID, fragment2.model!!.runningID)
         val referenceFragment = modelService.getReferenceFragment()
         Assertions.assertNotNull(referenceFragment)
+        Assertions.assertEquals(storedFragment2.dataID, referenceFragment!!.dataID)
+    }
+
+    @Test
+    fun setAndResetReferenceFragmentTest(){
+        val fragment1 = TestDataHelper.getSimpleFragmentOnlyModel()
+        val fragment2 = TestDataHelper.getSimpleFragmentOnlyModel()
+        val storedFragment1 = fragmentRepository.save(fragment1)
+        val storedFragment2 = fragmentRepository.save(fragment2)
+        metadataService.setReferenceFragment(fragment1.variantID, fragment1.model!!.runningID)
+        var referenceFragment = modelService.getReferenceFragment()
+        Assertions.assertEquals(storedFragment1.dataID, referenceFragment!!.dataID)
+
+        metadataService.setReferenceFragment(fragment2.variantID, fragment2.model!!.runningID)
+        referenceFragment = modelService.getReferenceFragment()
         Assertions.assertEquals(storedFragment2.dataID, referenceFragment!!.dataID)
     }
 

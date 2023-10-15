@@ -30,6 +30,9 @@ interface FragmentRepository : JpaRepository<Fragment, Long> {
     fun findOneFragmentOfEachVariantLazy(@Param("limit") limit: Int): List<Fragment>
 
     //Auto-generated
+    fun getFragmentByDataID(dataID: Long): Fragment?
+
+    //Auto-generated
     fun findFragmentByIsReferenceIsTrue(): List<Fragment>
 
     //Auto-generated

@@ -74,10 +74,18 @@ class MetadataService(
     }
 
     @Transactional
-    fun setReferenceFragment(variantID: String?, variantTime: String?) {
-        val fragment = fragmentRepository.getFragmentByIdentifiers(variantID, variantTime)
-        if(fragment != null){
-            fragment.isReference = true
+    fun setReferenceFragment(variantID: String, runningID: String) {
+        val oldReferenceFragments = fragmentRepository.findFragmentByIsReferenceIsTrue()
+        val fragmentID = modelRepository.findFragmentDataIdOfModelWithRunningId(runningID)
+        if(fragmentID != null) {
+            val fragment = fragmentRepository.getFragmentByDataID(fragmentID)
+            if(fragment != null){
+                oldReferenceFragments.forEach { f ->
+                    f.isReference = false
+                }
+                fragment.isReference = true
+            }
         }
+
     }
 }

@@ -50,10 +50,11 @@ class ModelController(
      */
     @PostMapping("model/variant/reference", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun postReference(
-        @RequestParam(required = false, name = "variant_timestamp") timestamp: String,
+        @RequestParam(required = false, name = "running_UUID" ) runningUID: String,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String
     ): String {
-        metadataService.setReferenceFragment(variantUID, timestamp)
+        metadataService.setReferenceFragment(variantUID, runningUID)
+        //TODO useful response
         return "OK"
     }
 
