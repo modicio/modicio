@@ -16,6 +16,10 @@ java {
     sourceCompatibility = '17'
 }
 
+test {
+    testLogging.showStandardStreams = true
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
