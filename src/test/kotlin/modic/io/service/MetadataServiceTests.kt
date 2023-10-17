@@ -23,25 +23,27 @@ class MetadataServiceTests {
 
     @Test
     fun getMetadataByVariantIDTest(){
-        val fragment = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel())
+        val savedFragmentID = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel()).dataID
+        val dbFragment = fragmentRepository.getFragmentByDataID(savedFragmentID!!)!!
 
         val metadata: MetaData? = metadataService.getVariantMetadata(
-            null, fragment.variantID, null, 10000, true).firstOrNull()
+            null, dbFragment.variantID, null, 10000, true).firstOrNull()
 
-        Assertions.assertEquals(fragment.variantID, metadata?.uuid)
-        Assertions.assertEquals(fragment.variantTime, metadata?.timestamp)
-        Assertions.assertEquals(fragment.variantName, metadata?.name)
+        Assertions.assertEquals(dbFragment.variantID, metadata?.uuid)
+        Assertions.assertEquals(dbFragment.variantTime, metadata?.timestamp)
+        Assertions.assertEquals(dbFragment.variantName, metadata?.name)
     }
 
     @Test
     fun getMetadataByVariantTimeTest(){
-        val fragment = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel())
+        val savedFragmentID = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel()).dataID
+        val dbFragment = fragmentRepository.getFragmentByDataID(savedFragmentID!!)!!
 
         val metadata: MetaData? = metadataService.getVariantMetadata(
-            fragment.variantTime, null, null).firstOrNull()
-        Assertions.assertEquals(fragment.variantID, metadata?.uuid)
-        Assertions.assertEquals(fragment.variantTime, metadata?.timestamp)
-        Assertions.assertEquals(fragment.variantName, metadata?.name)
+            dbFragment.variantTime, null, null).firstOrNull()
+        Assertions.assertEquals(dbFragment.variantID, metadata?.uuid)
+        Assertions.assertEquals(dbFragment.variantTime, metadata?.timestamp)
+        Assertions.assertEquals(dbFragment.variantName, metadata?.name)
     }
 
     @Test
