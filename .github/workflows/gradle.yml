@@ -37,7 +37,7 @@ jobs:
         apt-get install --yes postgresql-client
  
     - name: Create DB
-      run: psql -h postgres -U postgres -c 'CREATE DATABASE "modiciodb";'
+      run: psql -h localhost -U postgres -c 'CREATE DATABASE "modiciodb";'
       env:
         PGPASSWORD: pgpwdtest
 
@@ -47,8 +47,10 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        
-    - name: Build with Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: build
+
+    -  name: Gradle Build Action
+       uses: gradle/gradle-build-action@v2.9.0
+       with:
+          gradle-version: 8.4
+          arguments: "build --scan"
+   
