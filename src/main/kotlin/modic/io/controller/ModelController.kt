@@ -34,10 +34,10 @@ class ModelController(
      */
     @PostMapping("model/variant", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun postNewVariant(
-        @RequestParam(required = false, name = "variant_timestamp") timestamp: String?,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?
     ): String {
+
         return "TODO"
     }
 
@@ -50,6 +50,7 @@ class ModelController(
         @RequestParam(required = false, name = "variant_UUID") variantUID: String
     ): String {
         metadataService.setReferenceFragment(variantUID, runningUID)
+
         //TODO useful response
         return "OK"
     }
@@ -85,6 +86,7 @@ class ModelController(
     fun putModelOfVariant(
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?,
+        @RequestParam(required = false, name = "as_version") asVersion: Boolean = false,
         @RequestBody fragment: Fragment
     ): String {
 
@@ -93,7 +95,7 @@ class ModelController(
             return "Error"
         }
 
-        modelService.pushFullVariant(fragment, variantUID, name)
+        modelService.pushFullModel(fragment, variantUID, name, asVersion)
 
         return "OK"
     }

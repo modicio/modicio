@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.*
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import modic.io.model.xml.XMLDateTimeAdaptor
 import java.time.Instant
+import java.util.*
 
 /**
  * The [Fragment] is the central class (aka root element) of the modicio metamodel.
@@ -58,6 +59,13 @@ class Fragment(
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     @field:XmlTransient
     var dataID: Long? = null,
+
+    /**
+     * Optional value of the predecessor fragment in variant and/or version (as precise as known) if known
+     */
+    @field:Column
+    @field:XmlAttribute(name = "predecessor_id")
+    var predecessorID: String? = null,
 
     /**
      * A [Fragment] can be open or closed. Open refers to an open-world assumption regarding further model elements,
@@ -152,7 +160,15 @@ class Fragment(
      */
     @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Trace")
-    val trace: Trace? = null
+    val trace: Trace? = null,
+
+    /**
+     * A global system independent identifier of a particular fragment
+     */
+    @field:Column(unique = true)
+    @field:XmlAttribute(name = "global_id")
+    var globalID: String? = UUID.randomUUID().toString()
+
 ) {
 
     constructor() : this(null)
@@ -204,7 +220,7 @@ class Fragment(
             model?.getNodes()?.forEach { node -> node.annotation?.variantTime = value }
         }
 
-    fun initializeZeroIDs(){
+    fun initializeZeroIDs() {
         dataID = 0
         instance?.initializeZeroIDs()
         trace?.initializeZeroIDs()
@@ -212,17 +228,17 @@ class Fragment(
     }
 
     //companion object {
-        //FIXME some validation experiments that do not work right now
-        /*
-        fun validateToXSD(fragment: Fragment): Unit{
-            val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-            val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
+    //FIXME some validation experiments that do not work right now
+    /*
+    fun validateToXSD(fragment: Fragment): Unit{
+        val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+        val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
 
-            val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
-            marshaller.schema = schema
-            marshaller.marshal(fragment, DefaultHandler())
-        }
-        */
+        val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
+        marshaller.schema = schema
+        marshaller.marshal(fragment, DefaultHandler())
+    }
+    */
     //}
 
 }

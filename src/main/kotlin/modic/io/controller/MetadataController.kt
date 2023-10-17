@@ -42,9 +42,10 @@ class MetadataController(val metadataService: MetadataService) {
      */
     @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVariantsMetadata(
-        @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000
+        @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000,
+        @RequestParam(required = false, name = "closed_only") closedOnly: Boolean = true
     ): List<MetaData> {
-        return metadataService.getAllVariantsMetadata(delimiter)
+        return metadataService.getAllVariantsMetadata(delimiter, true)
     }
 
     /**
@@ -70,14 +71,15 @@ class MetadataController(val metadataService: MetadataService) {
         @RequestParam(required = false, name = "variant_timestamp") timestamp: String?,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?,
-        @RequestParam(required = false, name = "limit") limit: Int = 1
+        @RequestParam(required = false, name = "limit") limit: Int = 1,
+        @RequestParam(required = false, name = "closed_only") closedOnly: Boolean = true
     ): List<MetaData> {
 
         if(timestamp == null && variantUID == null && name == null){
             //TODO return error
         }
 
-        val metadata = metadataService.getVariantMetadata(Instant.parse(timestamp), variantUID, name, limit)
+        val metadata = metadataService.getVariantMetadata(Instant.parse(timestamp), variantUID, name, limit, closedOnly)
 
         if(metadata == null){
             //TODO return error code
@@ -104,9 +106,10 @@ class MetadataController(val metadataService: MetadataService) {
     @GetMapping("model/metadata/variant/versions", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVersionsOfVariantMetadata(
         @RequestParam(required = true, name = "variant_UUID") variantID: String,
-        @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000
+        @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000,
+        @RequestParam(required = false, name = "closed_only") closedOnly: Boolean = true
     ): List<MetaData> {
-        return metadataService.getAllRunningVersionsOfVariant(variantID, delimiter)
+        return metadataService.getAllRunningVersionsOfVariant(variantID, delimiter, closedOnly)
     }
 
 }

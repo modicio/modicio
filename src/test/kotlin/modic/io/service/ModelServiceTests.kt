@@ -26,7 +26,7 @@ class ModelServiceTests {
     @Test
     fun pushFullVariantNoMetadataTest() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
-        modelService.pushFullVariant(fragment, null, "Some Name")
+        modelService.pushFullModel(fragment, null, "Some Name", false)
         val res = fragmentRepository.findFragmentByVariantID(fragment.variantID)
         Assertions.assertEquals(1, res.size)
         val resFragment = res.first()

@@ -68,7 +68,7 @@ class TestDataHelper {
             model.addNode(node2)
 
             return Fragment(
-                0, false, "main", variantTime, variantId, Instant.now(), runningId,
+                0, null,false, "main", variantTime, variantId, Instant.now(), runningId,
                 false, model, null, trace
             )
         }

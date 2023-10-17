@@ -6,10 +6,12 @@
 
 * URL Params
   * `delimiter?=INT`
+  * `closed_only?=BOOLEAN = true`
 * Returns
   * JSON Body
 
 Get the metadata of all known variants. The result size can be delimited to the k most recently created variants.
+If closed_only, then only closed fragments will be regarded.
 
 ---
 
@@ -19,11 +21,13 @@ Get the metadata of all known variants. The result size can be delimited to the 
   * `variant_timestamp?=STRING`
   * `variant_UUID?=String`
   * `variant_name?=String`
+  * `closed_only?=BOOLEAN = true`
 * Returns
   * JSON Body
 
 Get the complete metadata of a variant. At least one of the URL params must be provided.
 If the URL params are not sufficient to determine a variant, an error code is thrown.
+If closed_only, then only closed fragments will be regarded.
 
 ---
 
@@ -33,10 +37,13 @@ If the URL params are not sufficient to determine a variant, an error code is th
   * `variant_timestamp=STRING`
   * `variant_UUID=String`
   * `delimiter?=INT`
+  * `closed_only?=BOOLEAN = true`
 * Returns
   * JSON Body
 
-Get the metadata of all known running versions of the specified variant. The response size can be delimited to the k most recent versions.
+Get the metadata of all known running versions of the specified variant. The response size can be delimited to 
+the k most recent versions.
+If closed_only, then only closed fragments will be regarded.
 
 ---
 
@@ -63,14 +70,14 @@ Activate the specified variant as reference model.
 ### `/model/reference/subspace` @ModelController
 
 * URL Params
-  * `variant_timestamp=STRING`
   * `variant_UUID=String`
   * `root=STRING`
   * `depth=INT`
 * Returns
   * XML Body
 
-Get a subspace of the reference model (fragment) of a certain variant as open model. The subspace is constructed starting 
+Get a subspace of the reference model (fragment) of a certain variant as open model. The subspace is constructed 
+starting 
 from `root` with a specified recursion `depth`. Select a depth of 0 for the minimal subspace.
 
 ---
@@ -78,9 +85,7 @@ from `root` with a specified recursion `depth`. Select a depth of 0 for the mini
 ### `/model/reconstructed/` @ModelController
 
 * URL Params
-  * `version_timestamp?=STRING`
   * `version_UUID?=String`
-  * `variant_timestamp?=STRING`
   * `variant_UUID?=String`
 * Returns
   * XML Body
@@ -116,12 +121,14 @@ a new variant with the given `name` is initialized with the specified model as a
 ### `/model/variant/` @ModelController
 
 * URL Params
-  * `variant_timestamp_from?=STRING`
   * `variant_UUID_from?=String`
   * `variant_name=String`
+  * `as_version=Boolean = false`
 
-Create a new variant. If an existing variant is specified, the new variant will be initialized with a copy of the model.
-If no existing variant is specified, a new empty variant with the given name is constructed.
+Create a new variant. 
+- If an existing variant is specified, the new variant will be initialized as successor of it.
+    - if as_version is set to true, the follow-up will be degraded to a subsequent version only
+- If no existing variant is specified, a new empty variant with the given name is constructed.
 
 ---
 

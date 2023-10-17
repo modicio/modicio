@@ -26,7 +26,7 @@ class MetadataServiceTests {
         val fragment = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel())
 
         val metadata: MetaData? = metadataService.getVariantMetadata(
-            null, fragment.variantID, null).firstOrNull()
+            null, fragment.variantID, null, 10000, true).firstOrNull()
         Assertions.assertEquals(metadata?.uuid,  fragment.variantID)
         Assertions.assertEquals(metadata?.timestamp,  fragment.variantTime)
         Assertions.assertEquals(metadata?.name,  fragment.variantName)

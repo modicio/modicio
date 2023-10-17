@@ -44,35 +44,35 @@ class MetadataService(
      * @param name Optional name of the variant(s) to find Fragments
      * @param limit The max result size. Default value is one.
      */
-    fun getVariantMetadata(timestamp: Instant?, uuid: String?, name: String?, limit: Int = 1): List<MetaData> {
+    fun getVariantMetadata(timestamp: Instant?, uuid: String?, name: String?, limit: Int = 1,  closedOnly: Boolean = true): List<MetaData> {
 
         var fragments: List<Fragment> = LinkedList()
 
         if (uuid != null) {
-            val fragment = fragmentRepository.findMostRecentFragmentByVariantIDLazy(uuid)
+            val fragment = fragmentRepository.findMostRecentFragmentByVariantIDLazy(uuid, !closedOnly)
             fragments = if(fragment != null) {
                 listOf(fragment)
             }else{
                 LinkedList()
             }
         } else if (timestamp != null) {
-            fragments = fragmentRepository.findMostRecentFragmentsByVariantTimeLazy(timestamp, limit)
+            fragments = fragmentRepository.findMostRecentFragmentsByVariantTimeLazy(timestamp, limit, !closedOnly)
         } else if (name != null) {
-            fragments = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(name, limit)
+            fragments = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(name, limit, !closedOnly)
         }
 
         return fragments.map { f -> MetaData(f.variantTime, f.variantID, f.variantName) }
     }
 
-    fun getAllVariantsMetadata(limit: Int = 1): List<MetaData> {
-        return fragmentRepository.findOneFragmentOfEachVariantLazy(limit).map {
+    fun getAllVariantsMetadata(limit: Int = 1, closedOnly: Boolean = true): List<MetaData> {
+        return fragmentRepository.findOneFragmentOfEachVariantLazy(limit, !closedOnly).map {
             f -> MetaData(f.variantTime, f.variantID, f.variantName)
         }
     }
 
 
-    fun getAllRunningVersionsOfVariant(variantID: String, limit: Int = 1): List<MetaData> {
-        return fragmentRepository.findAllRunningVersionsOfVariant(variantID, limit).map {
+    fun getAllRunningVersionsOfVariant(variantID: String, limit: Int = 1, closedOnly: Boolean = true): List<MetaData> {
+        return fragmentRepository.findAllRunningVersionsOfVariant(variantID, limit, !closedOnly).map {
             m -> MetaData(m.runningTime, m.runningID, null)
         }
     }
