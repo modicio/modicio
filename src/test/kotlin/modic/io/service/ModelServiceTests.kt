@@ -26,8 +26,8 @@ class ModelServiceTests {
     @Test
     fun pushFullVariantNoMetadataTest() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
-        modelService.pushFullVariant(fragment, null, null, "Some Name")
-        val res = fragmentRepository.findFragmentByVariantIDLazy(fragment.variantID, 100)
+        modelService.pushFullVariant(fragment, null, "Some Name")
+        val res = fragmentRepository.findFragmentByVariantID(fragment.variantID)
         Assertions.assertEquals(1, res.size)
         val resFragment = res.first()
 
@@ -53,7 +53,7 @@ class ModelServiceTests {
         val fragment2 = TestDataHelper.getSimpleFragmentOnlyModel()
         val storedFragment1 = fragmentRepository.save(fragment1)
         val storedFragment2 = fragmentRepository.save(fragment2)
-        metadataService.setReferenceFragment(fragment2.variantID, fragment2.model!!.runningID)
+        metadataService.setReferenceFragment(fragment2.variantID, fragment2.runningID)
         val referenceFragment = modelService.getReferenceFragment()
         Assertions.assertNotNull(referenceFragment)
         Assertions.assertEquals(storedFragment2.dataID, referenceFragment!!.dataID)
@@ -65,11 +65,11 @@ class ModelServiceTests {
         val fragment2 = TestDataHelper.getSimpleFragmentOnlyModel()
         val storedFragment1 = fragmentRepository.save(fragment1)
         val storedFragment2 = fragmentRepository.save(fragment2)
-        metadataService.setReferenceFragment(fragment1.variantID, fragment1.model!!.runningID)
+        metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
         var referenceFragment = modelService.getReferenceFragment()
         Assertions.assertEquals(storedFragment1.dataID, referenceFragment!!.dataID)
 
-        metadataService.setReferenceFragment(fragment2.variantID, fragment2.model!!.runningID)
+        metadataService.setReferenceFragment(fragment2.variantID, fragment2.runningID)
         referenceFragment = modelService.getReferenceFragment()
         Assertions.assertEquals(storedFragment2.dataID, referenceFragment!!.dataID)
     }

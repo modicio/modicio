@@ -20,15 +20,13 @@ import jakarta.transaction.Transactional
 import modic.io.messages.MetaData
 import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
-import modic.io.repository.ModelRepository
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.*
 
 @Service
 class MetadataService(
-    val fragmentRepository: FragmentRepository,
-    val modelRepository: ModelRepository) {
+    val fragmentRepository: FragmentRepository) {
 
     /**
      * Get the [MetaData] of a set of [Fragment]s. The result size can be limited.
@@ -41,7 +39,8 @@ class MetadataService(
      * 3: variantName (name)
      *
      * @param timestamp Optional timestamp of the variant(s) to find Fragments
-     * @param uuid Optional variantID of the variant to find Fragments
+     * @param uuid Optional variantID of the variant to find Fragments: In case the ID is given, at most one fragment is
+     * returned
      * @param name Optional name of the variant(s) to find Fragments
      * @param limit The max result size. Default value is one.
      */
@@ -50,11 +49,16 @@ class MetadataService(
         var fragments: List<Fragment> = LinkedList()
 
         if (uuid != null) {
-            fragments = fragmentRepository.findFragmentByVariantIDLazy(uuid, limit)
+            val fragment = fragmentRepository.findMostRecentFragmentByVariantIDLazy(uuid)
+            fragments = if(fragment != null) {
+                listOf(fragment)
+            }else{
+                LinkedList()
+            }
         } else if (timestamp != null) {
-            fragments = fragmentRepository.findFragmentByTimestampLazy(timestamp, limit)
+            fragments = fragmentRepository.findMostRecentFragmentsByVariantTimeLazy(timestamp, limit)
         } else if (name != null) {
-            fragments = fragmentRepository.findFragmentByVariantNameLazy(name, limit)
+            fragments = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(name, limit)
         }
 
         return fragments.map { f -> MetaData(f.variantTime, f.variantID, f.variantName) }
@@ -68,7 +72,7 @@ class MetadataService(
 
 
     fun getAllRunningVersionsOfVariant(variantID: String, limit: Int = 1): List<MetaData> {
-        return modelRepository.findAllRunningVersionsOfVariant(variantID, limit).map {
+        return fragmentRepository.findAllRunningVersionsOfVariant(variantID, limit).map {
             m -> MetaData(m.runningTime, m.runningID, null)
         }
     }
@@ -76,9 +80,9 @@ class MetadataService(
     @Transactional
     fun setReferenceFragment(variantID: String, runningID: String) {
         val oldReferenceFragments = fragmentRepository.findFragmentByIsReferenceIsTrue()
-        val fragmentID = modelRepository.findFragmentDataIdOfModelWithRunningId(runningID)
-        if(fragmentID != null) {
-            val fragment = fragmentRepository.getFragmentByDataID(fragmentID)
+        val newReferenceFragment = fragmentRepository.findModelOnlyFragmentWithVariantAndRunningIDFirstLazy(variantID, runningID)
+        if(newReferenceFragment != null) {
+            val fragment = fragmentRepository.getFragmentByDataID(newReferenceFragment.dataID!!)
             if(fragment != null){
                 oldReferenceFragments.forEach { f ->
                     f.isReference = false

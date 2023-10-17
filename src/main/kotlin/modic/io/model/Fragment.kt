@@ -97,6 +97,25 @@ class Fragment(
     variantID: String = "",
 
     /**
+     * The runningTime represents the creation point / update of the running version as UTC timestamp.
+     */
+    @field:Column
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlAttribute(name = "running_time")
+    var runningTime: Instant = Instant.MIN,
+
+    /**
+     * The runningID is a unique string identifier of the running version. This implementation uses random-based UUIDs.
+     * This guarantees (to a high probability) that each running version in a distributed system is uniquely identified.
+     * The pair of runningID and runningTime result in a sortable unique identifier.
+     *
+     * The runningID can safely be used as an access identifier, also in distributed use-cases.
+     */
+    @field:Column
+    @field:XmlAttribute(name = "running_id")
+    var runningID: String = "",
+
+    /**
      * Boolean value denoting if the given [Fragment] is the current reference definition of its variant.
      * Being a reference implicates that the Fragment is not open and has no [Instance] defined.
      * Basically, the reference Fragment represents the whole up-to-date default model which is used for instantiation.

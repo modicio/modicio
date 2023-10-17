@@ -18,13 +18,9 @@ package modic.io.controller
 
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
-import modic.io.model.Delta
 import modic.io.model.Fragment
-import modic.io.model.Model
-import modic.io.model.Trace
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
-import java.time.Instant
 
 @RestController
 class ModelController(
@@ -62,13 +58,8 @@ class ModelController(
      * Get the active reference model (fragment) as closed model.
      */
     @GetMapping("model/reference", produces = [MediaType.APPLICATION_XML_VALUE])
-    fun getReferenceModel(): Fragment {
-        // FIXME just da simple demo here
-        return Fragment(
-            null, false, "xxx", Instant.now(),  "0123", true,
-            Model(null, Instant.now(), "123ad", HashSet(), null), null,
-            Trace(null, mutableListOf(Delta(null, "hi", "ho")), null)
-        )
+    fun getReferenceModel(): Fragment? {
+        return modelService.getReferenceFragment()
     }
 
     /**
@@ -77,7 +68,6 @@ class ModelController(
      * a new variant with the given `name` is initialized with the specified model as an initial version
      *
      * URL Params
-     * - `variant_timestamp?=STRING`
      * - `variant_UUID?=String`
      * - `variant_name=String`
      *
@@ -87,27 +77,25 @@ class ModelController(
      * Checks
      * - XML fragment verification
      *
-     * @param timestamp
      * @param variantUID
      * @param name
      * @param fragment
      */
     @PutMapping("model", produces=[MediaType.APPLICATION_JSON_VALUE], consumes = [MediaType.APPLICATION_XML_VALUE])
     fun putModelOfVariant(
-        @RequestParam(required = false, name = "variant_timestamp") timestamp: String?,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?,
         @RequestBody fragment: Fragment
     ): String {
 
-        if(timestamp == null && variantUID == null && name == null){
+        if(variantUID == null && name == null){
             //TODO Not executable
             return "Error"
         }
 
-        modelService.pushFullVariant(fragment, timestamp, variantUID, name)
+        modelService.pushFullVariant(fragment, variantUID, name)
 
-        return "TODO"
+        return "OK"
     }
 
 }

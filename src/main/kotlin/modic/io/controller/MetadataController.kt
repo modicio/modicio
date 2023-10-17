@@ -42,15 +42,15 @@ class MetadataController(val metadataService: MetadataService) {
      */
     @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVariantsMetadata(
-        @RequestParam(required = false, name = "delimiter") delimiter: Int?
+        @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000
     ): List<MetaData> {
-        return metadataService.getAllVariantsMetadata(delimiter ?: 1000)
+        return metadataService.getAllVariantsMetadata(delimiter)
     }
 
     /**
      * Get the complete metadata of a variant. At least one of the URL params must be provided.
      * If the URL params are not sufficient to determine a variant, an error is thrown.
-     * This returns the first variant that is found matching one of the parameters in order. Please look at the
+     * This returns the first variants that are found matching one of the parameters in order. Please look at the
      * behaviour of [MetadataService.getVariantMetadata] for more details.
      *
      * URL Params
@@ -69,20 +69,21 @@ class MetadataController(val metadataService: MetadataService) {
     fun getVariantMetadata(
         @RequestParam(required = false, name = "variant_timestamp") timestamp: String?,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
-        @RequestParam(required = false, name = "variant_name") name: String?
-    ): MetaData {
+        @RequestParam(required = false, name = "variant_name") name: String?,
+        @RequestParam(required = false, name = "limit") limit: Int = 1
+    ): List<MetaData> {
 
         if(timestamp == null && variantUID == null && name == null){
             //TODO return error
         }
 
-        val metadata = metadataService.getVariantMetadata(Instant.parse(timestamp), variantUID, name).firstOrNull()
+        val metadata = metadataService.getVariantMetadata(Instant.parse(timestamp), variantUID, name, limit)
 
         if(metadata == null){
             //TODO return error code
         }
 
-        return metadata!!
+        return metadata
     }
 
     /**
@@ -103,9 +104,9 @@ class MetadataController(val metadataService: MetadataService) {
     @GetMapping("model/metadata/variant/versions", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVersionsOfVariantMetadata(
         @RequestParam(required = true, name = "variant_UUID") variantID: String,
-        @RequestParam(required = false, name = "delimiter") delimiter: Int?
+        @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000
     ): List<MetaData> {
-        return metadataService.getAllRunningVersionsOfVariant(variantID, delimiter ?: 1000)
+        return metadataService.getAllRunningVersionsOfVariant(variantID, delimiter)
     }
 
 }

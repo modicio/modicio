@@ -24,7 +24,7 @@ class TestDataHelper {
             trace.addDelta(d1)
             trace.addDelta(d2)
 
-            val model = Model(0, Instant.now(), runningId, HashSet<Node>())
+            val model = Model(0, HashSet<Node>())
 
             val node1 = Node(
                 0, "Todo", "modicio:demo.todo", false,
@@ -68,7 +68,7 @@ class TestDataHelper {
             model.addNode(node2)
 
             return Fragment(
-                0, false, "main", variantTime, variantId,
+                0, false, "main", variantTime, variantId, Instant.now(), runningId,
                 false, model, null, trace
             )
         }
