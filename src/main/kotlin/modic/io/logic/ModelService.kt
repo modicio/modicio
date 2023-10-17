@@ -18,6 +18,7 @@ package modic.io.logic
 
 import jakarta.transaction.Transactional
 import modic.io.model.Fragment
+import modic.io.model.Model
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -27,6 +28,34 @@ import java.util.*
 class ModelService(
     val fragmentRepository: FragmentRepository,
     val metadataService: MetadataService) {
+
+    /**
+     * TODO doc & TESTS
+     */
+    @Transactional
+    fun newVariant(preVariantID: String?, name: String?){
+
+        val now = Instant.now()
+        val newName = name ?: ""
+
+        if(preVariantID != null){
+            val newestFragmentWithID = fragmentRepository.findMostRecentFragmentByVariantIDLazy(preVariantID, isOpen = false)
+            if(newestFragmentWithID != null){
+                val newFragment = Fragment(0, newestFragmentWithID.globalID, false, newName, now,
+                    UUID.randomUUID().toString(), now, UUID.randomUUID().toString(), false,
+                    Model(0), null, null)
+                fragmentRepository.save(newFragment)
+            }else{
+                throw Exception("Predecessor variant not found")
+            }
+        }else{
+            val newFragment = Fragment(0, null, false, newName, now,
+                UUID.randomUUID().toString(), now, UUID.randomUUID().toString(), false,
+                Model(0), null, null)
+            fragmentRepository.save(newFragment)
+        }
+
+    }
 
     /**
      * Possibilities:
@@ -79,7 +108,7 @@ class ModelService(
     }
 
     /**
-     * Initialize a given [Fragment]
+     * Initialize a given [Fragment] ...TODO
      */
     private fun newFullVariantWithNameFromFragment(newFragment: Fragment, name: String){
         val now = Instant.now()

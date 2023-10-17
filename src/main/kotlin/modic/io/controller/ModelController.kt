@@ -34,11 +34,14 @@ class ModelController(
      */
     @PostMapping("model/variant", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun postNewVariant(
-        @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
+        @RequestParam(required = false, name = "variant_id") variantID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?
     ): String {
 
-        return "TODO"
+
+        modelService.newVariant(variantID, name)
+
+        return "OK"
     }
 
     /**
@@ -99,5 +102,6 @@ class ModelController(
 
         return "OK"
     }
+
 
 }

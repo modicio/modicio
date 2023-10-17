@@ -67,7 +67,7 @@ Activate the specified variant as reference model.
 
 ---
 
-### `/model/reference/subspace` @ModelController
+### `/model/reference/subspace` @ModelController TODO
 
 * URL Params
   * `variant_UUID=String`
@@ -82,7 +82,7 @@ from `root` with a specified recursion `depth`. Select a depth of 0 for the mini
 
 ---
 
-### `/model/reconstructed/` @ModelController
+### `/model/reconstructed/` @ModelController TODO
 
 * URL Params
   * `version_UUID?=String`
@@ -101,20 +101,22 @@ TODO
 
 ## PUT
 
-### `/model` @ModelController
+### `/model` @ModelController TODO
 
 * URL Params
-  * `variant_timestamp?=STRING`
   * `variant_UUID?=String`
   * `variant_name=String`
+  * `as_version=Boolean = false`
 * Body
   * XML Body (closed fragment)
 * Checks
   * XML fragment verification
 
-Set a complete model (fragment). If the specified variant is existent, a new running version will be created. 
-If the variant is not present,
-a new variant with the given `name` is initialized with the specified model as an initial version
+Create a new variant with a full model.
+- If an existing variant is specified, the new variant will be initialized as successor of it.
+  - if as_version is set to true, the follow-up will be degraded to a subsequent version only
+- If no existing variant is specified, a new empty variant with the given name is constructed.
+
 
 ## POST
 
@@ -123,11 +125,10 @@ a new variant with the given `name` is initialized with the specified model as a
 * URL Params
   * `variant_UUID_from?=String`
   * `variant_name=String`
-  * `as_version=Boolean = false`
+ 
 
 Create a new variant. 
 - If an existing variant is specified, the new variant will be initialized as successor of it.
-    - if as_version is set to true, the follow-up will be degraded to a subsequent version only
 - If no existing variant is specified, a new empty variant with the given name is constructed.
 
 ---
