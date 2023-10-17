@@ -1,3 +1,6 @@
+[![Gradle Kotlin CI](https://github.com/modicio/modicio/actions/workflows/gradle.yml/badge.svg)](https://github.com/modicio/modicio/actions/workflows/gradle.yml)
+[![codecov](https://codecov.io/gh/modicio/modicio/branch/main/graph/badge.svg?token=TY4TLWUGSG)](https://codecov.io/gh/modicio/modicio)
+
 # modicio
 
 🚀 **Welcome to the new modicio microservice!**
