@@ -31,7 +31,7 @@ jobs:
  
     - name: Create data test database
       run: |
-        PGPASSWORD=postgres createdb -h localhost -p 5432 -U pgpwdtest modiciodb
+        PGPASSWORD=pgwdtest createdb -h localhost -p 5432 -U postgres modiciodb
 
 
     - name: Set up JDK 17
