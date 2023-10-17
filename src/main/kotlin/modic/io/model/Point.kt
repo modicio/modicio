@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlTransient
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import modic.io.model.xml.XMLDateTimeAdaptor
+import java.sql.Timestamp
 import java.time.Instant
 
 /**
@@ -54,9 +55,9 @@ class Point(
      * This field is required.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "variant_time")
-    val variantTime: Instant = Instant.MIN,
+    val variantTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * Binds the [variantTime] to a specific version ID.

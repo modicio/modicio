@@ -2,6 +2,7 @@ package modic.io
 
 import modic.io.model.*
 import modic.io.model.Annotation
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 
@@ -13,7 +14,7 @@ class TestDataHelper {
             preVariantID: String? = null,
             preRunningID: String? = null): Fragment {
 
-            val variantTime = Instant.now()
+            val variantTime = Timestamp.from(Instant.now())
             val variantId = preVariantID ?: UUID.randomUUID().toString()
             val runningId = preRunningID ?: UUID.randomUUID().toString()
 
@@ -28,7 +29,7 @@ class TestDataHelper {
 
             val node1 = Node(
                 0, "Todo", "modicio:demo.todo", false,
-                Annotation(0, Instant.now(), UUID.randomUUID().toString(), variantTime, variantId),
+                Annotation(0, Timestamp.from(Instant.now()), UUID.randomUUID().toString(), variantTime, variantId),
                 LinkedList<Attribute>(),
                 LinkedList<AssociationRelation>(),
                 HashSet<ParentRelation>(),
@@ -43,7 +44,7 @@ class TestDataHelper {
 
             val node2 = Node(
                 0, "Project", "modicio:demo.project", false,
-                Annotation(0, Instant.now(), UUID.randomUUID().toString(), variantTime, variantId),
+                Annotation(0, Timestamp.from(Instant.now()), UUID.randomUUID().toString(), variantTime, variantId),
                 LinkedList<Attribute>(),
                 LinkedList<AssociationRelation>(),
                 HashSet<ParentRelation>(),
@@ -68,7 +69,7 @@ class TestDataHelper {
             model.addNode(node2)
 
             return Fragment(
-                0, null,false, "main", variantTime, variantId, Instant.now(), runningId,
+                0, null,false, "main", variantTime, variantId, Timestamp.from(Instant.now()), runningId,
                 false, model, null, trace
             )
         }

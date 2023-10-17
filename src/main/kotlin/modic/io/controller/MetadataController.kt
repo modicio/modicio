@@ -22,7 +22,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.Instant
+import java.sql.Timestamp
 
 @RestController
 class MetadataController(val metadataService: MetadataService) {
@@ -79,7 +79,7 @@ class MetadataController(val metadataService: MetadataService) {
             //TODO return error
         }
 
-        val metadata = metadataService.getVariantMetadata(Instant.parse(timestamp), variantUID, name, limit, closedOnly)
+        val metadata = metadataService.getVariantMetadata(Timestamp.valueOf(timestamp), variantUID, name, limit, closedOnly)
 
         if(metadata == null){
             //TODO return error code

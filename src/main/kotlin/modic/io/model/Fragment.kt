@@ -17,8 +17,7 @@ package modic.io.model
 
 import jakarta.persistence.*
 import jakarta.xml.bind.annotation.*
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
-import modic.io.model.xml.XMLDateTimeAdaptor
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 
@@ -92,7 +91,7 @@ class Fragment(
      * The variantTime represents the creation point of the variant as UTC timestamp.
      * This information is stored redundant in [Annotation].
      */
-    variantTime: Instant = Instant.MIN,
+    variantTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * The variantID is a unique string identifier of the variant. This implementation uses random-based UUIDs.
@@ -108,9 +107,9 @@ class Fragment(
      * The runningTime represents the creation point / update of the running version as UTC timestamp.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "running_time")
-    var runningTime: Instant = Instant.MIN,
+    var runningTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * The runningID is a unique string identifier of the running version. This implementation uses random-based UUIDs.
@@ -212,9 +211,9 @@ class Fragment(
         }
 
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "variant_time")
-    var variantTime: Instant = variantTime
+    var variantTime: Timestamp = variantTime
         set(value) {
             field = value
             model?.getNodes()?.forEach { node -> node.annotation?.variantTime = value }

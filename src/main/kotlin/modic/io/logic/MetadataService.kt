@@ -21,6 +21,7 @@ import modic.io.messages.MetaData
 import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 
@@ -44,7 +45,7 @@ class MetadataService(
      * @param name Optional name of the variant(s) to find Fragments
      * @param limit The max result size. Default value is one.
      */
-    fun getVariantMetadata(timestamp: Instant?, uuid: String?, name: String?, limit: Int = 1,  closedOnly: Boolean = true): List<MetaData> {
+    fun getVariantMetadata(timestamp: Timestamp?, uuid: String?, name: String?, limit: Int = 1,  closedOnly: Boolean = true): List<MetaData> {
 
         var fragments: List<Fragment> = LinkedList()
 

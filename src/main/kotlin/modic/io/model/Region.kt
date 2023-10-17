@@ -21,8 +21,7 @@ import jakarta.xml.bind.annotation.XmlAccessType
 import jakarta.xml.bind.annotation.XmlAccessorType
 import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlTransient
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
-import modic.io.model.xml.XMLDateTimeAdaptor
+import java.sql.Timestamp
 import java.time.Instant
 
 /**
@@ -54,9 +53,9 @@ class Region(
      * This field is required.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "left_border_version_time")
-    val leftBorderVersionTime: Instant = Instant.MIN,
+    val leftBorderVersionTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * Binds the [leftBorderVersionTime] to a specific version.
@@ -73,9 +72,9 @@ class Region(
      * This field is required.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+   // @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "right_border_version_time")
-    val rightBorderVersionTime: Instant = Instant.MIN,
+    val rightBorderVersionTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * Binds the [rightBorderVersionTime] to a specific version.

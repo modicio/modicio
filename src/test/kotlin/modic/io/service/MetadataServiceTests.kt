@@ -27,9 +27,10 @@ class MetadataServiceTests {
 
         val metadata: MetaData? = metadataService.getVariantMetadata(
             null, fragment.variantID, null, 10000, true).firstOrNull()
-        Assertions.assertEquals(metadata?.uuid,  fragment.variantID)
-        Assertions.assertEquals(metadata?.timestamp,  fragment.variantTime)
-        Assertions.assertEquals(metadata?.name,  fragment.variantName)
+
+        Assertions.assertEquals(fragment.variantID, metadata?.uuid)
+        Assertions.assertEquals(fragment.variantTime, metadata?.timestamp)
+        Assertions.assertEquals(fragment.variantName, metadata?.name)
     }
 
     @Test
@@ -38,9 +39,9 @@ class MetadataServiceTests {
 
         val metadata: MetaData? = metadataService.getVariantMetadata(
             fragment.variantTime, null, null).firstOrNull()
-        Assertions.assertEquals(metadata?.uuid,  fragment.variantID)
-        Assertions.assertEquals(metadata?.timestamp,  fragment.variantTime)
-        Assertions.assertEquals(metadata?.name,  fragment.variantName)
+        Assertions.assertEquals(fragment.variantID, metadata?.uuid)
+        Assertions.assertEquals(fragment.variantTime, metadata?.timestamp)
+        Assertions.assertEquals(fragment.variantName, metadata?.name)
     }
 
     @Test

@@ -23,6 +23,7 @@ import modic.io.model.Fragment
 import modic.io.model.Model
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
 
@@ -41,7 +42,7 @@ class ModelService(
     @Transactional
     fun newVariant(preVariantID: String?, name: String?){
 
-        val now = Instant.now()
+        val now = Timestamp.from(Instant.now())
         val newName = name ?: ""
 
         if(preVariantID != null){
@@ -123,7 +124,7 @@ class ModelService(
      * Initialize a given [Fragment] ...TODO
      */
     private fun newFullVariantWithNameFromFragment(newFragment: Fragment, name: String){
-        val now = Instant.now()
+        val now = Timestamp.from(Instant.now())
         newFragment.isReference = false
         newFragment.variantID = UUID.randomUUID().toString()
         newFragment.variantTime = now
@@ -134,7 +135,7 @@ class ModelService(
     }
 
     private fun newVariantFromExistingTrunk(newFragment: Fragment, oldFragment: Fragment, asVersion: Boolean){
-        val now = Instant.now()
+        val now = Timestamp.from(Instant.now())
         newFragment.isReference = false
         if(asVersion){
             newFragment.variantID = oldFragment.variantID

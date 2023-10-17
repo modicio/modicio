@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlTransient
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import modic.io.model.xml.XMLDateTimeAdaptor
+import java.sql.Timestamp
 import java.time.Instant
 
 /**
@@ -53,9 +54,9 @@ class Annotation(
      * Together with [versionID] it forms the version (time) identifier per model element.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "version_time")
-    var versionTime: Instant = Instant.MIN,
+    var versionTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * The versionID is a unique string identifier of the version. This implementation uses random-based UUIDs.
@@ -75,7 +76,7 @@ class Annotation(
     @field:Column
     @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "variant_time")
-    var variantTime: Instant = Instant.MIN,
+    var variantTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * The variantID is a unique string identifier of the variant. This implementation uses random-based UUIDs.

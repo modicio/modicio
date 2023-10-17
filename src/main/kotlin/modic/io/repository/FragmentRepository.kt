@@ -1,12 +1,10 @@
 package modic.io.repository
 
-import jakarta.persistence.Transient
 import modic.io.model.Fragment
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
-import java.time.Instant
+import java.sql.Timestamp
 
 interface FragmentRepository : JpaRepository<Fragment, Long> {
 
@@ -18,7 +16,7 @@ interface FragmentRepository : JpaRepository<Fragment, Long> {
                 "LIMIT :limit", nativeQuery = true
     )
     fun findMostRecentFragmentsByVariantTimeLazy(
-        @Param("variantTime") variantTime: Instant,
+        @Param("variantTime") variantTime: Timestamp,
         @Param("limit") limit: Int,
         @Param("isOpen") isOpen: Boolean = false
     ): List<Fragment>
@@ -36,7 +34,7 @@ interface FragmentRepository : JpaRepository<Fragment, Long> {
     ): Fragment?
 
     @Query(
-        "SELECT  DISTINCT ON (runing_time, variantID) f.* from Fragment f WHERE f.variant_name = :variantName " +
+        "SELECT  DISTINCT ON (running_time, variantID) f.* from Fragment f WHERE f.variant_name = :variantName " +
                 "AND running_time = ( SELECT MAX(running_time) FROM Fragment f1 WHERE f1.variant_name = :variantName)\n" +
                 "AND f.open = :isOpen\n" +
                 "ORDER BY running_time DESC, variantID\n" +
@@ -90,7 +88,7 @@ interface FragmentRepository : JpaRepository<Fragment, Long> {
     //Auto-generated
     fun getFragmentByRunningID(runningID: String): List<Fragment>
 
-    fun getFragmentsByRunningTime(runningTime: Instant): List<Fragment>
+    fun getFragmentsByRunningTime(runningTime: Timestamp): List<Fragment>
 
     //Auto-generated
     fun findFragmentByIsReferenceIsTrue(): List<Fragment>
@@ -99,9 +97,9 @@ interface FragmentRepository : JpaRepository<Fragment, Long> {
     fun findFragmentByVariantID(variantID: String): List<Fragment>
 
     //Auto-generated
-    fun findFragmentByVariantTime(variantTime: Instant): List<Fragment>
+    fun findFragmentByVariantTime(variantTime: Timestamp): List<Fragment>
 
     //Auto-generated
-    fun findFragmentByVariantIDAndVariantTime(variantID: String, variantTime: Instant): List<Fragment>
+    fun findFragmentByVariantIDAndVariantTime(variantID: String, variantTime: Timestamp): List<Fragment>
 
 }
