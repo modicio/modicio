@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://modic.io/ns"
-    xmlns="http://modic.io/ns" xmlns:mio="http://modic.io/ns" elementFormDefault="qualified">
-
-</xs:schema>
