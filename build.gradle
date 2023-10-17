@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.spring' version '1.8.22'
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.8.22'
     id "org.jetbrains.dokka" version "1.9.0"
+    id 'jacoco'
 }
 
 group = 'modic.io'
@@ -18,7 +19,14 @@ java {
 
 test {
     testLogging.showStandardStreams = true
+    finalizedBy jacocoTestReport // report is always generated after tests run
 }
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
+
 
 configurations {
     compileOnly {
@@ -65,9 +73,8 @@ import org.jetbrains.dokka.gradle.DokkaTask
 tasks.withType(DokkaTask.class) {
     String dokkaBaseConfiguration = """
     {
-      "footerMessage": "(c) 2022 MyOrg",
+      "footerMessage": "(c) 2022 modicio Team @ ST TU-Dresden / Karl Kegel",
       "separateInheritedMembers": false,
-      "templatesDir": "${file("dokka/templates")}",
       "mergeImplicitExpectActualDeclarations": false
     }
     """
