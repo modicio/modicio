@@ -37,7 +37,7 @@ jobs:
         apt-get install --yes postgresql-client
  
     - name: Create DB
-      run: psql -h postgres -U postgres_user -c 'CREATE DATABASE "modiciodb";'
+      run: psql -h postgres -U postgres -c 'CREATE DATABASE "modiciodb";'
       env:
         PGPASSWORD: pgpwdtest
 
