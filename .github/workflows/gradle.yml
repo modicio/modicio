@@ -1,11 +1,4 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
-
-name: Java CI with Gradle
+name: Gradle Kotlin CI
 
 on:
   push:
@@ -16,17 +9,38 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    services: 
+      postgres:
+        image: postgres 
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pgpwdtest
+            # Set health checks to wait until postgres has started
+          options: >-
+              --health-cmd pg_isready
+              --health-interval 10s
+              --health-timeout 5s
+              --health-retries 5
+        ports:
+          - 5432:5432
+          
     steps:
     - uses: actions/checkout@v3
+ 
+    - name: Create data test database
+      run: |
+        PGPASSWORD=postgres createdb -h localhost -p 5432 -U pgpwdtest modiciodb
+
+
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
+        
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
+      uses: gradle/gradle-build-action@v2
       with:
-        arguments: build   
+        arguments: build
