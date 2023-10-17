@@ -51,8 +51,14 @@ jobs:
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2.9.0
 
-    - name: Gradle Build
+    - name: Gradle Bild and Test
       run: ./gradlew clean test
+
+    - name: "Upload coverage to Codecov"
+      uses: codecov/codecov-action@v4.0.0-beta.3
+      with:
+        fail_ci_if_error: true
+        files: reports/jacoco/
 
     - name: Store reports
       if: failure()
@@ -62,5 +68,21 @@ jobs:
         path: |
           **/build/reports/
           **/build/test-results/
+    
+    - name: Gradle Build Doc HTML
+      run: ./gradlew dokkaHtml
+    
+    - name: Push DOC
+      uses: datalbry/copy_folder_to_another_repo_action@1.0.0
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.BOT_PUSH }}
+      with:
+        source_folder: 'build/dokka/html'
+        destination_repo: 'modicio/modicio-docs'
+        destination_folder: 'docs'
+        destination_branch: 'main'
+        user_email: ${{ secrets.BOT_MAIL }}
+        user_name: 'modicio-bot'
+        commit_msg: '[GHA] Publish Kotlin Doc'
 
    
