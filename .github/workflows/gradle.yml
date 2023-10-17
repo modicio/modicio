@@ -34,7 +34,7 @@ jobs:
     - name: Install PostgreSQL client
       run: |
         apt-get update
-        apt-get install --yes postgresql-client
+        apt-get install --yes postgresql-client unzip
  
     - name: Create DB
       run: psql -h postgres -U postgres -c 'CREATE DATABASE "modiciodb";'
@@ -53,4 +53,5 @@ jobs:
 
     - name: Gradle Build
       run: ./gradlew clean test
+
    
