@@ -16,6 +16,8 @@
 
 package modic.io.logic
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
 import modic.io.model.Fragment
 import modic.io.model.Model
@@ -24,10 +26,14 @@ import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.*
 
+
 @Service
 class ModelService(
     val fragmentRepository: FragmentRepository,
     val metadataService: MetadataService) {
+
+    @PersistenceContext
+    private val entityManager: EntityManager? = null
 
     /**
      * TODO doc & TESTS
@@ -41,10 +47,16 @@ class ModelService(
         if(preVariantID != null){
             val newestFragmentWithID = fragmentRepository.findMostRecentFragmentByVariantIDLazy(preVariantID, isOpen = false)
             if(newestFragmentWithID != null){
-                val newFragment = Fragment(0, newestFragmentWithID.globalID, false, newName, now,
-                    UUID.randomUUID().toString(), now, UUID.randomUUID().toString(), false,
-                    Model(0), null, null)
-                fragmentRepository.save(newFragment)
+                val templateFragment = fragmentRepository.getFragmentByDataID(newestFragmentWithID.dataID!!)
+                entityManager!!.detach(templateFragment)
+
+                templateFragment!!.variantID = UUID.randomUUID().toString()
+                templateFragment.variantTime = now
+                templateFragment.globalID = UUID.randomUUID().toString()
+                templateFragment.predecessorID = newestFragmentWithID.globalID
+                templateFragment.initializeZeroIDs()
+
+                fragmentRepository.save(templateFragment)
             }else{
                 throw Exception("Predecessor variant not found")
             }
