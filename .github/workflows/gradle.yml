@@ -15,23 +15,30 @@ jobs:
       postgres:
         image: postgres 
         env:
-          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres_db
           POSTGRES_PASSWORD: pgpwdtest
-            # Set health checks to wait until postgres has started
-          options: >-
-              --health-cmd pg_isready
-              --health-interval 10s
-              --health-timeout 5s
-              --health-retries 5
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+        options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
         ports:
           - 5432:5432
           
     steps:
     - uses: actions/checkout@v3
- 
-    - name: Create data test database
+
+    - name: Install PostgreSQL client
       run: |
-        PGPASSWORD=pgpwdtest createdb -h localhost -p 5432 -U postgres modiciodb
+        apt-get update
+        apt-get install --yes postgresql-client
+ 
+    - name: Create DB
+      run: psql -h postgres -U postgres_user -c 'CREATE DATABASE "modiciodb";'
+      env:
+        PGPASSWORD: pgpwdtest
 
 
     - name: Set up JDK 17
