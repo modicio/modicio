@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
+import java.util.*
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -100,6 +101,19 @@ class ModelServiceTests {
         Assertions.assertNull(newFragment.instance)
         Assertions.assertEquals(predecessor.globalID, newFragment.predecessorID)
         Assertions.assertEquals(predecessor.model!!.getNodes().size, newFragment.model!!.getNodes().size)
+    }
+
+    @Test
+    fun newVariantWithPredecessorFailsTest(){
+        try {
+            modelService.newVariant(UUID.randomUUID().toString(), "foo")
+            Assertions.fail<Any>("Exception Expected")
+        }catch (e: Exception){
+            Assertions.assertNotNull(e)
+            Assertions.assertEquals("Predecessor variant not found", e.message)
+        }
+
+
     }
 
 }
