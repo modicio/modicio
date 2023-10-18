@@ -74,4 +74,32 @@ class ModelServiceTests {
         Assertions.assertEquals(storedFragment2.dataID, referenceFragment!!.dataID)
     }
 
+    @Test
+    fun newVariantNoPredecessorTest(){
+        modelService.newVariant(null, "foo")
+        val allFragments = fragmentRepository.findAll()
+        Assertions.assertEquals(1, allFragments.size)
+        val newFragment = allFragments.first()
+        Assertions.assertEquals("foo", newFragment.variantName)
+        Assertions.assertFalse(newFragment.open)
+        Assertions.assertNull(newFragment.instance)
+        Assertions.assertNull(newFragment.predecessorID)
+    }
+
+    @Test
+    fun newVariantWithPredecessorTest(){
+        val predecessor = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel())
+        modelService.newVariant(predecessor.variantID, "foo")
+        val allFragments = fragmentRepository.findAll()
+        Assertions.assertEquals(2, allFragments.size)
+        val fooFragments = allFragments.filter { f -> f.variantName == "foo" }
+        Assertions.assertEquals(1, fooFragments.size)
+        val newFragment = fooFragments.first()!!
+        Assertions.assertNotNull(newFragment)
+        Assertions.assertFalse(newFragment.open)
+        Assertions.assertNull(newFragment.instance)
+        Assertions.assertEquals(predecessor.globalID, newFragment.predecessorID)
+        Assertions.assertEquals(predecessor.model!!.getNodes().size, newFragment.model!!.getNodes().size)
+    }
+
 }

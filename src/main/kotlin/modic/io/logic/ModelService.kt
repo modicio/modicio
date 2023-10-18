@@ -43,7 +43,6 @@ class ModelService(
     fun newVariant(preVariantID: String?, name: String?){
 
         val now = Timestamp.from(Instant.now())
-        val newName = name ?: ""
 
         if(preVariantID != null){
             val newestFragmentWithID = fragmentRepository.findMostRecentFragmentByVariantIDLazy(preVariantID, isOpen = false)
@@ -53,8 +52,12 @@ class ModelService(
 
                 templateFragment!!.variantID = UUID.randomUUID().toString()
                 templateFragment.variantTime = now
-                templateFragment.globalID = UUID.randomUUID().toString()
+                templateFragment.variantName = name ?: templateFragment.variantName
                 templateFragment.predecessorID = newestFragmentWithID.globalID
+                templateFragment.globalID = UUID.randomUUID().toString()
+                templateFragment.open = false
+                templateFragment.instance = null
+                templateFragment.trace?.clearTrace()
                 templateFragment.initializeZeroIDs()
 
                 fragmentRepository.save(templateFragment)
@@ -62,7 +65,7 @@ class ModelService(
                 throw Exception("Predecessor variant not found")
             }
         }else{
-            val newFragment = Fragment(0, null, false, newName, now,
+            val newFragment = Fragment(0, null, false, name ?: "", now,
                 UUID.randomUUID().toString(), now, UUID.randomUUID().toString(), false,
                 Model(0), null, null)
             fragmentRepository.save(newFragment)

@@ -75,7 +75,7 @@ class Fragment(
      */
     @field:Column
     @field:XmlAttribute(name = "is_open")
-    val open: Boolean = false,
+    var open: Boolean = false,
 
     /**
      * The variantName is an optional arbitrary identifier to name a particular variant.
@@ -151,7 +151,7 @@ class Fragment(
      * @see [Model] for further information
      */
     @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-    val instance: Instance? = null,
+    var instance: Instance? = null,
 
     /**
      * A [Fragment] can contain a [Trace].
@@ -199,7 +199,7 @@ class Fragment(
     init {
         if (model != null) model.fragment = this
         if (trace != null) trace.fragment = this
-        if (instance != null) instance.fragment = this
+        if (instance != null) instance!!.fragment = this
     }
 
     @field:Column
