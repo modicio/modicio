@@ -40,7 +40,7 @@ class MetadataController(val metadataService: MetadataService) {
      *
      * @param delimiter
      */
-    @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_XML_VALUE])
     fun getVariantsMetadata(
         @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000,
         @RequestParam(required = false, name = "closed_only") closedOnly: Boolean = true
@@ -66,7 +66,7 @@ class MetadataController(val metadataService: MetadataService) {
      * @param variantUID
      * @param name
      */
-    @GetMapping("model/metadata/variant", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("model/metadata/variant", produces=[MediaType.APPLICATION_XML_VALUE])
     fun getVariantMetadata(
         @RequestParam(required = false, name = "variant_timestamp") timestamp: String?,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
@@ -103,7 +103,7 @@ class MetadataController(val metadataService: MetadataService) {
      *  @param variantID
      *  @param delimiter
      */
-    @GetMapping("model/metadata/variant/versions", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("model/metadata/variant/versions", produces=[MediaType.APPLICATION_XML_VALUE])
     fun getVersionsOfVariantMetadata(
         @RequestParam(required = true, name = "variant_UUID") variantID: String,
         @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000,

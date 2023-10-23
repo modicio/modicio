@@ -32,7 +32,7 @@ class ModelController(
      * If no existing variant is specified, a new empty variant with the given name is constructed.
      *
      */
-    @PostMapping("model/variant", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("model/variant", produces=[MediaType.APPLICATION_XML_VALUE])
     fun postNewVariant(
         @RequestParam(required = false, name = "variant_id") variantID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?
@@ -47,7 +47,7 @@ class ModelController(
     /**
      * Activate the specified variant as reference model.
      */
-    @PostMapping("model/variant/reference", produces=[MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("model/variant/reference", produces=[MediaType.APPLICATION_XML_VALUE])
     fun postReference(
         @RequestParam(required = false, name = "running_UUID" ) runningUID: String,
         @RequestParam(required = false, name = "variant_UUID") variantUID: String
@@ -85,7 +85,7 @@ class ModelController(
      * @param name
      * @param fragment
      */
-    @PutMapping("model", produces=[MediaType.APPLICATION_JSON_VALUE], consumes = [MediaType.APPLICATION_XML_VALUE])
+    @PutMapping("model", produces=[MediaType.APPLICATION_XML_VALUE], consumes = [MediaType.APPLICATION_XML_VALUE])
     fun putModelOfVariant(
         @RequestParam(required = false, name = "variant_UUID") variantUID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?,
