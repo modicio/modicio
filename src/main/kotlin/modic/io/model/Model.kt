@@ -84,4 +84,35 @@ class Model(
 
     fun removeNode(node: Node): Boolean = nodes.remove(node)
 
+    /**
+     * Create a slice of the [Node] set.
+     * The slice includes the inheritance hierarchy of the root as well as compositions and their inheritance hierarchies
+     * recursively.
+     * This method is cycle-safe.
+     *
+     * @param rootNodeURI URI string of the model root.
+     * @throws Exception if the URI is not found
+     */
+    fun sliceDeep(rootNodeURI: String): Set<Node> {
+        val results = HashSet<Node>()
+        val root = nodes.find { n -> n.uri == rootNodeURI } ?: throw Exception("No root node found or inconsistent model")
+        results.add(root)
+        root.getParentRelations().forEach { p ->
+            if(results.find { r -> r.uri == p.uri } == null) results.addAll(sliceDeep(p.uri))
+        }
+        root.getCompositions().forEach { p ->
+            if(results.find { r -> r.uri == p.target } == null) results.addAll(sliceDeep(p.target))
+        }
+        return results
+    }
+
+    /**
+     * Find the [Script] with the provided URI in the set of [Node]s.
+     *
+     * @param scriptURI URI of the [Script]
+     */
+    fun findScript(scriptURI: String): Script?{
+        return nodes.flatMap { n -> n.getScripts() }.find { s -> s.uri == scriptURI }
+    }
+
 }
