@@ -19,6 +19,7 @@ package modic.io.model
 import jakarta.persistence.*
 import jakarta.xml.bind.annotation.*
 import java.util.*
+import kotlin.jvm.Transient
 
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -57,9 +58,17 @@ class CompositionInstance(
     @field:XmlElement(name = "Object")
     private val objects: MutableList<IObject> = LinkedList(),
 
+    @field:Transient
+    @field:XmlTransient
+    var rootInstance: Instance? = null,
+
+    @field:Transient
+    @field:XmlTransient
+    var node: Node? = null
 ) {
 
     constructor() : this(null)
+
 
     fun initializeZeroIDs(){
         dataID = 0
@@ -71,6 +80,18 @@ class CompositionInstance(
 
     fun removeObject(iObject: IObject) {
         objects.remove(iObject)
+    }
+
+    private fun getCompositionRule(): Composition? {
+        return node!!.getCompositions().find { c -> c.uri == compositionUri }
+    }
+
+    fun collectHeaderObjects(): Set<HeaderElement> {
+        val headerElements: MutableSet<HeaderElement> = HashSet()
+        if(!getCompositionRule()!!.isPublic) return headerElements
+        headerElements.add(HeaderElement(0, node!!.uri, uri))
+        headerElements.addAll(objects.flatMap { o -> o.collectHeaderObjects() })
+        return headerElements
     }
 
 }

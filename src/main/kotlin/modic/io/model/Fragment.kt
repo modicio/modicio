@@ -197,9 +197,7 @@ class Fragment(
      * Autowire backlinks that are not part of the JPA schema (transient)
      */
     init {
-        if (model != null) model.fragment = this
-        if (trace != null) trace.fragment = this
-        if (instance != null) instance!!.fragment = this
+        autowire()
     }
 
     @field:Column
@@ -224,6 +222,15 @@ class Fragment(
         instance?.initializeZeroIDs()
         trace?.initializeZeroIDs()
         model?.initializeZeroIDs()
+    }
+
+    fun autowire(){
+        if (model != null) model.fragment = this
+        if (trace != null) trace.fragment = this
+        if (instance != null) instance!!.fragment = this
+        model?.autowire()
+        trace?.autowire()
+        instance?.autowire()
     }
 
     //companion object {

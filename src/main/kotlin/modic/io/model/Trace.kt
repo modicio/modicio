@@ -70,6 +70,10 @@ class Trace(
 
     constructor() : this(null)
 
+    fun autowire(){
+        //Nothing to do yet
+    }
+
     fun initializeZeroIDs(){
         dataID = 0
         deltas.forEach { d -> d.initializeZeroIDs() }

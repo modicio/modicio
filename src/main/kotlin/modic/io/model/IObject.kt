@@ -61,7 +61,7 @@ class IObject(
     @field:XmlElement(name = "AttributeInstance")
     private val attributeInstances: MutableList<AttributeInstance> = LinkedList(),
 
-    /**
+    /**.
      * The list of [AssociationInstance]s of the [IObject].
      * Each AssociationInstance conforms to exactly one [AssociationRelation] defined in the corresponding [Node].
      * One AssociationRelation can have an arbitrary number of AssociationInstances.
@@ -84,6 +84,13 @@ class IObject(
     private val compositionInstances: MutableList<CompositionInstance> = LinkedList(),
 
     /**
+     * Backlink for faster traversal
+     */
+    @field:Transient
+    @field:XmlTransient
+    var instance: Instance? = null,
+
+    /**
      * Link to the [Node] being the type of this [IObject]
      */
     @field:Transient
@@ -92,6 +99,14 @@ class IObject(
 ) {
 
     constructor() : this(null)
+
+    fun autowire(){
+        node = instance?.fragment?.model?.getNodes()?.find { node -> node.uri == instanceOf }
+        compositionInstances.forEach{ c ->
+            c.rootInstance = instance
+            c.node = node
+        }
+    }
 
     fun initializeZeroIDs(){
         dataID = 0
@@ -120,6 +135,10 @@ class IObject(
 
     fun removeCompositionInstance(compositionInstance: CompositionInstance) {
         compositionInstances.remove(compositionInstance)
+    }
+
+    fun collectHeaderObjects(): Set<HeaderElement> {
+        return compositionInstances.flatMap { c -> c.collectHeaderObjects() }.toSet()
     }
 
 }

@@ -90,7 +90,14 @@ class Instance(
      */
     @field:Transient
     @field:XmlTransient
-    var fragment: Fragment? = null
+    var fragment: Fragment? = null,
+
+    /**
+     * Backlink for faster traversal.
+     */
+    @field:Transient
+    @field:XmlTransient
+    var rootNode: Node? = null
 ) {
 
     constructor() : this(null)
@@ -102,7 +109,16 @@ class Instance(
     }
 
     init {
+        autowire()
+    }
+
+    fun autowire(){
         header?.instance = this
+        rootNode = fragment?.model?.getNodes()?.find { node -> node.uri == modelRoot }
+        objects.forEach{obj ->
+            obj.instance = this
+            obj.autowire()
+        }
     }
 
     fun getObjects(): List<IObject> = objects
@@ -113,6 +129,53 @@ class Instance(
 
     fun removeObject(iObject: IObject) {
         objects.remove(iObject)
+    }
+
+    fun updateHeader() {
+        val existingHeaderElements = header!!.getElements()
+        val currentPublicElements = collectHeaderInstances()
+
+        val retainedHeaderElements: MutableList<HeaderElement> = existingHeaderElements.filter { elem ->
+            currentPublicElements.find { pub ->
+                elem.compositeInstanceUri == pub.compositeInstanceUri } != null }.toMutableList()
+
+        retainedHeaderElements.addAll(currentPublicElements.filter { pub ->
+            retainedHeaderElements.find { elem -> elem.compositeInstanceUri == pub.compositeInstanceUri} == null })
+
+        header.clearElements()
+        header.addAll(retainedHeaderElements)
+    }
+
+    fun getParentOfObject(iObject: IObject): Node? {
+        return fragment!!.model!!.getNodes().find { n -> n.uri == iObject.instanceOf }
+    }
+
+    private fun collectHeaderInstances(): Set<HeaderElement> {
+        val allPublicElements: MutableSet<HeaderElement> = HashSet()
+        allPublicElements.add(HeaderElement(0, rootNode!!.uri, uri))
+        allPublicElements.addAll(getObjects().flatMap { obj -> obj.collectHeaderObjects() })
+        return allPublicElements
+    }
+
+    companion object {
+
+        fun constructIObjects(rootNode: Node, typeNodes: Set<Node>): Set<IObject>{
+            val inheritanceClosure: Set<Node> = Node.getInheritanceClosure(rootNode, typeNodes)
+            val allConcreteValues: Set<Concretization> = inheritanceClosure.flatMap { n -> n.getConcretizations() }.toSet()
+            val iObjects = inheritanceClosure.map { node ->
+                val attributeInstances: MutableList<AttributeInstance> =
+                    node.getAttributes().filter { att ->
+                        allConcreteValues.find { value -> value.attributeInstance!!.attributeUri == att.uri } == null
+                    }.map { att ->
+                        AttributeInstance(0, att.uri, "")
+                    }.toMutableList()
+                val associationInstances: MutableList<AssociationInstance> = LinkedList()
+                val compositionInstances: MutableList<CompositionInstance> = LinkedList()
+                IObject(0, node.uri, attributeInstances, associationInstances, compositionInstances)
+            }.toSet()
+            return iObjects
+        }
+
     }
 
 }

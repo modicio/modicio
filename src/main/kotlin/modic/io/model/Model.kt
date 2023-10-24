@@ -67,7 +67,14 @@ class Model(
      * Autowire backlinks that are not part of the JPA schema (transient)
      */
     init {
-        nodes.forEach { node -> node.model = this }
+        autowire()
+    }
+
+    fun autowire(){
+        nodes.forEach { node ->
+            node.model = this
+            node.autowire()
+        }
     }
 
     fun initializeZeroIDs(){

@@ -28,7 +28,7 @@ import jakarta.xml.bind.annotation.XmlTransient
  * (because AttributeInstances would normally live in the [Instance] facet).
  * From an Instance view, the AttributeInstance contains an immutable value that predefines an Attribute.
  *
- * In consequence, the modicio metamodel becomes multilevel model properties.
+ * In consequence, the modicio metamodel receives multilevel model properties.
  * See gradual concretization in multilevel modelling for more information.
  */
 @Entity

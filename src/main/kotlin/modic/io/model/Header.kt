@@ -90,4 +90,12 @@ class Header(
         elements.remove(headerElement)
     }
 
+    fun clearElements(){
+        elements.clear()
+    }
+
+    fun addAll(elements: Collection<HeaderElement>){
+        elements.forEach(this::addElement)
+    }
+
 }

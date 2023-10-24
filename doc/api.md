@@ -94,9 +94,9 @@ Get a past model reconstruction (fragment) as open model.
 
 ---
 
-### `instance`
+### `instance` @InstanceController
 
-TODO
+TODO: get an instance of a given dataID
 
 
 ## PUT
@@ -131,6 +131,11 @@ Create a new variant.
 - If an existing variant is specified, the new variant will be initialized as successor of it.
 - If no existing variant is specified, a new empty variant with the given name is constructed.
 
+
+### `instance` @InstanceController
+
+TODO: Update a full instance
+
 ---
 
 ### `model/evolve`
@@ -140,8 +145,8 @@ TODO
 
 ---
 
-### `instance/create`
+### `instance/create` @InstanceController
 
-TODO
+TODO: create a new instance
 
 ## DELETE

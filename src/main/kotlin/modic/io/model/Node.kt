@@ -148,6 +148,15 @@ class Node(
 
     constructor() : this(null)
 
+    init {
+        autowire()
+    }
+
+    fun autowire(){
+        concretizations.forEach { c -> c.node = this }
+        compositions.forEach { c -> c.node = this }
+    }
+
     fun initializeZeroIDs(){
         dataID = 0
         annotation?.initializeZeroIDs()
@@ -238,5 +247,16 @@ class Node(
 
     fun removeScript(script: Script) = scripts.remove(script)
 
+    companion object {
+        fun getInheritanceClosure(rootNode: Node, typeNodes: Set<Node>): Set<Node> {
+            val inheritanceClosure: MutableSet<Node> = HashSet()
+            inheritanceClosure.add(rootNode)
+            val parentNodes = typeNodes.filter { n -> rootNode.getParentRelations().find { p -> p.uri == n.uri } != null }
+            inheritanceClosure.addAll(parentNodes)
+            inheritanceClosure.addAll(parentNodes.flatMap { p -> getInheritanceClosure(p, typeNodes) })
+            return inheritanceClosure
+        }
+
+    }
 
 }
