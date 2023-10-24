@@ -37,11 +37,8 @@ class ModelController(
         @RequestParam(required = false, name = "variant_id") variantID: String?,
         @RequestParam(required = false, name = "variant_name") name: String?
     ): String {
-
-
         modelService.newVariant(variantID, name)
-
-        return "OK"
+        return "OK" //TODO useful response
     }
 
     /**
@@ -53,9 +50,7 @@ class ModelController(
         @RequestParam(required = false, name = "variant_UUID") variantUID: String
     ): String {
         metadataService.setReferenceFragment(variantUID, runningUID)
-
-        //TODO useful response
-        return "OK"
+        return "OK" //TODO useful response
     }
 
     /**

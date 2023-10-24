@@ -19,17 +19,16 @@ package modic.io.logic
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
-import modic.io.model.Fragment
-import modic.io.model.Header
-import modic.io.model.Instance
+import modic.io.model.*
 import modic.io.repository.FragmentRepository
+import modic.io.repository.InstanceRepository
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class InstanceService(
     val modelService: ModelService,
-    val fragmentRepository: FragmentRepository
+    val fragmentRepository: FragmentRepository,
+    val instanceRepository: InstanceRepository
 ) {
 
     @PersistenceContext
@@ -72,31 +71,48 @@ class InstanceService(
 
     @Transactional
     fun createCompositeInstance(){
-
+        //TODO
     }
 
     @Transactional
     fun deleteCompositionInstance(){
-
+        //TODO
     }
 
     @Transactional
     fun getInstanceFragment(fragmentDataID: Long, fullType: Boolean = true): Fragment? {
-        //TODO
-        return null
+        val result = fragmentRepository.getFragmentByDataID(fragmentDataID)
+        if(result?.instance == null)  return null
+        return result
     }
 
     @Transactional
-    fun getAllInstances(typeName: String?, variantID: String?, versionID: String?, limit: Int): List<Fragment> {
-        //TODO
-        return LinkedList()
+    fun getAllInstances(typeNamePattern: String, variantID: String?, versionID: String?, limit: Int): List<Fragment> {
+        val fragmentIDs: List<Long> = if (variantID != null && versionID != null){
+            instanceRepository.getInstancesByTypeNameSoftMatchAndVariantAndVersion(
+                typeNamePattern, variantID, versionID, limit)
+        } else if(variantID != null){
+            instanceRepository.getInstancesByTypeNameSoftMatchAndVariant(typeNamePattern, variantID, limit)
+        } else {
+            instanceRepository.getInstancesByTypeURISoftMatch(typeNamePattern, limit)
+        }
+        return fragmentRepository.findAllById(fragmentIDs)
     }
 
 
     @Transactional
-    fun updateInstance(fragment: Fragment): Fragment? {
+    fun setAttributes(attributes: List<AttributeInstance>, fragmentDataID: Long){
         //TODO
-        return null
+    }
+
+    @Transactional
+    fun addAssociation(associationInstance: AssociationInstance, fragmentDataID: Long){
+        //TODO
+    }
+
+    @Transactional
+    fun removeAssociation(associationDataID: Long, fragmentDataID: Long){
+        //TODO
     }
 
 

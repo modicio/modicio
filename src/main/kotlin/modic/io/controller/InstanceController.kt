@@ -52,12 +52,12 @@ class InstanceController(val instanceService: InstanceService) {
      */
     @GetMapping("instance/all", produces = [MediaType.APPLICATION_XML_VALUE])
     fun getInstances(
-        @RequestParam(required = false, name = "type_name") typeName: String?,
+        @RequestParam(required = true, name = "type_name_pattern") typeNamePattern: String,
         @RequestParam(required = false, name = "variant_id") variantID: String?,
         @RequestParam(required = false, name = "version_id") versionID: String?,
         @RequestParam(required = true, name = "limit") limit: Int,
     ): List<Fragment> {
-        return instanceService.getAllInstances(typeName, variantID, versionID, limit)
+        return instanceService.getAllInstances(typeNamePattern, variantID, versionID, limit)
     }
 
     /**
@@ -70,15 +70,6 @@ class InstanceController(val instanceService: InstanceService) {
         instanceService.deleteInstance(fragmentDataID)
     }
 
-    /**
-     * TODO doc
-     */
-    @PostMapping("instance", produces = [MediaType.APPLICATION_XML_VALUE])
-    fun updateInstance(
-        @RequestBody fragment: Fragment
-    ) {
-        instanceService.updateInstance(fragment)
-    }
 
 
 }
