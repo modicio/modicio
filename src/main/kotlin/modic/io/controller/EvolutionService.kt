@@ -16,6 +16,8 @@
 
 package modic.io.controller
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
 import modic.io.logic.ModelService
 import modic.io.repository.FragmentRepository
@@ -26,11 +28,16 @@ class EvolutionService(
     val modelService: ModelService,
     val fragmentRepository: FragmentRepository) {
 
+    @PersistenceContext
+    private val entityManager: EntityManager? = null
+
     @Transactional
     fun evolveFragment(variantID: String, runningID: String, evolutionRequest: String){
 
-        val fragment = fragmentRepository
         //1. get fragment to evolve
+        val fragment = fragmentRepository.findModelOnlyFragmentWithVariantAndRunningIDFirstLazy(variantID, runningID)!!
+        entityManager!!.detach(fragment)
+
 
         //2. detach fragment from the entity manager
 
@@ -38,8 +45,9 @@ class EvolutionService(
 
         //4. apply the result changes to the fragment
 
-        //5. store the fragment with a new runningID and current runningTime
 
+        //5. store the fragment with a new runningID and current runningTime
+        modelService.pushFullModel(fragment, variantID, fragment.variantName ?: "", true)
     }
 
 }
