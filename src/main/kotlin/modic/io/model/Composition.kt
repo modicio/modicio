@@ -43,6 +43,8 @@ import jakarta.xml.bind.annotation.XmlTransient
  * @see [Fragment]
  * @see [Header]
  * @see [CompositionInstance]
+ *
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -64,6 +66,7 @@ class Composition(
     /**
      * The URI uniquely identifying the composition in the scope of its [Model].
      * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "uri")
@@ -72,6 +75,7 @@ class Composition(
     /**
      * The role name the composite elements are referred by, i.e., the name of the composition relation.
      * The role must be unique in the scope of the [Node] owning the Composition.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "role")
@@ -81,6 +85,7 @@ class Composition(
      * The URI specifying the composite [Node] element.
      * The target node must be part of the same [Model] as the Node specifying this composition.
      * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "target")
@@ -92,6 +97,7 @@ class Composition(
      * Public [Composition] types and their instances are listed in the [Fragment]s [Header].
      * @see [Header]
      * @see [CompositionInstance]
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "is_public")

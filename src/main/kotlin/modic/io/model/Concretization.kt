@@ -30,6 +30,7 @@ import jakarta.xml.bind.annotation.XmlTransient
  *
  * In consequence, the modicio metamodel receives multilevel model properties.
  * See gradual concretization in multilevel modelling for more information.
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -53,6 +54,7 @@ class Concretization(
      * It must be assured that an [Attribute] is only concreted once in the meta hierarchy (parent relation trace).
      * It must also be checked that teh Attribute still exists after a model refactoring. In this case, the AttributeInstance
      * may become invalid.
+     * @editable
      */
     @field:OneToOne(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "AttributeInstance")

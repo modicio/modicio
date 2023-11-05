@@ -29,6 +29,7 @@ import java.time.Instant
  * The interval targets one particular variant that is inferred by the usage context of the interval.
  * @see Annotation
  * @see AssociationRelation
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -51,6 +52,7 @@ class Region(
      * Defines the timestamp of the (inclusive) left / past border of the version interval as a UTC instant.
      * Only using a border time allows arbitrary intervals but may be ambiguous across distributed use-cases.
      * This field is required.
+     * @editable
      */
     @field:Column
     //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
@@ -61,6 +63,7 @@ class Region(
      * Binds the [leftBorderVersionTime] to a specific version.
      * The specified version must exist and must be known to the system the interval is interpreted on.
      * This field optional.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "left_border_version_id")
@@ -70,6 +73,7 @@ class Region(
      * Defines the timestamp of the (inclusive) right / future border of the version interval as a UTC instant.
      * Only using a border time allows arbitrary intervals but may be ambiguous across distributed use-cases.
      * This field is required.
+     * @editable
      */
     @field:Column
    // @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
@@ -80,6 +84,7 @@ class Region(
      * Binds the [rightBorderVersionTime] to a specific version.
      * The specified version must exist and must be known to the system the interval is interpreted on.
      * This field optional.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "right_border_version_id")

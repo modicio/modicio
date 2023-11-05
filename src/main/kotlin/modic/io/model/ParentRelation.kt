@@ -28,6 +28,7 @@ import jakarta.xml.bind.annotation.XmlTransient
  * - The parent link is an open property, i.e., it is only evaluated at runtime if resolution is possible. Resolution
  *   must be possible during instantiation.
  * - Parents must be from the same [Fragment].
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -50,6 +51,7 @@ class ParentRelation(
      * The URI defines the target parent [Node] to inherit from by its URI.
      * This reference is resolved during edit, load and store. Otherwise, the model becomes (temporarily) invalid.
      * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "uri")

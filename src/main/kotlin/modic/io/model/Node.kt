@@ -25,6 +25,7 @@ import java.util.*
  * but can also represent a Node in a typed graph.
  * The Node as first-level element contains all further model elements such as relations to other Nodes which
  * are always unidirectional edges.
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -47,6 +48,7 @@ class Node(
      * The name provides the [Node] a practical identifier.
      * Uniqueness is optional but desired.
      * The name should relate to the [uri] and is typically its last part.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "name")
@@ -56,6 +58,7 @@ class Node(
      * The unique naming URI of the [Node] in its current [Model].
      * The uri must not take variant/version into account which is stored separately.
      * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "uri")
@@ -64,6 +67,7 @@ class Node(
     /**
      * If the [Node] is abstract, it cannot be used as the root of an [Instance].
      * In other words, it is abstract in the sense of object-oriented programming.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "is_abstract")
@@ -81,6 +85,7 @@ class Node(
      * The list of [Attribute]s define the attributes/properties of the [Node] model.
      * Attributes must be unique (by name and uri) per Node.
      * The list must fulfill set properties. Ordering is important for interpretation and rendering.
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Attribute")
@@ -90,6 +95,7 @@ class Node(
      * The list of [AssociationRelation]s define directed association relations to other [Node]s.
      * Attributes must be unique (by name and uri) per Node.
      * The list must fulfill set properties. Ordering is important for interpretation and rendering.
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "AssociationRelation")
@@ -98,6 +104,7 @@ class Node(
     /**
      * The list of [ParentRelation]s define directed inheritance relations to other [Node]s.
      * Attributes must be unique (by name and uri) per Node.
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "ParentRelation")
@@ -116,6 +123,7 @@ class Node(
      * This required:
      * - The specified Attribute must exist in the scope of this model element (match by uri)
      * - The provided value must match the Attribute type
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Concretization")
@@ -125,6 +133,7 @@ class Node(
      * [Composition]s can be used to represent "part-of" relationships.
      * The [Node] a Composition refers to must exist in the scope of the Model.
      * Note the special scoping and visibility mechanisms explained in [Composition] and [Header].
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Composition")

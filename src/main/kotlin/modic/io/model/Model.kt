@@ -27,6 +27,7 @@ import jakarta.xml.bind.annotation.XmlTransient
  * The Model is an object-oriented class structure. Classes are denoted as [Node]s.
  * Nodes can be connected through associations and inheritance. These relations are directed edges and are
  * owned by the starting node. A Node can compose other Nodes (part-of relationship).
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -48,6 +49,7 @@ class Model(
     /**
      * The set of [Node]s contains all elements of the Model.
      * Practically, the set can be empty.
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Node")

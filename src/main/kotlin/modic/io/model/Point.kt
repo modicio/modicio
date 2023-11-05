@@ -32,6 +32,7 @@ import java.time.Instant
  * The interval targets one particular variant that is inferred by the usage context of the interval.
  * @see Annotation
  * @see AssociationRelation
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -53,6 +54,7 @@ class Point(
     /**
      * Defines the timestamp of the single variant (point in space, range in time) as a UTC instant.
      * This field is required.
+     * @editable
      */
     @field:Column
     //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
@@ -62,6 +64,7 @@ class Point(
     /**
      * Binds the [variantTime] to a specific version ID.
      * This field optional but its usage is strongly proposed due to the ambiguity of a variant timestamp alone.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "variant_id")
@@ -71,6 +74,7 @@ class Point(
      * Defines the timestamp of the single version (point in time) as a UTC instant.
      * This field is optional.
      * Using a version time collapses the range to one single point in space-time, i.e., a single variant+version pair.
+     * @editable
      */
     @field:Column
     @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
@@ -80,6 +84,7 @@ class Point(
     /**
      * Binds the [versionTime] to a specific version ID to resolve unambiguity,
      * This field optional.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "version_id")

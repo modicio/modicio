@@ -25,6 +25,7 @@ import jakarta.xml.bind.annotation.XmlTransient
 /**
  * The AttributeInstance represents a concretization of an [Attribute].
  * @see [Attribute]
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -45,6 +46,7 @@ class AttributeInstance(
 
     /**
      * URI of the [Attribute] defining this AttributeInstances.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "attribute_uri")
@@ -52,6 +54,7 @@ class AttributeInstance(
 
     /**
      * Textual value representation of the Attribute.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "any_value")

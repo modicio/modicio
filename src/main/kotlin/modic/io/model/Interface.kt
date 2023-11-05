@@ -29,6 +29,7 @@ import java.util.*
  * An Interface can contain multiple types of intervals and points describing subsets of time-space.
  * An AssociationRelation regarding a certain target type is fulfilled if the target fulfils at least one of the
  * subsets defined by this class.
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -50,6 +51,7 @@ class Interface(
     /**
      * The list of version-based intervals open on the left side (past).
      * @see [LeftOpen]
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "LeftOpen")
@@ -58,6 +60,7 @@ class Interface(
     /**
      * The list of version-based intervals open on the right side (future).
      * @see [RightOpen]
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "RightOpen")
@@ -66,6 +69,7 @@ class Interface(
     /**
      * The list of version-based intervals delimited on both sides (past and future).
      * @see [Region]
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Region")
@@ -74,6 +78,7 @@ class Interface(
     /**
      * The list of variant-based (and/or version-based) points / ranges
      * @see [Point]
+     * @editable
      */
     @field:OneToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
     @field:XmlElement(name = "Point")

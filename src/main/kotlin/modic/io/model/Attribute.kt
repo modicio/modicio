@@ -26,6 +26,7 @@ import jakarta.xml.bind.annotation.XmlTransient
  * The [Attribute] represents the model element typically known as attribute or property.
  * By default, only [Node]s can have Attributes.
  * An Attribute consists of identifiers and a key-datatype pair expressing the physical attribute model.
+ * @editable
  */
 @Entity
 @XmlAccessorType(XmlAccessType.NONE)
@@ -48,6 +49,7 @@ class Attribute(
      * The unique naming URI of the [Attribute] in its current [Model].
      * The uri must not take variant/version into account which is stored separately.
      * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "uri")
@@ -56,6 +58,7 @@ class Attribute(
     /**
      * The name of an Attribute, also called key.
      * Uniqueness is optional but should be enforced on the level of a single [Node].
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "name")
@@ -64,6 +67,7 @@ class Attribute(
     /**
      * The data type of the attribute serialized as string.
      * TODO: right now, arbitrary types are supported. A later type checker must predefine a set of type values.
+     * @editable
      */
     @field:Column
     @field:XmlAttribute(name = "dType")
