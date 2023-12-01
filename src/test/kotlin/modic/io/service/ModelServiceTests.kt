@@ -66,6 +66,12 @@ class ModelServiceTests {
 
     @Test
     fun setAndGetReferenceFragmentTest(){
+        /**
+         * For evolution tests,
+         * 1. create a fragment and save it
+         * 2. activate it via setReferenceFragment
+         * 3. do the evolution
+         */
         val fragment1 = TestDataHelper.getSimpleFragmentOnlyModel()
         val fragment2 = TestDataHelper.getSimpleFragmentOnlyModel()
         val storedFragment1 = fragmentRepository.save(fragment1)

@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package modic.io.controller
+package modic.io.logic
 
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
-import modic.io.logic.ModelService
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 
@@ -32,14 +31,14 @@ class EvolutionService(
     private val entityManager: EntityManager? = null
 
     @Transactional
-    fun evolveFragment(variantID: String, runningID: String, evolutionRequest: String){
+    fun evolveFragment(variantID: String, runningID: String, evolutionRequest: String, backwards: Boolean = false){
 
         //1. get fragment to evolve
         val fragment = fragmentRepository.findModelOnlyFragmentWithVariantAndRunningIDFirstLazy(variantID, runningID)!!
         entityManager!!.detach(fragment)
 
 
-        //2. detach fragment from the entity manager
+        //2. detach fragit gment from the entity manager
 
         //3. do all the request compilation stuff
 
