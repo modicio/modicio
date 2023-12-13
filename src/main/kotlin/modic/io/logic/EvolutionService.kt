@@ -19,6 +19,8 @@ package modic.io.logic
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
+import modic.io.model.Fragment
+import modic.io.model.Node
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 
@@ -35,18 +37,44 @@ class EvolutionService(
 
         //1. get fragment to evolve
         val fragment = fragmentRepository.findModelOnlyFragmentWithVariantAndRunningIDFirstLazy(variantID, runningID)!!
+
+        //2. detach fragment from the entity manager
         entityManager!!.detach(fragment)
 
 
-        //2. detach fragit gment from the entity manager
-
         //3. do all the request compilation stuff
-
+        if (evolutionRequest.contains("create class", ignoreCase = true)) {
+            val creationStatement = "create class"
+            val nameStart = evolutionRequest.indexOf(creationStatement, startIndex = 0, ignoreCase = true) + creationStatement.length
+            val nameEnd = evolutionRequest.length - 1
+            val nodeName = evolutionRequest.slice(nameStart..nameEnd)
+            val newNode = Node(name = nodeName)
+            fragment.model!!.addNode(newNode)
+        } else if (evolutionRequest.contains("create abstract class", ignoreCase = true)) {
+            val creationStatement = "create abstract class"
+            val nameStart = evolutionRequest.indexOf(creationStatement, startIndex = 0, ignoreCase = true) + creationStatement.length
+            val nameEnd = evolutionRequest.length - 1
+            val nodeName = evolutionRequest.slice(nameStart..nameEnd)
+            val newNode = Node(name = nodeName, isAbstract = true)
+            fragment.model!!.addNode(newNode)
+        } else if (evolutionRequest.contains("delete class", ignoreCase = true)) {
+            val deleteStatement = "delete class"
+            val nameStart = evolutionRequest.indexOf(deleteStatement, startIndex = 0, ignoreCase = true) + deleteStatement.length
+            val nameEnd = evolutionRequest.length - 1
+            val nodeName = evolutionRequest.slice(nameStart..nameEnd)
+            for (node in fragment.model!!.getNodes()) {
+                if (node.name.equals(nodeName, ignoreCase = true)) {
+                    fragment.model.removeNode(node)
+                }
+            }
+        }
         //4. apply the result changes to the fragment
 
 
         //5. store the fragment with a new runningID and current runningTime
         modelService.pushFullModel(fragment, variantID, fragment.variantName ?: "", true)
     }
+
+
 
 }
