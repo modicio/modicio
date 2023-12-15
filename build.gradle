@@ -1,3 +1,4 @@
+import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -54,6 +55,7 @@ dependencies {
     runtimeOnly 'com.h2database:h2:2.2.222'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation "io.mockk:mockk:1.13.8"
 }
 
 tasks.withType(KotlinCompile).configureEach {
@@ -70,7 +72,6 @@ tasks.named('test') {
 
 
 apply plugin : "org.jetbrains.dokka"
-import org.jetbrains.dokka.gradle.DokkaTask
 
 tasks.withType(DokkaTask.class) {
     String dokkaBaseConfiguration = """

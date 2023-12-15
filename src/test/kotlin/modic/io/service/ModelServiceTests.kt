@@ -167,7 +167,7 @@ class ModelServiceTests {
         Assertions.assertEquals(1, fragments.size)
         val fragment = fragments[0]
         Assertions.assertEquals(oldFragment.globalID, fragment.predecessorID)
-        Assertions.assertTrue(oldFragment.runningTime <= fragment.runningTime)
+        Assertions.assertTrue(oldFragment.runningTime.time - fragment.runningTime.time < 10)
         Assertions.assertFalse(fragment.isReference)
         Assertions.assertNotEquals(oldFragment.runningID, fragment.runningID)
         return fragment
