@@ -55,13 +55,14 @@ class ModelServiceTests {
         Assertions.assertNotEquals("", resFragment.model?.getNodes()?.first()?.annotation?.variantID)
 
         Assertions.assertEquals(
-            resFragment.model?.getNodes()?.first()?.annotation?.variantID,
+            fragment.model?.getNodes()?.first()?.annotation?.variantID,
             resFragment.model?.getNodes()?.first()?.annotation?.variantID
         )
 
-        Assertions.assertEquals(
-            resFragment.model?.getNodes()?.first()?.annotation?.variantTime,
-            resFragment.model?.getNodes()?.first()?.annotation?.variantTime
+        Assertions.assertTrue(
+            fragment.model?.getNodes()?.first()?.annotation?.variantTime!!.time
+                    - resFragment.model?.getNodes()?.first()?.annotation?.variantTime!!.time
+                    < 10
         )
     }
 

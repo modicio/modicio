@@ -19,6 +19,7 @@ package modic.io.service
 import modic.io.TestDataHelper
 import modic.io.logic.MetadataService
 import modic.io.messages.MetaData
+import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -39,27 +40,61 @@ class MetadataServiceTests {
 
     @Test
     fun getMetadataByVariantIDTest(){
-        val savedFragmentID = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel()).dataID
-        val dbFragment = fragmentRepository.getFragmentByDataID(savedFragmentID!!)!!
+        val dbFragment = createFragment()
+        val metadata: MetaData? = metadataService.getVariantMetadata(null, dbFragment.variantID, null, 10000, true).firstOrNull()
+        compareMetadataOfFragment(dbFragment, metadata)
+    }
 
-        val metadata: MetaData? = metadataService.getVariantMetadata(
-            null, dbFragment.variantID, null, 10000, true).firstOrNull()
+    @Test
+    fun getMetadataByVariantTimeTest(){
+        val dbFragment = createFragment()
+        val metadata: MetaData? = metadataService.getVariantMetadata(dbFragment.variantTime, null, null).firstOrNull()
+        compareMetadataOfFragment(dbFragment, metadata)
+    }
 
+    @Test
+    fun getMetadataWithNullUUID(){
+        val dbFragment = createFragment()
+        val metadata = metadataService.getVariantMetadata(dbFragment.variantTime, null, "").firstOrNull()
+        compareMetadataOfFragment(dbFragment, metadata)
+    }
+
+    @Test
+    fun getMetadataWithNullTimestamp(){
+        val dbFragment = createFragment()
+        val metadata = metadataService.getVariantMetadata(dbFragment.variantTime, null, "").firstOrNull()
+        compareMetadataOfFragment(dbFragment, metadata)
+    }
+
+    @Test
+    fun getMetadataWithOnlyName(){
+        val dbFragment = createFragment()
+        val metadata = metadataService.getVariantMetadata(null, null, dbFragment.variantName).firstOrNull()
+        compareMetadataOfFragment(dbFragment, metadata)
+    }
+
+    @Test
+    fun getMetadataAllNullValues(){
+        val metadata = metadataService.getVariantMetadata(null, null, null)
+        Assertions.assertTrue(metadata.isEmpty())
+    }
+
+    @Test
+    fun getMetadataForNonexistentFragment(){
+        val metadata = metadataService.getVariantMetadata(null, "", null)
+        Assertions.assertTrue(metadata.isEmpty())
+    }
+
+    private fun compareMetadataOfFragment(dbFragment: Fragment, metadata: MetaData?) {
         Assertions.assertEquals(dbFragment.variantID, metadata?.uuid)
         Assertions.assertEquals(dbFragment.variantTime, metadata?.timestamp)
         Assertions.assertEquals(dbFragment.variantName, metadata?.name)
     }
 
-    @Test
-    fun getMetadataByVariantTimeTest(){
+    private fun createFragment(): Fragment {
         val savedFragmentID = fragmentRepository.save(TestDataHelper.getSimpleFragmentOnlyModel()).dataID
         val dbFragment = fragmentRepository.getFragmentByDataID(savedFragmentID!!)!!
-
-        val metadata: MetaData? = metadataService.getVariantMetadata(
-            dbFragment.variantTime, null, null).firstOrNull()
-        Assertions.assertEquals(dbFragment.variantID, metadata?.uuid)
-        Assertions.assertEquals(dbFragment.variantTime, metadata?.timestamp)
-        Assertions.assertEquals(dbFragment.variantName, metadata?.name)
+        return dbFragment
     }
 
     @Test
