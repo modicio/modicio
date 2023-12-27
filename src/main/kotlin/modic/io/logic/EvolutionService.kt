@@ -23,6 +23,7 @@ import modic.io.model.Attribute
 import modic.io.model.Node
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class EvolutionService(
@@ -42,90 +43,102 @@ class EvolutionService(
         entityManager!!.detach(fragment)
 
         //3. do all the request compilation stuff
-        when (true) {
-            evolutionRequest.contains("create class", ignoreCase = true) -> {
-                val nodeName = retrieveName("create class", 0, evolutionRequest)
+        val evolutionList = evolutionRequest.split(",", ignoreCase = true)
+        lateinit var selectedNode: Node
+        lateinit var selectedAttribute: Attribute
+
+        for (request in evolutionList) {
+            if (request.contains("CREATE CLASS")) {
+                val nodeName = retrieveName(request, "CREATE CLASS")
                 val nodeUri = "modicio:$nodeName"
-                val newNode = Node(name = nodeName, uri = nodeUri)
+                val newNode = Node(name = nodeName, uri = nodeUri, model = fragment.model)
                 fragment.model!!.addNode(newNode)
+                continue
             }
-            evolutionRequest.contains("create abstract class", ignoreCase = true) -> {
-                val nodeName = retrieveName("create abstract class", 0, evolutionRequest)
+            if (request.contains("CREATE ABSTRACT CLASS")) {
+                val nodeName = retrieveName(request, "CREATE ABSTRACT CLASS")
                 val nodeUri = "modicio:$nodeName"
-                val newNode = Node(name = nodeName, uri = nodeUri, isAbstract = true)
+                val newNode = Node(name = nodeName, uri = nodeUri, isAbstract = true, model = fragment.model)
                 fragment.model!!.addNode(newNode)
+                continue
             }
-            evolutionRequest.contains("delete class", ignoreCase = true) -> {
-                val nodeName = retrieveName("delete class", 0, evolutionRequest)
+            if (request.contains("DELETE CLASS")) {
+                val nodeName = retrieveName(request, "DELETE CLASS")
                 for (node in fragment.model!!.getNodes()) {
                     if (node.name.equals(nodeName, ignoreCase = true)) {
                         fragment.model.removeNode(node)
-                    } else {
-                        throw Exception("No class with such name!")
                     }
                 }
+                continue
             }
-            evolutionRequest.contains("open class", ignoreCase = true) -> {
-                val nodeName = retrieveName("open class", 0, evolutionRequest)
-                lateinit var selectedNode: Node
+            if (request.contains("OPEN CLASS")) {
+                val nodeName = retrieveName(request, "OPEN CLASS")
+                var foundClass = false
                 for (node in fragment.model!!.getNodes()) {
                     if (node.name.equals(nodeName, ignoreCase = true)) {
                         selectedNode = node
-                    } else {
-                        throw Exception("No class with such name!")
+                        foundClass = true
                     }
                 }
-                if (evolutionRequest.contains("delete attribute", ignoreCase = true)) {
-                    val attributeName = retrieveName("delete attribute", 10, evolutionRequest)
-                    for (attribute in selectedNode.getAttributes()) {
-                        if (attribute.name.equals(attributeName, ignoreCase = true)) {
-                            selectedNode.removeAttribute(attribute)
-                        } else {
-                            throw Exception("No attribute with such name!")
-                        }
-                    }
-                }
-                if (evolutionRequest.contains("add attribute", ignoreCase = true)) {
-                    val attributeName = retrieveName("add attribute", 10, evolutionRequest)
-                    val attributeUri = "modicio:$attributeName"
-                    selectedNode.addAttribute(Attribute(name = attributeName, uri = attributeUri, node = selectedNode))
-
-                }
-                if (evolutionRequest.contains("open attribute", ignoreCase = true)) {
-                    val attributeName = retrieveName("open attribute", 10, evolutionRequest)
-                    lateinit var selectedAttribute: Attribute
-                    for (attribute in selectedNode.getAttributes()) {
-                        if (attribute.name.equals(attributeName, ignoreCase = true)) {
-                            selectedAttribute = attribute
-                        } else {
-                            throw Exception("No attribute with such name!")
-                        }
-                    }
-                    if (evolutionRequest.contains("set type", ignoreCase = true)) {
-                        val typeName = retrieveName("set type", 25, evolutionRequest)
-                        when (typeName) {
-                            "WORD" -> selectedAttribute.dType = "Date"
-                            "PHRASE" -> selectedAttribute.dType = "String"
-                            "NUMBER" -> selectedAttribute.dType = "Integer"
-                            else -> selectedAttribute.dType = "Default"
-                        }
-                    }
+                if (!foundClass) {
+                    throw Exception("No class with such name!")
+                } else {
+                    continue
                 }
             }
-            else -> throw Exception("No match for request found.")
+            if (request.contains("DELETE ATTRIBUTE")) {
+                val attributeName = retrieveName(request, "DELETE ATTRIBUTE")
+                for (attribute in selectedNode.getAttributes()) {
+                    if (attribute.name.equals(attributeName, ignoreCase = true)) {
+                        selectedNode.removeAttribute(attribute)
+                    }
+                }
+                continue
+            }
+            if (request.contains("ADD ATTRIBUTE")) {
+                val attributeName = retrieveName(request, "ADD ATTRIBUTE")
+                val attributeUri = "modicio:$attributeName"
+                selectedNode.addAttribute(Attribute(name = attributeName, uri = attributeUri, node = selectedNode))
+                continue
+            }
+            if (request.contains("OPEN ATTRIBUTE")) {
+                val attributeName = retrieveName(request, "OPEN ATTRIBUTE")
+                var foundAttribute = false
+                for (attribute in selectedNode.getAttributes()) {
+                    if (attribute.name.equals(attributeName, ignoreCase = true)) {
+                        selectedAttribute = attribute
+                        foundAttribute = true
+                    }
+                }
+                if (!foundAttribute) {
+                    throw Exception("No attribute with such name!")
+                } else {
+                    continue
+                }
+            }
+            if (request.contains("SET TYPE")) {
+                val typeName = retrieveName(request, "SET TYPE")
+                when (typeName) {
+                    "WORD" -> selectedAttribute.dType = "Date"
+                    "PHRASE" -> selectedAttribute.dType = "String"
+                    "NUMBER" -> selectedAttribute.dType = "Integer"
+                    else -> selectedAttribute.dType = "Default"
+                }
+                continue
+            }
         }
         //4. apply the result changes to the fragment
 
 
         //5. store the fragment with a new runningID and current runningTime
+        fragment.globalID = UUID.randomUUID().toString()
         modelService.pushFullModel(fragment, variantID, fragment.variantName ?: "", true)
     }
 
-    private fun retrieveName(statement: String, startAt: Int, evolutionRequest: String): String {
-        val nameStartIndex =
-            evolutionRequest.indexOf(statement, startIndex = startAt, ignoreCase = true) + statement.length
-        val nameEndIndex = evolutionRequest.indexOf(",", startIndex = nameStartIndex) - 1
-        return evolutionRequest.slice(nameStartIndex..nameEndIndex)
+    private fun retrieveName(requestFull: String, requestCommand: String): String {
+        val nameStartIndex = requestCommand.length + 1
+        val nameEndIndex = requestFull.length - 1
+        return requestFull.slice(nameStartIndex..nameEndIndex)
     }
 
 
