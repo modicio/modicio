@@ -99,4 +99,18 @@ class Script(
         dataID = 0
     }
 
+    fun addResolver(map: Map<String, String>){
+        resolver = map.toString()
+    }
+
+    fun resolverMap(): Map<String, String>{
+        val newMap = resolver.drop(1).dropLast(1) // Remove curly braces
+            .split(", ")
+            .associate {
+                val (key, value) = it.split("=")
+                key to value
+            }
+        return newMap
+    }
+
 }

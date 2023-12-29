@@ -17,10 +17,10 @@
 package modic.io.service
 
 import modic.io.TestDataHelper
-import modic.io.logic.FunctionLibrary
 import modic.io.logic.InstanceService
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
+import modic.io.logic.PredefinedFunctions
 import modic.io.model.Script
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
@@ -143,30 +143,35 @@ class ModelServiceTests {
     }
 
     @Test
-    fun someScriptEdit(){
+    fun someScriptEdit() {
         // JUST SETUP
         val fragment1 = TestDataHelper.getSimpleFragmentOnlyModel()
         val storedFragment1 = fragmentRepository.save(fragment1)
         metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
 
         //done by the admin:
-
-        var referenceFragment = modelService.getReferenceFragment()
-
+        val referenceFragment = modelService.getReferenceFragment()
         val projectNode = referenceFragment!!.model!!.getNodes().find { n -> n.name == "Project" }
 
-        val myScript = Script(0, "", "example_function", "button", "name->param1")
-
+        // data to use in the predefined functions
+        val myScript = Script(0, "", "exampleFunction", "button", "{A=PA, B=PB, C=PC}")
         projectNode!!.addScript(myScript)
 
+        // todo make resolver only addable by function?
 
         // Later the user
-
         val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "My New Project", "")
 
-        if(myScript.name == "example_whatever"){
-            FunctionLibrary.example_whatever(..., myNewProjectInstance)
-        }
+        // dummy Data for the resolver
+        val map = mapOf<String, String>(
+            "A" to "PA",
+            "B" to "PB",
+            "C" to "PC",
+        )
+        myScript.addResolver(map)
+        // call function of script
+        PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!)
+
 
     }
 
