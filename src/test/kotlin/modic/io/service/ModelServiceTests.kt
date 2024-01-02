@@ -154,25 +154,17 @@ class ModelServiceTests {
         val projectNode = referenceFragment!!.model!!.getNodes().find { n -> n.name == "Project" }
 
         // data to use in the predefined functions
-        val myScript = Script(0, "", "exampleFunction", "button", "{A=PA, B=PB, C=PC}")
+        val myScript = Script(0, "", "addHelloToDescription", "button", "{description=Description}")
         projectNode!!.addScript(myScript)
-
-        // todo make resolver only addable by function?
 
         // Later the user
         val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "My New Project", "")
 
-        // dummy Data for the resolver
-        val map = mapOf<String, String>(
-            "A" to "PA",
-            "B" to "PB",
-            "C" to "PC",
-        )
-        myScript.addResolver(map)
+        // todo Add AttributeInstances to myNewProjectInstance using instanceService.setAttributes()
+
         // call function of script
-        PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!)
-
-
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!)
+        println(predefinedFunction)
     }
 
 }

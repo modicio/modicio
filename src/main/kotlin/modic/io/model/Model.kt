@@ -124,4 +124,10 @@ class Model(
         return nodes.flatMap { n -> n.getScripts() }.find { s -> s.uri == scriptURI }
     }
 
+    fun getAttributesWithValues(): Map<String, String>{
+        // todo FIX get AttributeInstance for the values. Concretization binds AttributeInstance to Attribute
+        // nodes.flatMap { it.getConcretizations() }
+        return nodes.flatMap { it.getAttributes().map { attr -> attr.name to attr.dType } }.toMap()
+    }
+
 }

@@ -73,6 +73,7 @@ class Script(
      * The resolver is defined by a URI specifying a resolvable interpretation algorithm.
      * For the default modicio DSL, a valid modicio URI pointing to the desired language version must be used.
      * A modicio URI is defined as a "xs:anyURI" base with the schema extension "modicio:.*"
+     * Example of use: {description=Description, title=Title} maps argument needed from the function to our arg Name
      */
     @field:Column
     @field:XmlAttribute(name = "resolver")
@@ -97,10 +98,6 @@ class Script(
 
     fun initializeZeroIDs(){
         dataID = 0
-    }
-
-    fun addResolver(map: Map<String, String>){
-        resolver = map.toString()
     }
 
     fun resolverMap(): Map<String, String>{
