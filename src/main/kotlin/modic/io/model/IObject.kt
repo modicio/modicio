@@ -119,6 +119,10 @@ class IObject(
 
     fun getAssociationInstances(): List<AssociationInstance> = associationInstances
 
+    fun addAttributeInstance(attributeInstance: AttributeInstance) {
+        if (!attributeInstances.contains(attributeInstance)) attributeInstances.add(attributeInstance)
+    }
+
     fun addAssociationInstance(associationInstance: AssociationInstance) {
         if (!associationInstances.contains(associationInstance)) associationInstances.add(associationInstance)
     }

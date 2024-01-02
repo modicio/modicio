@@ -101,8 +101,13 @@ class InstanceService(
 
 
     @Transactional
-    fun setAttributes(attributes: List<AttributeInstance>, fragmentDataID: Long){
-        //TODO
+    fun setAttributes(attributes: List<AttributeInstance>, fragmentDataID: Long) {
+        // TODO fix this if needed
+        val fragment = fragmentRepository.getFragmentByDataID(fragmentDataID)
+        val o = IObject(instanceOf = fragment?.model.toString())
+        for (attributeInstance in attributes) {
+            o.addAttributeInstance(attributeInstance)
+        }
     }
 
     @Transactional

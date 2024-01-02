@@ -21,6 +21,8 @@ import modic.io.logic.InstanceService
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
 import modic.io.logic.PredefinedFunctions
+import modic.io.model.AttributeInstance
+import modic.io.model.IObject
 import modic.io.model.Script
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
@@ -160,7 +162,12 @@ class ModelServiceTests {
         // Later the user
         val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "My New Project", "")
 
-        // todo Add AttributeInstances to myNewProjectInstance using instanceService.setAttributes()
+        // Add AttributeInstances
+        // todo maybe use instanceService.setAttributes()
+        val o = IObject(instanceOf = "modicio:demo.project")
+        val attributeInstance = AttributeInstance(attributeUri="modicio:demo.project.Description")
+        attributeInstance.anyValue = "Example of Description"
+        o.addAttributeInstance(attributeInstance)
 
         // call function of script
         val predefinedFunction = PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!)
