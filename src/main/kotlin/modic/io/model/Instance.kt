@@ -123,6 +123,10 @@ class Instance(
 
     fun getObjects(): List<IObject> = objects
 
+    fun getRootObject(): IObject {
+        return objects.find { obj -> obj.instanceOf == modelRoot }!!
+    }
+
     fun addObject(iObject: IObject) {
         if (!objects.contains(iObject)) objects.add(iObject)
     }
@@ -155,6 +159,10 @@ class Instance(
         allPublicElements.add(HeaderElement(0, rootNode!!.uri, uri))
         allPublicElements.addAll(getObjects().flatMap { obj -> obj.collectHeaderObjects() })
         return allPublicElements
+    }
+
+    fun accessor(): Accessor {
+        return Accessor(this, getRootObject())
     }
 
     companion object {

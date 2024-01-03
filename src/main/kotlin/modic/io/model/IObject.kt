@@ -95,7 +95,7 @@ class IObject(
      */
     @field:Transient
     @field:XmlTransient
-    private var node: Node? = null
+    var node: Node? = null
 ) {
 
     constructor() : this(null)
