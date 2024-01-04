@@ -20,6 +20,7 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
 import modic.io.model.*
+import modic.io.repository.AttributeInstanceRepository
 import modic.io.repository.FragmentRepository
 import modic.io.repository.InstanceRepository
 import org.springframework.stereotype.Service
@@ -28,7 +29,8 @@ import org.springframework.stereotype.Service
 class InstanceService(
     val modelService: ModelService,
     val fragmentRepository: FragmentRepository,
-    val instanceRepository: InstanceRepository
+    val instanceRepository: InstanceRepository,
+    val attributeInstanceRepository: AttributeInstanceRepository
 ) {
 
     @PersistenceContext
@@ -79,10 +81,12 @@ class InstanceService(
         //TODO
     }
 
+
     @Transactional
-    fun getInstanceFragment(fragmentDataID: Long, fullType: Boolean = true): Fragment? {
-        val result = fragmentRepository.getFragmentByDataID(fragmentDataID)
-        if(result?.instance == null)  return null
+    fun getInstanceFragment(fragmentDataID: Long, fullType: Boolean = true, autowire: Boolean = false): Fragment? {
+        val result = fragmentRepository.getFragmentByDataID(fragmentDataID) ?: return null
+        if(result.instance == null)  return null
+        if(autowire) result.autowire()
         return result
     }
 
@@ -101,8 +105,18 @@ class InstanceService(
 
 
     @Transactional
-    fun setAttributes(attributes: List<AttributeInstance>, fragmentDataID: Long) {
-        // TODO
+    fun setAttributes(attributes: List<AttributeInstance>){
+        for(attributeInstance in attributes){
+            val persistedAttribute = attributeInstanceRepository.getAttributeInstanceByDataID(attributeInstance.dataID!!)
+            if(persistedAttribute is AttributeInstance){
+                persistedAttribute.anyValue = attributeInstance.anyValue
+            }
+        }
+    }
+
+    @Transactional
+    fun setAttributes(vararg attributes: AttributeInstance){
+        setAttributes(attributes.toList())
     }
 
     @Transactional
