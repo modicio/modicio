@@ -1,12 +1,15 @@
 package modic.io.logic
 
+import modic.io.model.Attribute
 import modic.io.model.Fragment
+import modic.io.model.Node
 import modic.io.model.Script
 import kotlin.reflect.KFunction2
 
 
 object PredefinedFunctions {
 
+    // find a dynamic way if needed JAVA reflection.
     private val functionMap: Map<String, KFunction2<Map<String, Any>, Fragment, Any>> = mapOf(
         "exampleFunction" to this::exampleFunction,
         "addHelloToDescription" to this::addHelloToDescription
@@ -25,8 +28,19 @@ object PredefinedFunctions {
         return "Function not found"
     }
 
-    fun callFunction(scrip: Script, fragment: Fragment): Any {
+    private fun addAttributeFromFragment(fragment: Fragment) {
+        // todo get the node of the arguments, get the number to add and the uri of the node
+        // node2.addAttribute(Attribute(0, "modicio:demo.project.Description", "Description", "string"))
+
+    }
+
+    fun callFunction(scrip: Script, fragment: Fragment, node: Node): Any {
+
+
+        // <Attribute uri="modicio:demo.project.title" name="Ttle" type="phrase" />
+        // node.addAttribute(Attribute(0, node.uri + ".Result", "Result", "string"))
         val function = functionMap[scrip.name] ?: this::defaultFunction
+        // println(fragment.model?.getAttributesWithValues())
         val args = mergeDictionaries(fragment.model?.getAttributesWithValues(), scrip.resolverMap())
         return function(args, fragment)
     }

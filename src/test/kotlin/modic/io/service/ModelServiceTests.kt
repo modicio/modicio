@@ -159,18 +159,24 @@ class ModelServiceTests {
         val myScript = Script(0, "", "addHelloToDescription", "button", "{description=Description}")
         projectNode!!.addScript(myScript)
 
-        // Later the user
+        // Later the user (This adds empty Attribute Instances)
         val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "My New Project", "")
 
-        // Add AttributeInstances
-        // todo maybe use instanceService.setAttributes()
-        val o = IObject(instanceOf = "modicio:demo.project")
-        val attributeInstance = AttributeInstance(attributeUri="modicio:demo.project.Description")
-        attributeInstance.anyValue = "Example of Description"
-        o.addAttributeInstance(attributeInstance)
+        myNewProjectInstance?.instance?.getObjects()?.find { it.instanceOf == "modicio:demo.project" }?.let { obj ->
+            obj.getAttributeInstances().find { it.attributeUri == "modicio:demo.project.Description" }?.let { instance ->
+                instance.anyValue = "Example of Description"
+            }
+        }
+
+//        val value = myNewProjectInstance?.instance?.getObjects()?.find {
+//            it.instanceOf == "modicio:demo.project"
+//        }?.getAttributeInstances()?.find {
+//            it.attributeUri == "modicio:demo.project.Description"
+//        }?.anyValue
+
 
         // call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!)
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!, projectNode)
         println(predefinedFunction)
     }
 
