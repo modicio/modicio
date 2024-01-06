@@ -1,8 +1,6 @@
 package modic.io.logic
 
-import modic.io.model.Attribute
 import modic.io.model.Fragment
-import modic.io.model.Node
 import modic.io.model.Script
 import kotlin.reflect.KFunction2
 
@@ -28,32 +26,32 @@ object PredefinedFunctions {
         return "Function not found"
     }
 
-    private fun addAttributeFromFragment(fragment: Fragment) {
-        // todo get the node of the arguments, get the number to add and the uri of the node
-        // node2.addAttribute(Attribute(0, "modicio:demo.project.Description", "Description", "string"))
-
-    }
-
-    fun callFunction(scrip: Script, fragment: Fragment, node: Node): Any {
-
-
-        // <Attribute uri="modicio:demo.project.title" name="Ttle" type="phrase" />
-        // node.addAttribute(Attribute(0, node.uri + ".Result", "Result", "string"))
+    fun callFunction(scrip: Script, fragment: Fragment): Any? {
         val function = functionMap[scrip.name] ?: this::defaultFunction
-        // println(fragment.model?.getAttributesWithValues())
-        val args = mergeDictionaries(fragment.model?.getAttributesWithValues(), scrip.resolverMap())
-        return function(args, fragment)
+        val args = createArgs(fragment, scrip.resolverMap())
+        val output = function(args, fragment)
+        if (scrip.actionType == "button"){
+            return output
+        }
+        // todo logic of the cron job
+        return null
     }
 
-    private fun mergeDictionaries(dict1: Map<String, String>?, dict2: Map<String, String>): Map<String, Any> {
+    private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, Any> {
         /**
-         * Mapping to create the args for the functions.
+         * Creates arguments for a function by mapping the instance's anyValue based on the provided resolver.
+         * It uses the resolver's values as attribute names to fetch anyValue from the fragment's instance.
+         * The resulting map pairs function parameter names with their corresponding attributeInstanceValues.
          *
-         * @param dict1 Attributes names and its values.
-         * @param dict2 Attributes names to Function parameter names.
-         * @return A new dictionary with keys having Function parameter names and attribute values in the values.
+         * Example:
+         * Resolver: {description=Description}
+         * If the instance's "Description" attribute has a value of "hello", the output will be {description="hello"}.
+         *
+         * @param fragment Initialized fragment to get the attribute Instance value.
+         * @param resolver Mapping of argument name needed in function to argument name of Node.
+         * @return A new dictionary with keys having Function parameter names and attributeInstanceValues in the values.
          */
-        return dict2.mapNotNull { (key, value) -> dict1?.get(value)?.let { key to it } }.toMap()
+        return resolver.mapValues { fragment.instance?.accessor()?.attributeByName(it.value)!!.anyValue }
     }
 
 }

@@ -21,8 +21,7 @@ import modic.io.logic.InstanceService
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
 import modic.io.logic.PredefinedFunctions
-import modic.io.model.AttributeInstance
-import modic.io.model.IObject
+import modic.io.model.Accessor
 import modic.io.model.Script
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
@@ -148,35 +147,29 @@ class ModelServiceTests {
     fun someScriptEdit() {
         // JUST SETUP
         val fragment1 = TestDataHelper.getSimpleFragmentOnlyModel()
-        val storedFragment1 = fragmentRepository.save(fragment1)
+        fragmentRepository.save(fragment1)
         metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
 
         //done by the admin:
         val referenceFragment = modelService.getReferenceFragment()
-        val projectNode = referenceFragment!!.model!!.getNodes().find { n -> n.name == "Project" }
+        val projectNode = referenceFragment?.model?.findNode("modicio:demo.project")
 
         // data to use in the predefined functions
-        val myScript = Script(0, "", "addHelloToDescription", "button", "{description=Description}")
+        val myScript = Script(0, "modicio:demo.myScript", "addHelloToDescription", "button", "{description=Description}")
         projectNode!!.addScript(myScript)
 
         // Later the user (This adds empty Attribute Instances)
-        val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "My New Project", "")
+        val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")
 
-        myNewProjectInstance?.instance?.getObjects()?.find { it.instanceOf == "modicio:demo.project" }?.let { obj ->
-            obj.getAttributeInstances().find { it.attributeUri == "modicio:demo.project.Description" }?.let { instance ->
-                instance.anyValue = "Example of Description"
-            }
-        }
-
-//        val value = myNewProjectInstance?.instance?.getObjects()?.find {
-//            it.instanceOf == "modicio:demo.project"
-//        }?.getAttributeInstances()?.find {
-//            it.attributeUri == "modicio:demo.project.Description"
-//        }?.anyValue
-
+        //Set value to description
+        val projectInstance = instanceService.getInstanceFragment(myNewProjectInstance?.dataID!!, fullType = true, autowire = true)
+        val accessor: Accessor = projectInstance?.instance!!.accessor()
+        val descriptionAttribute = accessor.attributeByName("Description")!!
+        descriptionAttribute.anyValue = "My first project"
+        instanceService.setAttributes(descriptionAttribute)
 
         // call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, myNewProjectInstance!!, projectNode)
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance)
         println(predefinedFunction)
     }
 
