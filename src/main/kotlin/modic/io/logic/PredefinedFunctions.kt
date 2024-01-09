@@ -1,11 +1,14 @@
 package modic.io.logic
 
-import modic.io.model.Fragment
-import modic.io.model.Script
+import modic.io.controller.InstanceController
 import kotlin.reflect.KFunction2
+import modic.io.logic.InstanceService
+import modic.io.model.*
+import modic.io.repository.FragmentRepository
 
 
 object PredefinedFunctions {
+
 
     // find a dynamic way if needed JAVA reflection.
     private val functionMap: Map<String, KFunction2<Map<String, Any>, Fragment, Any>> = mapOf(
@@ -18,6 +21,7 @@ object PredefinedFunctions {
     }
 
     private fun addHelloToDescription(params: Map<String, Any>, fragment: Fragment): String {
+        // todo implement complicated functions ...
         val description = params["description"] as? String ?: return "" // Provide a default value
         return description + "a"
     }
@@ -26,14 +30,40 @@ object PredefinedFunctions {
         return "Function not found"
     }
 
-    fun callFunction(scrip: Script, fragment: Fragment): Any? {
+    fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any? {
         val function = functionMap[scrip.name] ?: this::defaultFunction
         val args = createArgs(fragment, scrip.resolverMap())
         val output = function(args, fragment)
         if (scrip.actionType == "button"){
             return output
         }
-        // todo logic of the cron job
+        val resultName = "Result" // todo return by output
+        if (node.doesAttributeExist(resultName)){
+            val attribute =  fragment.getAttributeInstance(resultName)
+            attribute.anyValue = "My first project"
+            instanceService.setAttributes(attribute)
+        }
+        else{
+            // todo changes not persistent
+
+            // settings
+            val uri = "modicio:demo.project.$resultName"
+
+            // create attribute and add it to node
+            val attribute = Attribute(0, uri, resultName, "string")
+            node.addAttribute(attribute)
+
+            // create instance and add it to object
+            val instance = AttributeInstance(0, uri, output.toString())
+            val o = fragment.instance?.getObjects()?.find { obj -> obj.instanceOf == node.uri }
+            o!!.addAttributeInstance(instance)
+
+            // save
+            fragment.instance!!.updateHeader()
+            // fragmentRepository.save(fragment)
+            instanceService.setAttributes(instance)
+
+        }
         return null
     }
 

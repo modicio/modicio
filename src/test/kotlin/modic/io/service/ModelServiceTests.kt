@@ -155,7 +155,7 @@ class ModelServiceTests {
         val projectNode = referenceFragment?.model?.findNode("modicio:demo.project")
 
         // data to use in the predefined functions
-        val myScript = Script(0, "modicio:demo.myScript", "addHelloToDescription", "button", "{description=Description}")
+        val myScript = Script(0, "modicio:demo.myScript", "addHelloToDescription", "cron", "{description=Description}")
         projectNode!!.addScript(myScript)
 
         // Later the user (This adds empty Attribute Instances)
@@ -163,14 +163,16 @@ class ModelServiceTests {
 
         //Set value to description
         val projectInstance = instanceService.getInstanceFragment(myNewProjectInstance?.dataID!!, fullType = true, autowire = true)
-        val accessor: Accessor = projectInstance?.instance!!.accessor()
-        val descriptionAttribute = accessor.attributeByName("Description")!!
+        val descriptionAttribute =  projectInstance!!.getAttributeInstance("Description")
         descriptionAttribute.anyValue = "My first project"
         instanceService.setAttributes(descriptionAttribute)
 
         // call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance)
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
         println(predefinedFunction)
+
+        val projectInstanceCopy = instanceService.getInstanceFragment(myNewProjectInstance.dataID!!, fullType = true, autowire = true)
+        println(projectInstanceCopy!!.getAttributeInstance("Result")) // fails here!
     }
 
 }

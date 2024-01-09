@@ -224,7 +224,12 @@ class Fragment(
         model?.initializeZeroIDs()
     }
 
-    fun autowire(){
+    fun getAttributeInstance(name: String): AttributeInstance {
+        return instance?.accessor()?.attributeByName(name)!!
+    }
+
+
+    fun autowire() {
         if (model != null) model.fragment = this
         if (trace != null) trace.fragment = this
         if (instance != null) instance!!.fragment = this
