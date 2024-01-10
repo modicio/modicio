@@ -90,6 +90,37 @@ class TestDataHelper {
             )
         }
 
+        fun getFragmentForPredefinedFunctions(): Fragment {
+            val variantTime = Timestamp.from(Instant.now())
+            val variantId = UUID.randomUUID().toString()
+            val runningId = UUID.randomUUID().toString()
+
+            val model = Model(0, HashSet<Node>())
+            val node1 = Node(
+                0, "Todo", "modicio:demo.task", false,
+                Annotation(0, Timestamp.from(Instant.now()), UUID.randomUUID().toString(), variantTime, variantId),
+                LinkedList<Attribute>(),
+                LinkedList<AssociationRelation>(),
+                HashSet<ParentRelation>(),
+                HashSet<Plugin>(),
+                HashSet<Concretization>(),
+                HashSet<Composition>(),
+                LinkedList<Script>()
+            )
+            node1.addAttribute(Attribute(0, "modicio:demo.task.Title", "Title", "string"))
+            node1.addAttribute(Attribute(0, "modicio:demo.task.StartTime", "StartTime", "datetime"))
+            node1.addAttribute(Attribute(0, "modicio:demo.task.EndTime", "EndTime", "datetime"))
+            node1.addAttribute(Attribute(0, "modicio:demo.task.Deadline", "Deadline", "datetime"))
+            node1.addAttribute(Attribute(0, "modicio:demo.task.IsDeadLineCrossed", "IsDeadLineCrossed", "boolean"))
+            model.addNode(node1)
+
+            return Fragment(
+                0, null,false, "main", variantTime, variantId, Timestamp.from(Instant.now()), runningId,
+                false, model, null, Trace(null, LinkedList<Delta>())
+            )
+        }
+
+
     }
 
 }

@@ -146,33 +146,31 @@ class ModelServiceTests {
     @Test
     fun someScriptEdit() {
         // JUST SETUP
-        val fragment1 = TestDataHelper.getSimpleFragmentOnlyModel()
+        val fragment1 = TestDataHelper.getFragmentForPredefinedFunctions()
         fragmentRepository.save(fragment1)
         metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
 
-        //done by the admin:
+        // Done by the admin
         val referenceFragment = modelService.getReferenceFragment()
-        val projectNode = referenceFragment?.model?.findNode("modicio:demo.project")
+        val projectNode = referenceFragment?.model?.findNode("modicio:demo.task")
 
-        // data to use in the predefined functions
-        val myScript = Script(0, "modicio:demo.myScript", "addHelloToDescription", "cron", "{description=Description}")
+        // Data to use in the predefined functions
+        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "cronJob", "{startTime=StartTime, endTime=EndTime, deadline=Deadline, IsDeadLineCrossed=IsDeadLineCrossed}")
         projectNode!!.addScript(myScript)
 
         // Later the user (This adds empty Attribute Instances)
         val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")
 
-        //Set value to description
+        // Set values
         val projectInstance = instanceService.getInstanceFragment(myNewProjectInstance?.dataID!!, fullType = true, autowire = true)
-        val descriptionAttribute =  projectInstance!!.getAttributeInstance("Description")
-        descriptionAttribute.anyValue = "My first project"
+        val descriptionAttribute =  projectInstance!!.getAttributeInstance("StartTime")
+        descriptionAttribute.anyValue = "123"
         instanceService.setAttributes(descriptionAttribute)
 
-        // call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        println(predefinedFunction)
-
-        val projectInstanceCopy = instanceService.getInstanceFragment(myNewProjectInstance.dataID!!, fullType = true, autowire = true)
-        println(projectInstanceCopy!!.getAttributeInstance("Result")) // fails here!
+        // Call function of script
+        PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
+        Assertions.assertEquals("false",
+            projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
     }
 
 }
