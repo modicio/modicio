@@ -20,38 +20,51 @@ object PredefinedFunctions {
     }
 
     // find a dynamic way if needed JAVA reflection.
-    private val functionMap: Map<String, KFunction1<Map<String, String>, HashMap<String, String>>> = mapOf(
+    private val functionMap: Map<String, KFunction1<Map<String, String>, String>> = mapOf(
         "checkDeadline" to this::checkDeadline,
+        "calculateRemainingHours" to this::calculateRemainingHours,
     )
 
-    private fun defaultFunction(params: Map<String, String>): HashMap<String, String> {
-        return hashMapOf("outputValue" to "Function not found", "outputAttribute" to "")
+    private fun defaultFunction(params: Map<String, String>): String {
+        return "Function not found"
     }
 
-    private fun checkDeadline(params: Map<String, String>): HashMap<String, String> {
+    private fun checkDeadline(params: Map<String, String>): String {
         val deadlineString = params["deadline"]
         val endTimeString = params["endTime"]
         val parsedDeadline = deadlineString?.let { safeParseTimestamp(it) }
         val parsedEndTime = endTimeString?.let { safeParseTimestamp(it) }
-        val isDeadlineCrossed = parsedEndTime?.after(parsedDeadline) == true
-        return hashMapOf("outputValue" to isDeadlineCrossed.toString(), "outputAttribute" to "IsDeadLineCrossed")
+        return (parsedEndTime?.after(parsedDeadline) == true).toString()
+    }
+
+    private fun calculateRemainingHours(params: Map<String, String>): String {
+        val hoursWorked = params["hoursWorked"]?.toIntOrNull()
+        val totalHours = params["totalHours"]?.toIntOrNull()
+        if (hoursWorked == null || totalHours == null) {
+            return "Invalid input"
+        }
+        if (hoursWorked > totalHours) {
+            return "0"
+        }
+        return (totalHours - hoursWorked).toString()
     }
 
     fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any {
         val function = functionMap[scrip.name] ?: this::defaultFunction
         val args = createArgs(fragment, scrip.resolverMap())
         val functionOutput = function(args)
-        val output = functionOutput["outputValue"] ?: return 400
         if (scrip.actionType == "button") {
-            return output
+            return functionOutput
         }
-        val resultName = functionOutput["outputAttribute"] ?: return 400
-        if (node.doesAttributeExist(resultName)) {
-            val attribute = fragment.getAttributeInstance(resultName)
-            attribute.anyValue = output
-            instanceService.setAttributes(attribute)
+        val outputAttributeName = scrip.anyValue
+        if (!node.doesAttributeExist(outputAttributeName)) {
+            return "outputAttributeName $outputAttributeName does not exist in the node."
         }
-        return 200
+        // Set attribute
+        val attribute = fragment.getAttributeInstance(outputAttributeName)
+        attribute.anyValue = functionOutput
+        instanceService.setAttributes(attribute)
+        return "Success"
     }
 
     private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, String> {

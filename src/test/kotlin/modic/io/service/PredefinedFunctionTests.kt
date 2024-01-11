@@ -33,22 +33,23 @@ class PredefinedFunctionTests {
     @Autowired
     lateinit var fragmentRepository: FragmentRepository
 
+    private lateinit var referenceFragment: Fragment
+
 
     @BeforeEach
     fun setupReferenceFragment(){
         val fragment1 = TestDataHelper.getFragmentForPredefinedFunctions()
         fragmentRepository.save(fragment1)
         metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
+        referenceFragment = modelService.getReferenceFragment()!!
     }
 
-
     @Test
-    fun callPredefinedFunctionsWithScript() {
+    fun checkDeadlineScript() {
         // Setup
-        val referenceFragment = modelService.getReferenceFragment()
-        val projectNode = referenceFragment?.model?.findNode("modicio:demo.task")
+        val projectNode = referenceFragment.model?.findNode("modicio:demo.task")
         val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "cronJob",
-            "{startTime=StartTime, endTime=EndTime, deadline=Deadline, IsDeadLineCrossed=IsDeadLineCrossed}")
+            "{startTime=StartTime, endTime=EndTime, deadline=Deadline}", "IsDeadLineCrossed")
         projectNode!!.addScript(myScript)
 
         val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
@@ -61,8 +62,30 @@ class PredefinedFunctionTests {
 
         // Call function of script
         val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        Assertions.assertEquals(200, predefinedFunction)
+        Assertions.assertEquals("Success", predefinedFunction)
         Assertions.assertEquals("true", projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
+    }
+
+
+    @Test
+    fun calculateHours() {
+        // Setup
+        val projectNode = referenceFragment.model?.findNode("modicio:demo.employee")
+        val myScript = Script(0, "modicio:demo.myScript", "calculateRemainingHours", "cronJob",
+            "{hoursWorked=HoursWorked, totalHours=TotalHours}", "RemainingHours")
+        projectNode!!.addScript(myScript)
+
+        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
+        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
+
+        // Set values
+        setAttributeValue(projectInstance!!, "HoursWorked", "100")
+        setAttributeValue(projectInstance, "TotalHours", "150")
+
+        // Call function of script
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
+        Assertions.assertEquals("Success", predefinedFunction)
+        Assertions.assertEquals("50", projectInstance.getAttributeInstance("RemainingHours").anyValue)
     }
 
     private fun setAttributeValue(fragment: Fragment, attributeName: String, value: String) {

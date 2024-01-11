@@ -112,7 +112,23 @@ class TestDataHelper {
             node1.addAttribute(Attribute(0, "modicio:demo.task.EndTime", "EndTime", "datetime"))
             node1.addAttribute(Attribute(0, "modicio:demo.task.Deadline", "Deadline", "datetime"))
             node1.addAttribute(Attribute(0, "modicio:demo.task.IsDeadLineCrossed", "IsDeadLineCrossed", "boolean"))
+
+            val node2 = Node(
+                0, "Project", "modicio:demo.employee", false,
+                Annotation(0, Timestamp.from(Instant.now()), UUID.randomUUID().toString(), variantTime, variantId),
+                LinkedList<Attribute>(),
+                LinkedList<AssociationRelation>(),
+                HashSet<ParentRelation>(),
+                HashSet<Plugin>(),
+                HashSet<Concretization>(),
+                HashSet<Composition>(),
+                LinkedList<Script>()
+            )
+            node2.addAttribute(Attribute(0, "modicio:demo.employee.HoursWorked", "HoursWorked", "integer"))
+            node2.addAttribute(Attribute(0, "modicio:demo.employee.TotalHours", "TotalHours", "integer"))
+            node2.addAttribute(Attribute(0, "modicio:demo.employee.RemainingHours", "RemainingHours", "integer"))
             model.addNode(node1)
+            model.addNode(node2)
 
             return Fragment(
                 0, null,false, "main", variantTime, variantId, Timestamp.from(Instant.now()), runningId,

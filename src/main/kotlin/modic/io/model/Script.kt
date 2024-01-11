@@ -81,6 +81,7 @@ class Script(
 
     /**
      * The script's content which is interpreted by the resolver.
+     * Example of use: To write where the value calculated from the PredefinedFunctions should be written.
      */
     @field:Column
     @field:XmlAttribute(name = "any_value")
