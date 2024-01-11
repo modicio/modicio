@@ -40,13 +40,11 @@ object PredefinedFunctions {
     private fun calculateRemainingHours(params: Map<String, String>): String {
         val hoursWorked = params["hoursWorked"]?.toIntOrNull()
         val totalHours = params["totalHours"]?.toIntOrNull()
-        if (hoursWorked == null || totalHours == null) {
-            return "Invalid input"
+        return when {
+            hoursWorked == null || totalHours == null -> "Invalid input"
+            hoursWorked > totalHours -> "0"
+            else -> (totalHours - hoursWorked).toString()
         }
-        if (hoursWorked > totalHours) {
-            return "0"
-        }
-        return (totalHours - hoursWorked).toString()
     }
 
     fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any {
