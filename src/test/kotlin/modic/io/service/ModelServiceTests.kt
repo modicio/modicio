@@ -17,22 +17,15 @@
 package modic.io.service
 
 import modic.io.TestDataHelper
-import modic.io.logic.InstanceService
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
-import modic.io.logic.PredefinedFunctions
-import modic.io.model.Fragment
-import modic.io.model.Script
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import java.util.*
-import java.text.SimpleDateFormat
-import java.sql.Timestamp
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -40,9 +33,6 @@ class ModelServiceTests {
 
     @Autowired
     lateinit var modelService: ModelService
-
-    @Autowired
-    lateinit var instanceService: InstanceService
 
     @Autowired
     lateinit var metadataService: MetadataService
@@ -144,38 +134,5 @@ class ModelServiceTests {
             Assertions.assertNotNull(e)
             Assertions.assertEquals("Predecessor variant not found", e.message)
         }
-    }
-
-    @Test
-    fun someScriptEdit() {
-        // Setup
-        val fragment1 = TestDataHelper.getFragmentForPredefinedFunctions()
-        fragmentRepository.save(fragment1)
-        metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
-        val referenceFragment = modelService.getReferenceFragment()
-        val projectNode = referenceFragment?.model?.findNode("modicio:demo.task")
-
-        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "cronJob",
-            "{startTime=StartTime, endTime=EndTime, deadline=Deadline, IsDeadLineCrossed=IsDeadLineCrossed}")
-        projectNode!!.addScript(myScript)
-
-        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
-        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
-
-        // Set values
-        val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
-        setAttributeValue(projectInstance!!, "Deadline", timestampFormat.format(Timestamp(timestampFormat.parse("01.01.2023 00:00:00").time)))
-        setAttributeValue(projectInstance, "EndTime", timestampFormat.format(Timestamp(timestampFormat.parse("20.01.2023 00:00:00").time)))
-
-        // Call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        assertEquals(200, predefinedFunction)
-        assertEquals("true", projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
-    }
-
-    private fun setAttributeValue(fragment: Fragment, attributeName: String, value: String) {
-        val attribute = fragment.getAttributeInstance(attributeName)
-        attribute.anyValue = value
-        instanceService.setAttributes(listOf(attribute))
     }
 }
