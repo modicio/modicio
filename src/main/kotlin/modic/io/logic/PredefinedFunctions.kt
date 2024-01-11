@@ -1,50 +1,59 @@
 package modic.io.logic
 
-import kotlin.reflect.KFunction2
+import kotlin.reflect.KFunction1
 import modic.io.model.*
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
 
 
 object PredefinedFunctions {
 
+    private val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+
+
+    private fun safeParseTimestamp(timestampStr: String): Timestamp? {
+        return try {
+            Timestamp(timestampFormat.parse(timestampStr).time)
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     // find a dynamic way if needed JAVA reflection.
-    private val functionMap: Map<String, KFunction2<Map<String, Any>, Fragment, Any>> = mapOf(
-        "exampleFunction" to this::exampleFunction,
-        "checkDeadline" to this::checkDeadline
+    private val functionMap: Map<String, KFunction1<Map<String, String>, HashMap<String, String>>> = mapOf(
+        "checkDeadline" to this::checkDeadline,
     )
 
-    private fun exampleFunction(params: Map<String, Any>, fragment: Fragment): String {
-        return "Hello"
+    private fun defaultFunction(params: Map<String, String>): HashMap<String, String> {
+        return hashMapOf("output" to "Function not found", "key" to "")
     }
 
-    private fun checkDeadline(params: Map<String, Any>, fragment: Fragment): Boolean {
-        // todo implement complicated functions ...
-        val startTime = params["startTime"]
-        return false
-    }
-
-    private fun defaultFunction(params: Map<String, Any>, fragment: Fragment): String {
-        return "Function not found"
+    private fun checkDeadline(params: Map<String, String>): HashMap<String, String> {
+        val deadlineString = params["deadline"]
+        val endTimeString = params["endTime"]
+        val parsedDeadline = deadlineString?.let { safeParseTimestamp(it) }
+        val parsedEndTime = endTimeString?.let { safeParseTimestamp(it) }
+        val isDeadlineCrossed = parsedEndTime?.after(parsedDeadline) == true
+        return hashMapOf("output" to isDeadlineCrossed.toString(), "key" to "IsDeadLineCrossed")
     }
 
     fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any? {
         val function = functionMap[scrip.name] ?: this::defaultFunction
         val args = createArgs(fragment, scrip.resolverMap())
-        val output = function(args, fragment)
-        if (scrip.actionType == "button"){
-            return output
+        val output = function(args)
+        if (scrip.actionType == "button") {
+            return output["output"]
         }
-        // only write to attributes that exist ASSUME THAT
-        val resultName = "IsDeadLineCrossed" // todo return by output
-        if (node.doesAttributeExist(resultName)){
-            val attribute =  fragment.getAttributeInstance(resultName)
-            attribute.anyValue = output.toString()
+        val resultName = output["key"] as? String ?: "Default String"
+        if (node.doesAttributeExist(resultName)) {
+            val attribute = fragment.getAttributeInstance(resultName)
+            attribute.anyValue = output["output"] ?: ""
             instanceService.setAttributes(attribute)
         }
         return null
     }
 
-    private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, Any> {
+    private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, String> {
         /**
          * Creates arguments for a function by mapping the instance's anyValue based on the provided resolver.
          * It uses the resolver's values as attribute names to fetch anyValue from the fragment's instance.

@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import java.util.*
+import java.text.SimpleDateFormat
+import java.sql.Timestamp
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -162,14 +164,19 @@ class ModelServiceTests {
         val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")
 
         // Set values
+        val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+        val deadline = Timestamp(timestampFormat.parse("01.01.2023 00:00:00").time)
+        val endTime = Timestamp(timestampFormat.parse("20.01.2023 00:00:00").time)
         val projectInstance = instanceService.getInstanceFragment(myNewProjectInstance?.dataID!!, fullType = true, autowire = true)
-        val descriptionAttribute =  projectInstance!!.getAttributeInstance("StartTime")
-        descriptionAttribute.anyValue = "123"
-        instanceService.setAttributes(descriptionAttribute)
+        val deadlineAttribute =  projectInstance!!.getAttributeInstance("Deadline")
+        deadlineAttribute.anyValue = timestampFormat.format(deadline)
+        val endTimeAttribute =  projectInstance.getAttributeInstance("EndTime")
+        endTimeAttribute.anyValue = timestampFormat.format(endTime)
+        instanceService.setAttributes(listOf(deadlineAttribute, endTimeAttribute))
 
         // Call function of script
         PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        Assertions.assertEquals("false",
+        Assertions.assertEquals("true",
             projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
     }
 
