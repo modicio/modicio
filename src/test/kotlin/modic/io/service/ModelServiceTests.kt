@@ -21,10 +21,11 @@ import modic.io.logic.InstanceService
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
 import modic.io.logic.PredefinedFunctions
-import modic.io.model.Accessor
+import modic.io.model.Fragment
 import modic.io.model.Script
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -147,37 +148,34 @@ class ModelServiceTests {
 
     @Test
     fun someScriptEdit() {
-        // JUST SETUP
+        // Setup
         val fragment1 = TestDataHelper.getFragmentForPredefinedFunctions()
         fragmentRepository.save(fragment1)
         metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
-
-        // Done by the admin
         val referenceFragment = modelService.getReferenceFragment()
         val projectNode = referenceFragment?.model?.findNode("modicio:demo.task")
 
-        // Data to use in the predefined functions
-        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "cronJob", "{startTime=StartTime, endTime=EndTime, deadline=Deadline, IsDeadLineCrossed=IsDeadLineCrossed}")
+        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "cronJob",
+            "{startTime=StartTime, endTime=EndTime, deadline=Deadline, IsDeadLineCrossed=IsDeadLineCrossed}")
         projectNode!!.addScript(myScript)
 
-        // Later the user (This adds empty Attribute Instances)
-        val myNewProjectInstance = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")
+        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
+        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
 
         // Set values
         val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
-        val deadline = Timestamp(timestampFormat.parse("01.01.2023 00:00:00").time)
-        val endTime = Timestamp(timestampFormat.parse("20.01.2023 00:00:00").time)
-        val projectInstance = instanceService.getInstanceFragment(myNewProjectInstance?.dataID!!, fullType = true, autowire = true)
-        val deadlineAttribute =  projectInstance!!.getAttributeInstance("Deadline")
-        deadlineAttribute.anyValue = timestampFormat.format(deadline)
-        val endTimeAttribute =  projectInstance.getAttributeInstance("EndTime")
-        endTimeAttribute.anyValue = timestampFormat.format(endTime)
-        instanceService.setAttributes(listOf(deadlineAttribute, endTimeAttribute))
+        setAttributeValue(projectInstance!!, "Deadline", timestampFormat.format(Timestamp(timestampFormat.parse("01.01.2023 00:00:00").time)))
+        setAttributeValue(projectInstance, "EndTime", timestampFormat.format(Timestamp(timestampFormat.parse("20.01.2023 00:00:00").time)))
 
         // Call function of script
         val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        Assertions.assertEquals(200,  predefinedFunction)
-        Assertions.assertEquals("true",
-            projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
+        assertEquals(200, predefinedFunction)
+        assertEquals("true", projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
+    }
+
+    private fun setAttributeValue(fragment: Fragment, attributeName: String, value: String) {
+        val attribute = fragment.getAttributeInstance(attributeName)
+        attribute.anyValue = value
+        instanceService.setAttributes(listOf(attribute))
     }
 }
