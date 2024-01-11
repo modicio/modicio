@@ -175,9 +175,9 @@ class ModelServiceTests {
         instanceService.setAttributes(listOf(deadlineAttribute, endTimeAttribute))
 
         // Call function of script
-        PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
+        Assertions.assertEquals(200,  predefinedFunction)
         Assertions.assertEquals("true",
             projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
     }
-
 }

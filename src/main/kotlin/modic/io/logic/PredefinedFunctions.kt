@@ -25,7 +25,7 @@ object PredefinedFunctions {
     )
 
     private fun defaultFunction(params: Map<String, String>): HashMap<String, String> {
-        return hashMapOf("output" to "Function not found", "key" to "")
+        return hashMapOf("outputValue" to "Function not found", "outputAttribute" to "")
     }
 
     private fun checkDeadline(params: Map<String, String>): HashMap<String, String> {
@@ -34,23 +34,24 @@ object PredefinedFunctions {
         val parsedDeadline = deadlineString?.let { safeParseTimestamp(it) }
         val parsedEndTime = endTimeString?.let { safeParseTimestamp(it) }
         val isDeadlineCrossed = parsedEndTime?.after(parsedDeadline) == true
-        return hashMapOf("output" to isDeadlineCrossed.toString(), "key" to "IsDeadLineCrossed")
+        return hashMapOf("outputValue" to isDeadlineCrossed.toString(), "outputAttribute" to "IsDeadLineCrossed")
     }
 
-    fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any? {
+    fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any {
         val function = functionMap[scrip.name] ?: this::defaultFunction
         val args = createArgs(fragment, scrip.resolverMap())
-        val output = function(args)
+        val functionOutput = function(args)
+        val output = functionOutput["outputValue"] ?: return 400
         if (scrip.actionType == "button") {
-            return output["output"]
+            return output
         }
-        val resultName = output["key"] as? String ?: "Default String"
+        val resultName = functionOutput["outputAttribute"] ?: return 400
         if (node.doesAttributeExist(resultName)) {
             val attribute = fragment.getAttributeInstance(resultName)
-            attribute.anyValue = output["output"] ?: ""
+            attribute.anyValue = output
             instanceService.setAttributes(attribute)
         }
-        return null
+        return 200
     }
 
     private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, String> {
