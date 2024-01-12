@@ -4,13 +4,26 @@ import modic.io.model.*
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import kotlin.reflect.KFunction1
-
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.jvm.jvmErasure
 
 object PredefinedFunctions {
 
     private val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
     private val eventListeners = arrayListOf<String>() // todo call these functions with a Listener.
 
+    // match "name of function" to actual function of all the functions using Java Reflection
+    private val functionMap: Map<String, KFunction1<Map<String, String>, String>> by lazy {
+        this::class.memberFunctions
+            .filter { it.parameters.size == 2 }
+            .filter { it.parameters[1].type.jvmErasure == Map::class }
+            .filter { it.returnType.jvmErasure == String::class }
+            .mapNotNull { function ->
+                val castedFunction = function as? KFunction1<Map<String, String>, String>
+                castedFunction?.let { function.name to it }
+            }
+            .toMap()
+    }
 
     private fun safeParseTimestamp(timestampStr: String): Timestamp? {
         return try {
@@ -20,18 +33,11 @@ object PredefinedFunctions {
         }
     }
 
-    // find a dynamic way if needed JAVA reflection.
-    private val functionMap: Map<String, KFunction1<Map<String, String>, String>> = mapOf(
-        "checkDeadline" to this::checkDeadline,
-        "calculateRemainingHours" to this::calculateRemainingHours,
-        "resetInt" to this::resetInt
-    )
-
     private fun defaultFunction(params: Map<String, String>): String {
         return "Function not found"
     }
 
-    private fun checkDeadline(params: Map<String, String>): String {
+    internal fun checkDeadline(params: Map<String, String>): String {
         val deadlineString = params["deadline"]
         val endTimeString = params["endTime"]
         val parsedDeadline = deadlineString?.let { safeParseTimestamp(it) }
@@ -39,11 +45,11 @@ object PredefinedFunctions {
         return (parsedEndTime?.after(parsedDeadline) == true).toString()
     }
 
-    private fun resetInt(params: Map<String, String>): String {
+    internal fun resetInt(params: Map<String, String>): String {
         return "0"
     }
 
-    private fun calculateRemainingHours(params: Map<String, String>): String {
+    internal fun calculateRemainingHours(params: Map<String, String>): String {
         val hoursWorked = params["hoursWorked"]?.toIntOrNull()
         val totalHours = params["totalHours"]?.toIntOrNull()
         return when {
@@ -56,7 +62,7 @@ object PredefinedFunctions {
     fun callFunction(script: Script, fragment: Fragment, instanceService: InstanceService): Unit {
         val function = functionMap[script.name] ?: this::defaultFunction
         val args = createArgs(fragment, script.resolverMap())
-        val functionOutput = function(args)
+        val functionOutput = function.call(this, args)
         if (script.actionType == "RealTimeUpdater") {
             eventListeners.add(script.name)
         }
