@@ -194,10 +194,6 @@ class Node(
 
     fun getAttributes(): List<Attribute> = attributes
 
-    fun doesAttributeExist(name: String): Boolean {
-        return this.getAttributes().any { attribute -> attribute.name == name }
-    }
-
     fun addAttribute(attribute: Attribute) {
         attribute.node = this
         attributes.add(attribute)

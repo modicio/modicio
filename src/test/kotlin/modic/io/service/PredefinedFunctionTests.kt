@@ -1,121 +1,107 @@
 package modic.io.service
 
 import modic.io.TestDataHelper
-import modic.io.logic.InstanceService
-import modic.io.logic.MetadataService
-import modic.io.logic.ModelService
-import modic.io.logic.PredefinedFunctions
-import modic.io.model.Fragment
-import modic.io.model.Script
+import modic.io.logic.*
+import modic.io.model.*
 import modic.io.repository.FragmentRepository
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
-import java.sql.Timestamp
 import java.text.SimpleDateFormat
+import java.sql.Timestamp
 
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class PredefinedFunctionTests {
 
     @Autowired
-    lateinit var modelService: ModelService
-
+    private lateinit var modelService: ModelService
     @Autowired
-    lateinit var instanceService: InstanceService
-
+    private lateinit var instanceService: InstanceService
     @Autowired
-    lateinit var metadataService: MetadataService
-
+    private lateinit var metadataService: MetadataService
     @Autowired
-    lateinit var fragmentRepository: FragmentRepository
+    private lateinit var fragmentRepository: FragmentRepository
 
     private lateinit var referenceFragment: Fragment
 
-
     @BeforeEach
-    fun setupReferenceFragment(){
-        val fragment1 = TestDataHelper.getFragmentForPredefinedFunctions()
-        fragmentRepository.save(fragment1)
-        metadataService.setReferenceFragment(fragment1.variantID, fragment1.runningID)
-        referenceFragment = modelService.getReferenceFragment()!!
+    fun setupReferenceFragment() {
+        referenceFragment = TestDataHelper.getFragmentForPredefinedFunctions().also {
+            fragmentRepository.save(it)
+            metadataService.setReferenceFragment(it.variantID, it.runningID)
+            modelService.getReferenceFragment()!!
+        }
     }
 
     @Test
     fun checkDeadlineScript() {
-        // Setup
-        val projectNode = referenceFragment.model?.findNode("modicio:demo.task")
-        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "RealTimeUpdater",
-            "{startTime=StartTime, endTime=EndTime, deadline=Deadline}", "IsDeadLineCrossed")
-        projectNode!!.addScript(myScript)
-
-        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
-        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
-
-        // Set values
-        val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
-        setAttributeValue(projectInstance!!, "Deadline", timestampFormat.format(Timestamp(timestampFormat.parse("01.01.2023 00:00:00").time)))
-        setAttributeValue(projectInstance, "EndTime", timestampFormat.format(Timestamp(timestampFormat.parse("20.01.2023 00:00:00").time)))
-
-        // Call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        Assertions.assertEquals("Success", predefinedFunction)
-        Assertions.assertEquals("true", projectInstance.getAttributeInstance("IsDeadLineCrossed").anyValue)
+        testScript(
+            nodeUri = "modicio:demo.task",
+            script = Script(0, "modicio:demo.myScript", "checkDeadline", "RealTimeUpdater",
+                "{startTime=StartTime, endTime=EndTime, deadline=Deadline}", "IsDeadLineCrossed"),
+            attributeSetter = { projectInstance ->
+                val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+                setAttributeValue(projectInstance, "Deadline", timestampFormat.format(Timestamp(timestampFormat.parse("01.01.2023 00:00:00").time)))
+                setAttributeValue(projectInstance, "EndTime", timestampFormat.format(Timestamp(timestampFormat.parse("20.01.2023 00:00:00").time)))
+            },
+            expectedAttributeValue = "true"
+        )
     }
-
 
     @Test
     fun calculateHours() {
-        // Setup
-        val projectNode = referenceFragment.model?.findNode("modicio:demo.employee")
-        val myScript = Script(0, "modicio:demo.myScript", "calculateRemainingHours", "RealTimeUpdater",
-            "{hoursWorked=HoursWorked, totalHours=TotalHours}", "RemainingHours")
-        projectNode!!.addScript(myScript)
-
-        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
-        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
-
-        // Set values
-        setAttributeValue(projectInstance!!, "HoursWorked", "100")
-        setAttributeValue(projectInstance, "TotalHours", "150")
-
-        // Call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        Assertions.assertEquals("Success", predefinedFunction)
-        Assertions.assertEquals("50", projectInstance.getAttributeInstance("RemainingHours").anyValue)
+        testScript(
+            nodeUri = "modicio:demo.employee",
+            script = Script(0, "modicio:demo.myScript", "calculateRemainingHours", "RealTimeUpdater",
+                "{hoursWorked=HoursWorked, totalHours=TotalHours}", "RemainingHours"),
+            attributeSetter = { projectInstance ->
+                setAttributeValue(projectInstance, "HoursWorked", "100")
+                setAttributeValue(projectInstance, "TotalHours", "150")
+            },
+            expectedAttributeValue = "50"
+        )
     }
-
-
 
     @Test
     fun resetInt() {
-        // Setup
-        val projectNode = referenceFragment.model?.findNode("modicio:demo.employee")
-        val myScript = Script(0, "modicio:demo.myScript", "resetInt", "SingleAssignment",
-            "{}", "HoursWorked")
-        projectNode!!.addScript(myScript)
-
-        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
-        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
-
-        // Set values
-        setAttributeValue(projectInstance!!, "HoursWorked", "100")
-
-        // Call function of script
-        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
-        Assertions.assertEquals("Success", predefinedFunction)
-        Assertions.assertEquals("0", projectInstance.getAttributeInstance("HoursWorked").anyValue)
+        // reset HoursWorked
+        testScript(
+            nodeUri = "modicio:demo.employee",
+            script = Script(0, "modicio:demo.myScript", "resetInt", "SingleAssignment",
+                "{}", "HoursWorked"),
+            attributeSetter = { projectInstance ->
+                setAttributeValue(projectInstance, "HoursWorked", "100")
+            },
+            expectedAttributeValue = "0"
+        )
     }
 
+    private fun testScript(
+        nodeUri: String,
+        script: Script,
+        attributeSetter: (Fragment) -> Unit,
+        expectedAttributeValue: String
+    ) {
+        val projectNode = referenceFragment.model?.findNode(nodeUri).apply {
+            this?.addScript(script)
+        }
 
+        val projectInstanceUri = instanceService.createInstance(projectNode!!.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
+        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
 
+        attributeSetter(projectInstance!!)
+
+        PredefinedFunctions.callFunction(script, projectInstance, instanceService)
+        // script.anyValue is where the output will be written
+        Assertions.assertEquals(expectedAttributeValue, projectInstance.getAttributeInstance(script.anyValue).anyValue)
+    }
 
     private fun setAttributeValue(fragment: Fragment, attributeName: String, value: String) {
-        val attribute = fragment.getAttributeInstance(attributeName)
-        attribute.anyValue = value
-        instanceService.setAttributes(listOf(attribute))
+        fragment.getAttributeInstance(attributeName).apply {
+            anyValue = value
+            instanceService.setAttributes(listOf(this))
+        }
     }
 }

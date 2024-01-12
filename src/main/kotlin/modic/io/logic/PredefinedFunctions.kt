@@ -53,7 +53,7 @@ object PredefinedFunctions {
         }
     }
 
-    fun callFunction(scrip: Script, fragment: Fragment, node: Node, instanceService: InstanceService): Any {
+    fun callFunction(scrip: Script, fragment: Fragment, instanceService: InstanceService): Unit{
         val function = functionMap[scrip.name] ?: this::defaultFunction
         val args = createArgs(fragment, scrip.resolverMap())
         val functionOutput = function(args)
@@ -61,14 +61,11 @@ object PredefinedFunctions {
             eventListeners.add(scrip.name)
         }
         val outputAttributeName = scrip.anyValue
-        if (!node.doesAttributeExist(outputAttributeName)) {
-            return "outputAttributeName $outputAttributeName does not exist in the node."
-        }
+
         // Set attribute
         val attribute = fragment.getAttributeInstance(outputAttributeName)
         attribute.anyValue = functionOutput
         instanceService.setAttributes(attribute)
-        return "Success"
     }
 
     private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, String> {
