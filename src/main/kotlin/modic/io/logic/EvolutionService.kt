@@ -64,12 +64,18 @@ class EvolutionService(
             }
             if (request.contains("DELETE CLASS")) {
                 val nodeName = retrieveName(request, "DELETE CLASS")
+                var foundClass = false
                 for (node in fragment.model!!.getNodes()) {
                     if (node.name.equals(nodeName, ignoreCase = true)) {
+                        foundClass = true
                         fragment.model.removeNode(node)
                     }
                 }
-                continue
+                if (!foundClass) {
+                    throw Exception("Class does not exist!")
+                } else {
+                    continue
+                }
             }
             if (request.contains("OPEN CLASS")) {
                 val nodeName = retrieveName(request, "OPEN CLASS")
@@ -81,19 +87,25 @@ class EvolutionService(
                     }
                 }
                 if (!foundClass) {
-                    throw Exception("No class with such name!")
+                    throw Exception("Class does not exist!")
                 } else {
                     continue
                 }
             }
             if (request.contains("DELETE ATTRIBUTE")) {
                 val attributeName = retrieveName(request, "DELETE ATTRIBUTE")
+                var foundAttribute = false
                 for (attribute in selectedNode.getAttributes()) {
                     if (attribute.name.equals(attributeName, ignoreCase = true)) {
                         selectedNode.removeAttribute(attribute)
+                        foundAttribute = true
                     }
                 }
-                continue
+                if (!foundAttribute) {
+                    throw Exception("Attribute does not exist!")
+                } else {
+                    continue
+                }
             }
             if (request.contains("ADD ATTRIBUTE")) {
                 val attributeName = retrieveName(request, "ADD ATTRIBUTE")
@@ -111,7 +123,7 @@ class EvolutionService(
                     }
                 }
                 if (!foundAttribute) {
-                    throw Exception("No attribute with such name!")
+                    throw Exception("Attribute does not exist!")
                 } else {
                     continue
                 }
@@ -127,10 +139,9 @@ class EvolutionService(
                 continue
             }
         }
-        //4. apply the result changes to the fragment
 
 
-        //5. store the fragment with a new runningID and current runningTime
+        //4. store the fragment with a new runningID and current runningTime
         fragment.globalID = UUID.randomUUID().toString()
         modelService.pushFullModel(fragment, variantID, fragment.variantName ?: "", true)
     }
