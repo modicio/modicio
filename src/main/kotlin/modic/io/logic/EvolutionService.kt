@@ -19,8 +19,7 @@ package modic.io.logic
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import jakarta.transaction.Transactional
-import modic.io.model.Attribute
-import modic.io.model.Node
+import modic.io.model.*
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 import java.util.*
@@ -46,6 +45,8 @@ class EvolutionService(
         val evolutionList = evolutionRequest.split(",", ignoreCase = true)
         lateinit var selectedNode: Node
         lateinit var selectedAttribute: Attribute
+        lateinit var selectedAssociation: AssociationRelation
+        lateinit var selectedComposition: Composition
 
         for (request in evolutionList) {
             if (request.contains("CREATE CLASS")) {
@@ -138,6 +139,44 @@ class EvolutionService(
                 }
                 continue
             }
+            if (request.contains("ADD ASSOCIATION")) {
+                val associationName = retrieveNameWithTarget(request, "ADD ASSOCIATION")
+                val targetClassName = retrieveName(request, "ADD ASSOCIATION $associationName TARGET")
+                val associationUri = "modicio:$associationName"
+                selectedNode.addAssociationRelation(AssociationRelation(uri = associationUri, name = associationName, target = targetClassName,
+                                                                        cInterface = Interface(), node = selectedNode))
+                continue
+            }
+            if (request.contains("DELETE ASSOCIATION")) {
+                val associationName = retrieveName(request, "DELETE ASSOCIATION");
+                var foundAssociation = false
+                for (association in selectedNode.getAssociationRelations()) {
+                    if (association.name.equals(associationName, ignoreCase = true)) {
+                        selectedNode.removeAssociationRelation(association)
+                        foundAssociation = true
+                    }
+                }
+                if (!foundAssociation) {
+                    throw Exception("Association does not exist!")
+                } else {
+                    continue
+                }
+            }
+            if (request.contains("OPEN ASSOCIATION")) {
+                val associationName = retrieveName(request, "OPEN ASSOCIATION");
+                var foundAssociation = false
+                for (association in selectedNode.getAssociationRelations()) {
+                    if (association.name.equals(associationName, ignoreCase = true)) {
+                        selectedAssociation = association
+                        foundAssociation = true
+                    }
+                }
+                if (!foundAssociation) {
+                    throw Exception("Association does not exist!")
+                } else {
+                    continue
+                }
+            }
         }
 
 
@@ -149,6 +188,12 @@ class EvolutionService(
     private fun retrieveName(requestFull: String, requestCommand: String): String {
         val nameStartIndex = requestCommand.length + 1
         val nameEndIndex = requestFull.length - 1
+        return requestFull.slice(nameStartIndex..nameEndIndex)
+    }
+
+    private fun retrieveNameWithTarget(requestFull: String, requestCommand: String): String {
+        val nameStartIndex = requestCommand.length + 1
+        val nameEndIndex = requestFull.indexOf("TARGET") - 1
         return requestFull.slice(nameStartIndex..nameEndIndex)
     }
 
