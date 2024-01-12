@@ -53,14 +53,14 @@ object PredefinedFunctions {
         }
     }
 
-    fun callFunction(scrip: Script, fragment: Fragment, instanceService: InstanceService): Unit{
-        val function = functionMap[scrip.name] ?: this::defaultFunction
-        val args = createArgs(fragment, scrip.resolverMap())
+    fun callFunction(script: Script, fragment: Fragment, instanceService: InstanceService): Unit {
+        val function = functionMap[script.name] ?: this::defaultFunction
+        val args = createArgs(fragment, script.resolverMap())
         val functionOutput = function(args)
-        if (scrip.actionType == "RealTimeUpdater"){
-            eventListeners.add(scrip.name)
+        if (script.actionType == "RealTimeUpdater") {
+            eventListeners.add(script.name)
         }
-        val outputAttributeName = scrip.anyValue
+        val outputAttributeName = script.anyValue
 
         // Set attribute
         val attribute = fragment.getAttributeInstance(outputAttributeName)
