@@ -48,7 +48,7 @@ class PredefinedFunctionTests {
     fun checkDeadlineScript() {
         // Setup
         val projectNode = referenceFragment.model?.findNode("modicio:demo.task")
-        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "cronJob",
+        val myScript = Script(0, "modicio:demo.myScript", "checkDeadline", "RealTimeUpdater",
             "{startTime=StartTime, endTime=EndTime, deadline=Deadline}", "IsDeadLineCrossed")
         projectNode!!.addScript(myScript)
 
@@ -71,7 +71,7 @@ class PredefinedFunctionTests {
     fun calculateHours() {
         // Setup
         val projectNode = referenceFragment.model?.findNode("modicio:demo.employee")
-        val myScript = Script(0, "modicio:demo.myScript", "calculateRemainingHours", "cronJob",
+        val myScript = Script(0, "modicio:demo.myScript", "calculateRemainingHours", "RealTimeUpdater",
             "{hoursWorked=HoursWorked, totalHours=TotalHours}", "RemainingHours")
         projectNode!!.addScript(myScript)
 
@@ -87,6 +87,31 @@ class PredefinedFunctionTests {
         Assertions.assertEquals("Success", predefinedFunction)
         Assertions.assertEquals("50", projectInstance.getAttributeInstance("RemainingHours").anyValue)
     }
+
+
+
+    @Test
+    fun resetInt() {
+        // Setup
+        val projectNode = referenceFragment.model?.findNode("modicio:demo.employee")
+        val myScript = Script(0, "modicio:demo.myScript", "resetInt", "SingleAssignment",
+            "{}", "HoursWorked")
+        projectNode!!.addScript(myScript)
+
+        val projectInstanceUri = instanceService.createInstance(projectNode.uri, "myNewProject", "modicio:instance.myNewProject")?.dataID
+        val projectInstance = instanceService.getInstanceFragment(projectInstanceUri!!, fullType = true, autowire = true)
+
+        // Set values
+        setAttributeValue(projectInstance!!, "HoursWorked", "100")
+
+        // Call function of script
+        val predefinedFunction = PredefinedFunctions.callFunction(myScript, projectInstance, projectNode, instanceService)
+        Assertions.assertEquals("Success", predefinedFunction)
+        Assertions.assertEquals("0", projectInstance.getAttributeInstance("HoursWorked").anyValue)
+    }
+
+
+
 
     private fun setAttributeValue(fragment: Fragment, attributeName: String, value: String) {
         val attribute = fragment.getAttributeInstance(attributeName)

@@ -102,6 +102,9 @@ class Script(
     }
 
     fun resolverMap(): Map<String, String>{
+        if (resolver == "{}") {
+            return emptyMap()
+        }
         val newMap = resolver.drop(1).dropLast(1) // Remove curly braces
             .split(", ")
             .associate {

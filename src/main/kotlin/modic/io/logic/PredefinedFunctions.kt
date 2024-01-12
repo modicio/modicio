@@ -1,14 +1,15 @@
 package modic.io.logic
 
-import kotlin.reflect.KFunction1
 import modic.io.model.*
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
+import kotlin.reflect.KFunction1
 
 
 object PredefinedFunctions {
 
     private val timestampFormat = SimpleDateFormat("dd.MM.yyyy HH:mm:ss")
+    private val eventListeners = arrayListOf<String>() // todo call these functions with a Listener.
 
 
     private fun safeParseTimestamp(timestampStr: String): Timestamp? {
@@ -23,6 +24,7 @@ object PredefinedFunctions {
     private val functionMap: Map<String, KFunction1<Map<String, String>, String>> = mapOf(
         "checkDeadline" to this::checkDeadline,
         "calculateRemainingHours" to this::calculateRemainingHours,
+        "resetInt" to this::resetInt
     )
 
     private fun defaultFunction(params: Map<String, String>): String {
@@ -35,6 +37,10 @@ object PredefinedFunctions {
         val parsedDeadline = deadlineString?.let { safeParseTimestamp(it) }
         val parsedEndTime = endTimeString?.let { safeParseTimestamp(it) }
         return (parsedEndTime?.after(parsedDeadline) == true).toString()
+    }
+
+    private fun resetInt(params: Map<String, String>): String {
+        return "0"
     }
 
     private fun calculateRemainingHours(params: Map<String, String>): String {
@@ -51,8 +57,8 @@ object PredefinedFunctions {
         val function = functionMap[scrip.name] ?: this::defaultFunction
         val args = createArgs(fragment, scrip.resolverMap())
         val functionOutput = function(args)
-        if (scrip.actionType == "button") {
-            return functionOutput
+        if (scrip.actionType == "RealTimeUpdater"){
+            eventListeners.add(scrip.name)
         }
         val outputAttributeName = scrip.anyValue
         if (!node.doesAttributeExist(outputAttributeName)) {
