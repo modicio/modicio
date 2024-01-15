@@ -124,4 +124,12 @@ class Model(
         return nodes.flatMap { n -> n.getScripts() }.find { s -> s.uri == scriptURI }
     }
 
+    fun getAllNonAbstractNodesByURI(): List<String> {
+        return nodes.filter { n -> !n.getIsAbstract() }.map { n -> n.uri }
+    }
+
+    fun findNode(uri: String): Node? {
+        return nodes.find { n -> n.uri == uri }
+    }
+
 }
