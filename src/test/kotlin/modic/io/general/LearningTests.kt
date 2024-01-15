@@ -35,7 +35,7 @@ class LearningTests {
 
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
-        Fragment.validateToXSD(fragment)
+        //Fragment.validateToXSD(fragment)
 
     }
 

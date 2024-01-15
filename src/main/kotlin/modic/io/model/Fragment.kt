@@ -17,6 +17,8 @@ package modic.io.model
 
 import jakarta.persistence.*
 import jakarta.xml.bind.annotation.*
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
@@ -107,7 +109,7 @@ class Fragment(
      * The runningTime represents the creation point / update of the running version as UTC timestamp.
      */
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "running_time")
     var runningTime: Timestamp = Timestamp.from(Instant.MIN),
 
