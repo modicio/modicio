@@ -46,7 +46,7 @@ class RightOpen(
     @field:Column
     @field:GeneratedValue(strategy = GenerationType.IDENTITY)
     @field:XmlTransient
-    var dataID: Long?,
+    var dataID: Long? = null,
 
     /**
      * Defines the timestamp of the (inclusive) right / future border of the version interval as a UTC instant.

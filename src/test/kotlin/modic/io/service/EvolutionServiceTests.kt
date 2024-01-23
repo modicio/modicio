@@ -26,8 +26,9 @@ class EvolutionServiceTests {
     fun createClassWithAttribute() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest = "CREATE CLASS TestClass,OPEN CLASS TestClass,ADD ATTRIBUTE testAttribute," +
-                "OPEN ATTRIBUTE testAttribute,SET TYPE NUMBER,CLOSE ATTRIBUTE testAttribute,CLOSE CLASS TestClass"
+        val evolutionRequest = "CREATE CLASS TestClass/DELETE CLASS TestClass,OPEN CLASS TestClass/CLOSE CLASS TestClass," +
+                "ADD ATTRIBUTE testAttribute/DELETE ATTRIBUTE testAttribute," +
+                "OPEN ATTRIBUTE testAttribute,SET TYPE NUMBER,CLOSE ATTRIBUTE testAttribute,CLOSE CLASS TestClass/OPEN CLASS TestClass"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest)
         val result = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
         Assertions.assertEquals(1, result.size)
@@ -55,7 +56,7 @@ class EvolutionServiceTests {
     fun createAbstractClass() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest1 = "CREATE ABSTRACT CLASS TestClass"
+        val evolutionRequest1 = "CREATE ABSTRACT CLASS TestClass/DELETE CLASS TestClass"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest1)
         val result = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
 
@@ -72,22 +73,13 @@ class EvolutionServiceTests {
         Assertions.assertEquals(3, nodes.size)
         Assertions.assertEquals("TestClass", retrievedNode.name)
         Assertions.assertTrue(retrievedNode.getIsAbstract())
-
-        val evolutionRequest2 = "DELETE CLASS Todo"
-        evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest2)
-        val result2 = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
-        val evolvedFragment2 = result2.first()
-        val nodes2 = evolvedFragment2.model!!.getNodes()
-
-        //only 2 classes after delete of previously created class
-        Assertions.assertEquals(2, nodes2.size)
     }
 
     @Test
     fun deleteClass() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest2 = "DELETE CLASS Todo"
+        val evolutionRequest2 = "DELETE CLASS Todo/CREATE CLASS Todo"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest2)
         val result2 = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
         val evolvedFragment2 = result2.first()
