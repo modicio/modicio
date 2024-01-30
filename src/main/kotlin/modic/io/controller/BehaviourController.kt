@@ -16,6 +16,7 @@
 
 package modic.io.controller
 
+import modic.io.logic.BehaviourService
 import modic.io.model.Fragment
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,15 +24,14 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class BehaviourController {
+class BehaviourController(val behaviourService: BehaviourService) {
 
     @PostMapping("instance/action", produces = [MediaType.APPLICATION_XML_VALUE])
     fun triggerStoredActionScript(
         @RequestParam(required = true, name = "fragment_data_id") fragmentDataID: Long,
         @RequestParam(required = true, name = "script_uri") scriptURI: String
     ): Fragment?{
-        //TODO
+        behaviourService.triggerStoredActionScript(fragmentDataID, scriptURI)
         return null
     }
-
 }

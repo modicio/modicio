@@ -115,6 +115,15 @@ class IObject(
         compositionInstances.forEach { c -> c.initializeZeroIDs() }
     }
 
+    fun addAttributeInstance(newAttributeInstance: AttributeInstance) {
+        // Check if an attribute instance with the same URI already exists
+        val existingInstance = attributeInstances.find { it.attributeUri == newAttributeInstance.attributeUri }
+        if (existingInstance == null) {
+            attributeInstances.add(newAttributeInstance)
+        }
+    }
+
+
     fun getAttributeInstances(): List<AttributeInstance> = attributeInstances
 
     fun getAssociationInstances(): List<AssociationInstance> = associationInstances

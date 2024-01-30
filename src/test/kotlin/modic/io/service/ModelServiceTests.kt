@@ -134,8 +134,5 @@ class ModelServiceTests {
             Assertions.assertNotNull(e)
             Assertions.assertEquals("Predecessor variant not found", e.message)
         }
-
-
     }
-
 }

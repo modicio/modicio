@@ -31,11 +31,8 @@ class BehaviourService(
         val targetFragment = fragmentRepository.getFragmentByDataID(fragmentDataID)
         if(targetFragment != null){
             val script = targetFragment.model!!.findScript(scriptURI) ?: throw Exception("No executable script found")
-
-            /*
-            TODO use the script to edit the fragment
-             */
-
+            val fragment = fragmentRepository.getFragmentByDataID(fragmentDataID)
+            PredefinedFunctions.callFunction(fragment = fragment!!, script = script, instanceService = null)
             return targetFragment
         }
         return null
