@@ -59,7 +59,7 @@ object PredefinedFunctions {
         }
     }
 
-    fun callFunction(script: Script, fragment: Fragment, instanceService: InstanceService): Unit {
+    fun callFunction(script: Script, fragment: Fragment, instanceService: InstanceService?): Unit {
         val function = functionMap[script.name] ?: this::defaultFunction
         val args = createArgs(fragment, script.resolverMap())
         val functionOutput = function.call(this, args)
@@ -71,7 +71,7 @@ object PredefinedFunctions {
         // Set attribute
         val attribute = fragment.getAttributeInstance(outputAttributeName)
         attribute.anyValue = functionOutput
-        instanceService.setAttributes(attribute)
+        instanceService?.setAttributes(attribute)
     }
 
     private fun createArgs(fragment: Fragment, resolver: Map<String, String>): Map<String, String> {
