@@ -57,7 +57,7 @@ class Point(
      * @editable
      */
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "variant_time")
     val variantTime: Timestamp = Timestamp.from(Instant.MIN),
 

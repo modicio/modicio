@@ -16,10 +16,19 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.JAXBContext
+import jakarta.xml.bind.Marshaller
 import jakarta.xml.bind.annotation.*
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
+import org.springframework.core.io.ClassPathResource
+import java.io.PrintWriter
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
+import javax.xml.XMLConstants
+import javax.xml.validation.Schema
+import javax.xml.validation.SchemaFactory
 
 /**
  * The [Fragment] is the central class (aka root element) of the modicio metamodel.
@@ -107,7 +116,7 @@ class Fragment(
      * The runningTime represents the creation point / update of the running version as UTC timestamp.
      */
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "running_time")
     var runningTime: Timestamp = Timestamp.from(Instant.MIN),
 
@@ -209,7 +218,7 @@ class Fragment(
         }
 
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "variant_time")
     var variantTime: Timestamp = variantTime
         set(value) {
@@ -233,18 +242,18 @@ class Fragment(
         instance?.autowire()
     }
 
-    //companion object {
-    //FIXME some validation experiments that do not work right now
-    /*
+companion object {
+//FIXME some validation experiments that do not work right now
     fun validateToXSD(fragment: Fragment): Unit{
         val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-        val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
+    val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
 
         val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
-        marshaller.schema = schema
-        marshaller.marshal(fragment, DefaultHandler())
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
+//        marshaller.schema = schema
+        marshaller.marshal(fragment, PrintWriter( System.out))
     }
-    */
-    //}
+
+}
 
 }

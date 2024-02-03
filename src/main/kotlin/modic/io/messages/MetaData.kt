@@ -20,13 +20,16 @@ import jakarta.xml.bind.annotation.XmlAccessType
 import jakarta.xml.bind.annotation.XmlAccessorType
 import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlRootElement
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
 import java.sql.Timestamp
+import java.time.Instant
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
 data class MetaData(
 
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "variantTime")
     val timestamp: Timestamp,
 

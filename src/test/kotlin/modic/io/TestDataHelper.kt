@@ -36,8 +36,8 @@ class TestDataHelper {
 
             val trace = Trace(null, LinkedList<Delta>())
 
-            val d1 = Delta(null, "foo", "t1")
-            val d2 = Delta(null, "bar", "t2")
+            val d1 = Delta(null, "foo", "modicio:t1")
+            val d2 = Delta(null, "bar", "modicio:t2")
             trace.addDelta(d1)
             trace.addDelta(d2)
 

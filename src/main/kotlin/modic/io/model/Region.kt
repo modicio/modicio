@@ -21,6 +21,8 @@ import jakarta.xml.bind.annotation.XmlAccessType
 import jakarta.xml.bind.annotation.XmlAccessorType
 import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlTransient
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
 import java.sql.Timestamp
 import java.time.Instant
 
@@ -55,7 +57,7 @@ class Region(
      * @editable
      */
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "left_border_version_time")
     val leftBorderVersionTime: Timestamp = Timestamp.from(Instant.MIN),
 
@@ -76,7 +78,7 @@ class Region(
      * @editable
      */
     @field:Column
-   // @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "right_border_version_time")
     val rightBorderVersionTime: Timestamp = Timestamp.from(Instant.MIN),
 

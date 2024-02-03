@@ -1,51 +1,48 @@
 <?xml version="1.0"?>
-<Fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://modic.io/ns"
-    xsi:schemaLocation="http://modic.io/ns modicio_lang.xsd"
-    open="true">
+<Fragment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://modic.io/ns"
+          xsi:schemaLocation="http://modic.io/ns modicio_lang.xsd"
+          is_open="true"
+          running_time="2002-05-30T09:00:00"
+          running_id="1"
+          is_reference="true"
+          variant_id="1"
+          variant_name="main"
+          variant_time="2023-08-10T09:00:00">
 
-    <Model runningTime="2002-05-30T09:00:00" runningID="1">
-
-        <Node name="Project" uri="modicio:demo.project" abstract="false">
-            <Annotation>
-                <versionTime>2023-08-10T09:00:00</versionTime>
-                <versionID>1</versionID>
-                <variantTime>2023-08-10T09:00:00</variantTime>
-                <variantID>1</variantID>
-            </Annotation>
-            <Attribute uri="modicio:demo.project.title" name="Ttle" type="phrase" />
-            <Attribute uri="modicio:demo.project.deadline" name="Deadline" type="datetime" />
+    <Model>
+        <Node name="Project" uri="modicio:demo.project" is_abstract="false">
+            <Annotation version_time="2023-08-10T09:00:00" version_id="1" variant_time="2023-08-10T09:00:00" variant_id="1"/>
+            <Attribute uri="modicio:demo.project.title" name="Title" dType="phrase" />
+            <Attribute uri="modicio:demo.project.deadline" name="Deadline" dType="datetime" />
             <AssociationRelation uri="modicio:demo.project.todos" name="Todos"
                 target="modicio:demo.todo">
                 <Interface>
-                    <Point variantTime="2023-08-10T09:00:00" variantID="1" />
+                    <Point variant_time="2023-08-10T09:00:00" variant_id="1" />
                 </Interface>
             </AssociationRelation>
-
-            <Script uri="modicio:demo.myscript1" name="myscript1">
-                <AnyValue>
-                    foo script ... alot of scala code here
-                </AnyValue>
+            <Script uri="modicio:demo.myScript1" name="myScript1" action_type="ActionType" resolver="modicio:resolver">
+                <any_value>
+                    foo script ... a lot of scala code here
+                </any_value>
             </Script>
-            <Script uri="modicio:demo.myscript2" name="myscript2">
-                <AnyValue>
-                    bar script ... alot of scala code here
-                </AnyValue>
+            <Script uri="modicio:demo.myScript2" name="myScript2" action_type="AnotherActionType" resolver="modicio:resolver2">
+                <any_value>
+                    bar script ... a lot of scala code here
+                </any_value>
             </Script>
-            
         </Node>
-
     </Model>
 
     <Instance name="myProject" modelRoot="modicio:demo.project" uri="modicio:instance.myProject">
         <Header></Header>
         <Object instanceOf="modicio:demo.project">
-            <AttributeInstance attributeUri="modicio:demo.project.title">
-                <AnyValue>My Project Title</AnyValue>
+            <AttributeInstance attribute_uri="modicio:demo.project.title">
+                <any_value>My Project Title</any_value>
             </AttributeInstance>
-            <AttributeInstance attributeUri="modicio:demo.project.deadline">
-                <AnyValue>My Project Description</AnyValue>
+            <AttributeInstance attribute_uri="modicio:demo.project.deadline">
+                <any_value>My Project Description</any_value>
             </AttributeInstance>
         </Object>
     </Instance>
-
 </Fragment>

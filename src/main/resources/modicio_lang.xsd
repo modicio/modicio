@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://modic.io/ns"
-    xmlns="http://modic.io/ns" xmlns:mio="http://modic.io/ns" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://modic.io/ns"
+           xmlns="http://modic.io/ns"
+           xmlns:mio="http://modic.io/ns"
+           elementFormDefault="qualified">
 
     <!-- Root Model Definition -->
 
@@ -12,8 +15,6 @@
                         <xs:sequence>
                             <xs:element name="Node" type="Node" maxOccurs="unbounded"/>
                         </xs:sequence>
-                        <xs:attribute name="runningTime" type="xs:dateTime" use="required" />
-                        <xs:attribute name="runningID" type="xs:string" use="required" />
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="Instance" minOccurs="0">
@@ -30,7 +31,15 @@
                 </xs:element>
                 <xs:element name="Trace" type="Trace" minOccurs="0"/>
             </xs:sequence>
-            <xs:attribute name="open" type="xs:boolean" use="required" />
+            <xs:attribute name="predecessor_id" type="xs:dateTime"/>
+            <xs:attribute name="is_open" type="xs:boolean" use="required"/>
+            <xs:attribute name="variant_name" type="xs:string" use="required"/>
+            <xs:attribute name="running_time" type="xs:dateTime" use="required"/>
+            <xs:attribute name="running_id" type="xs:string" use="required"/>
+            <xs:attribute name="is_reference" type="xs:boolean" use="required"/>
+            <xs:attribute name="global_id" type="xs:string"/>
+            <xs:attribute name="variant_id" type="xs:string" use="required"/>
+            <xs:attribute name="variant_time" type="xs:dateTime" use="required"/>
         </xs:complexType>
 
         <!-- Global Value & Reference Constraints -->
@@ -116,7 +125,7 @@
                 <xs:complexType>
                     <xs:attribute name="uri" type="mio:mID" use="required"/>
                     <xs:attribute name="name" type="xs:string" use="required"/>
-                    <xs:attribute name="type" type="xs:string" use="required"/>
+                    <xs:attribute name="dType" type="xs:string" use="required"/>
                 </xs:complexType>
             </xs:element>
 
@@ -135,7 +144,7 @@
             <!-- Parent Relation -->
             <xs:element name="ParentRelation" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="target" type="mio:mID" use="required"/>
+                    <xs:attribute name="uri" type="mio:mID" use="required"/>
                 </xs:complexType>
             </xs:element>
 
@@ -170,10 +179,12 @@
             <xs:element name="Script" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                     <xs:all>
-                        <xs:element name="AnyValue" type="xs:string"/>
+                        <xs:element name="any_value" type="xs:string"/>
                     </xs:all>
                     <xs:attribute name="uri" type="mio:mID" use="required"/>
                     <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="action_type" type="xs:string" use="required"/>
+                    <xs:attribute name="resolver" type="mio:mID" use="required"/>
                 </xs:complexType>
             </xs:element>
 
@@ -181,17 +192,15 @@
 
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="uri" type="mio:mID" use="required"/>
-        <xs:attribute name="abstract" type="xs:boolean" use="required"/>
+        <xs:attribute name="is_abstract" type="xs:boolean" use="required"/>
 
     </xs:complexType>
 
     <xs:complexType name="Annotation">
-        <xs:sequence>
-            <xs:element name="versionTime" type="xs:dateTime"/>
-            <xs:element name="versionID" type="xs:string"/>
-            <xs:element name="variantTime" type="xs:dateTime"/>
-            <xs:element name="variantID" type="xs:string"/>
-        </xs:sequence>
+        <xs:attribute name="version_time" type="xs:dateTime"/>
+        <xs:attribute name="version_id" type="xs:string"/>
+        <xs:attribute name="variant_time" type="xs:dateTime"/>
+        <xs:attribute name="variant_id" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="Trace">
@@ -209,30 +218,30 @@
         <xs:sequence>
             <xs:element name="LeftOpen" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="borderVersionTime" type="xs:dateTime" use="required"/>
-                    <xs:attribute name="borderVersionID" type="xs:string"/>
+                    <xs:attribute name="border_version_time" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="border_version_id" type="xs:string"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="RightOpen" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="borderVersionTime" type="xs:dateTime" use="required"/>
-                    <xs:attribute name="borderVersionID" type="xs:string"/>
+                    <xs:attribute name="border_version_time" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="border_version_id" type="xs:string"/>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="Interval" minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="Region" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="leftBorderVersionTime" type="xs:dateTime" use="required"/>
-                    <xs:attribute name="leftBorderVersionID" type="xs:string"/>
-                    <xs:attribute name="rightBorderVersionTime" type="xs:dateTime" use="required"/>
-                    <xs:attribute name="rightBorderVersionID" type="xs:string"/>
+                    <xs:attribute name="left_border_version_time" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="left_border_version_id" type="xs:string"/>
+                    <xs:attribute name="right_border_version_time" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="right_border_version_id" type="xs:string"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="Point" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="variantTime" type="xs:dateTime" use="required"/>
-                    <xs:attribute name="variantID" type="xs:string"/>
-                    <xs:attribute name="versionTime" type="xs:dateTime"/>
-                    <xs:attribute name="versionID" type="xs:string"/>
+                    <xs:attribute name="variant_time" type="xs:dateTime" use="required"/>
+                    <xs:attribute name="variant_id" type="xs:string"/>
+                    <xs:attribute name="version_time" type="xs:dateTime"/>
+                    <xs:attribute name="version_id" type="xs:string"/>
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
@@ -248,8 +257,8 @@
 
             <xs:element name="AssociationInstance" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
-                    <xs:attribute name="instanceUri" type="mio:mID" use="required"/>
-                    <xs:attribute name="NodeUri" type="mio:mID" use="required"/>
+                    <xs:attribute name="instance_uri" type="mio:mID" use="required"/>
+                    <xs:attribute name="association_uri" type="mio:mID" use="required"/>
                 </xs:complexType>
             </xs:element>
 
@@ -260,11 +269,11 @@
                     </xs:sequence>
 
                     <xs:attribute name="name" type="xs:string" use="required" />
-                    <xs:attribute name="modelRoot" type="mio:mID" use="required" />
+                    <xs:attribute name="model_root" type="mio:mID" use="required" />
                     <!-- uri of an instance must be globally unique -->
                     <xs:attribute name="uri" type="mio:mID" use="required" />
 
-                    <xs:attribute name="compositionUri" type="mio:mID" use="required"/>
+                    <xs:attribute name="composition_uri" type="mio:mID" use="required"/>
                 </xs:complexType>
             </xs:element>
 
@@ -274,11 +283,11 @@
 
     <xs:complexType name="Header">
         <xs:sequence>
-            <xs:element name="Element" minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="HeaderElement" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="compositeNodeUri" type="mio:mID"/>
-                        <xs:element name="compositeInstanceUri" type="mio:mID"/>
+                        <xs:element name="composite_node_uri" type="mio:mID"/>
+                        <xs:element name="composite_instance_uri" type="mio:mID"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -287,9 +296,9 @@
 
     <xs:complexType name="AttributeInstance">
         <xs:all>
-            <xs:element name="AnyValue" type="xs:string"/>
+            <xs:element name="any_value" type="xs:string"/>
         </xs:all>
-        <xs:attribute name="attributeUri" type="mio:mID" use="required"/>
+        <xs:attribute name="attribute_uri" type="mio:mID" use="required"/>
     </xs:complexType>
 
 </xs:schema>
