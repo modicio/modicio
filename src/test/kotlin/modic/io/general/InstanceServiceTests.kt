@@ -33,10 +33,11 @@ class InstanceServiceTests {
         fragmentRepository.save(referenceFragment)
         metadataService.setReferenceFragment(referenceFragment.variantID, referenceFragment.runningID)
 
-        val newFragment = instanceService.createInstance("modicio:demo.todo", "Todo", "newURI")
+        val newFragment = instanceService.createInstance("modicio:demo.todo", "Todo", "newURI")!!
 
-        val fragments = fragmentRepository.findAll()
-        Assertions.assertTrue(fragments.contains(newFragment))
+        val fragment = fragmentRepository.findById(newFragment.dataID!!)
+        Assertions.assertNotNull(fragment.get())
+        Assertions.assertEquals(fragment.get().instance!!.uri, "newURI")
 
     }
 

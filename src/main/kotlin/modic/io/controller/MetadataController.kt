@@ -40,12 +40,13 @@ class MetadataController(val metadataService: MetadataService) {
      *
      * @param delimiter
      */
-    @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_XML_VALUE])
+    @GetMapping("model/metadata/variants", produces=[MediaType.APPLICATION_JSON_VALUE])
     fun getVariantsMetadata(
         @RequestParam(required = false, name = "delimiter") delimiter: Int = 1000,
         @RequestParam(required = false, name = "closed_only") closedOnly: Boolean = true
     ): List<MetaData> {
-        return metadataService.getAllVariantsMetadata(delimiter, true)
+        val result = metadataService.getAllVariantsMetadata(delimiter, true).filterNotNull()
+        return result
     }
 
     /**

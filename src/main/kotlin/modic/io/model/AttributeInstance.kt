@@ -56,7 +56,7 @@ class AttributeInstance(
      * Textual value representation of the Attribute.
      * @editable
      */
-    @field:Column
+    @field:Column(updatable = true)
     @field:XmlAttribute(name = "any_value")
     var anyValue: String = ""
 ) {
