@@ -54,7 +54,7 @@ class Annotation(
      * Together with [versionID] it forms the version (time) identifier per model element.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "version_time")
     var versionTime: Timestamp = Timestamp.from(Instant.MIN),
 
@@ -74,7 +74,7 @@ class Annotation(
      * of truth.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "variant_time")
     var variantTime: Timestamp = Timestamp.from(Instant.MIN),
 

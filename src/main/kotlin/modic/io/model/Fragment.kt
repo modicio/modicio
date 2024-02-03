@@ -116,7 +116,7 @@ class Fragment(
      * The runningTime represents the creation point / update of the running version as UTC timestamp.
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "running_time")
     var runningTime: Timestamp = Timestamp.from(Instant.MIN),
 
