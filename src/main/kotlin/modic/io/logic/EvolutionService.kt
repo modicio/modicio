@@ -23,9 +23,6 @@ import modic.io.model.*
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
@@ -48,7 +45,7 @@ class EvolutionService(
         //3. do all the request compilation stuff
 
         //get the Evolution String ready for parsing
-        val requestList = evolutionRequest.split(",", ignoreCase = true)
+        val requestList = evolutionRequest.replace("&", "").split(",", ignoreCase = true)
 
         val forwardEvolution: MutableList<String> = LinkedList()
         val backwardsEvolution: MutableList<String> = LinkedList()
@@ -70,10 +67,10 @@ class EvolutionService(
             forwardEvolution.toList()
         }
 
-        lateinit var selectedNode: Node
-        lateinit var selectedAttribute: Attribute
-        lateinit var selectedAssociation: AssociationRelation
-        lateinit var selectedComposition: Composition
+        var selectedNode: Node? = null
+        var selectedAttribute: Attribute? = null
+        var selectedAssociation: AssociationRelation? = null
+        var selectedComposition: Composition? = null
 
         for (request in evolutionList) {
             if (request.contains("CREATE CLASS")) {
@@ -104,6 +101,7 @@ class EvolutionService(
                     throw Exception("Class does not exist!")
                 } else {
                     fragment.model.removeNode(nodeToDelete)
+                    selectedNode = null
                     continue
                 }
             }
@@ -127,7 +125,7 @@ class EvolutionService(
                 var foundAttribute = false
                 lateinit var attributeToDelete: Attribute
                 lateinit var concretToDelete: Concretization
-                for (attribute in selectedNode.getAttributes()) {
+                for (attribute in selectedNode!!.getAttributes()) {
                     if (attribute.name.equals(attributeName, ignoreCase = true)) {
                         attributeToDelete = attribute
                         foundAttribute = true
@@ -143,19 +141,20 @@ class EvolutionService(
                 } else {
                     selectedNode.removeConcretization(concretToDelete)
                     selectedNode.removeAttribute(attributeToDelete)
+                    selectedAttribute = null
                     continue
                 }
             }
             if (request.contains("ADD ATTRIBUTE")) {
                 val attributeName = retrieveName(request, "ADD ATTRIBUTE")
                 val attributeUri = "modicio:$attributeName"
-                selectedNode.addAttribute(Attribute(name = attributeName, uri = attributeUri, node = selectedNode))
+                selectedNode!!.addAttribute(Attribute(name = attributeName, uri = attributeUri, node = selectedNode))
                 continue
             }
             if (request.contains("OPEN ATTRIBUTE")) {
                 val attributeName = retrieveName(request, "OPEN ATTRIBUTE")
                 var foundAttribute = false
-                for (attribute in selectedNode.getAttributes()) {
+                for (attribute in selectedNode!!.getAttributes()) {
                     if (attribute.name.equals(attributeName, ignoreCase = true)) {
                         selectedAttribute = attribute
                         foundAttribute = true
@@ -170,25 +169,26 @@ class EvolutionService(
             if (request.contains("SET TYPE")) {
                 val typeName = retrieveName(request, "SET TYPE")
                 when (typeName) {
-                    "WORD" -> selectedAttribute.dType = "Date"
-                    "PHRASE" -> selectedAttribute.dType = "String"
-                    "NUMBER" -> selectedAttribute.dType = "Integer"
-                    else -> selectedAttribute.dType = "Default"
+                    "WORD" -> selectedAttribute!!.dType = "Date"
+                    "PHRASE" -> selectedAttribute!!.dType = "String"
+                    "NUMBER" -> selectedAttribute!!.dType = "Integer"
+                    else -> selectedAttribute!!.dType = "Default"
                 }
                 continue
             }
             if (request.contains("ADD ASSOCIATION")) {
                 val associationName = retrieveNameFromComplexCommand(request, "ADD ASSOCIATION", "TARGET")
                 val targetClassName = retrieveName(request, "ADD ASSOCIATION $associationName TARGET")
+                val targetUri = "modicio:$targetClassName"
                 var foundTarget = false
                 for (node in fragment.model!!.getNodes()) {
-                    if (node.name.equals(targetClassName, ignoreCase = true)) {
+                    if (node.uri.equals(targetUri, ignoreCase = true)) {
                         foundTarget = true
                     }
                 }
                 if (foundTarget) {
                     val associationUri = "modicio:$associationName"
-                    selectedNode.addAssociationRelation(AssociationRelation(uri = associationUri, name = associationName, target = targetClassName,
+                    selectedNode!!.addAssociationRelation(AssociationRelation(uri = associationUri, name = associationName, target = targetUri,
                         cInterface = Interface(), node = selectedNode))
                     continue
                 } else {
@@ -196,10 +196,10 @@ class EvolutionService(
                 }
             }
             if (request.contains("DELETE ASSOCIATION")) {
-                val associationName = retrieveName(request, "DELETE ASSOCIATION");
+                val associationName = retrieveName(request, "DELETE ASSOCIATION")
                 var foundAssociation = false
                 lateinit var assocToDelete: AssociationRelation
-                for (association in selectedNode.getAssociationRelations()) {
+                for (association in selectedNode!!.getAssociationRelations()) {
                     if (association.name.equals(associationName, ignoreCase = true)) {
                         assocToDelete = association
                         foundAssociation = true
@@ -209,13 +209,14 @@ class EvolutionService(
                     throw Exception("Association does not exist!")
                 } else {
                     selectedNode.removeAssociationRelation(assocToDelete)
+                    selectedAssociation = null
                     continue
                 }
             }
             if (request.contains("OPEN ASSOCIATION")) {
-                val associationName = retrieveName(request, "OPEN ASSOCIATION");
+                val associationName = retrieveName(request, "OPEN ASSOCIATION")
                 var foundAssociation = false
-                for (association in selectedNode.getAssociationRelations()) {
+                for (association in selectedNode!!.getAssociationRelations()) {
                     if (association.name.equals(associationName, ignoreCase = true)) {
                         selectedAssociation = association
                         foundAssociation = true
@@ -229,32 +230,32 @@ class EvolutionService(
             }
             if (request.contains("SET COMPATIBLE WITH VERSION")) {
                 val versionDate = retrieveName(request, "SET COMPATIBLE WITH VERSION")
-                val versionTime = "12:00"
-                val dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault())
-                val zdt = ZonedDateTime.parse(versionDate + "T" + versionTime, dtf)
-                val instant = zdt.toInstant()
-                selectedAssociation.cInterface?.addPointDelimiter(Point(versionTime = instant))
+                val timestampDate = versionDate + "T12:00:00"
+                selectedAssociation!!.cInterface?.addPointDelimiter(Point(versionTime = Timestamp.valueOf(timestampDate)))
             }
             if (request.contains("SET VERSION RANGE FROM")) {
                 val rangeStart = retrieveNameFromComplexCommand(request, "SET VERSION RANGE FROM", "TO")
                 val rangeEnd = retrieveName(request, "SET VERSION RANGE FROM $rangeStart TO")
                 val startDate = rangeStart + "T12:00:00"
                 val endDate = rangeEnd + "T12:00:00"
-                selectedAssociation.cInterface?.addIntervalDelimiter(Region(leftBorderVersionTime = Timestamp.valueOf(startDate),
+                selectedAssociation!!.cInterface?.addIntervalDelimiter(Region(leftBorderVersionTime = Timestamp.valueOf(startDate),
                     rightBorderVersionTime = Timestamp.valueOf(endDate)))
             }
             if (request.contains("SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")) {
-                val variant = retrieveName(request, "SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")
+                val variantDate = retrieveName(request, "SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")
+                val timestampVariant = variantDate + "T12:00:00"
+                selectedAssociation!!.cInterface?.addPointDelimiter(Point(variantTime = Timestamp.valueOf(timestampVariant)))
             }
             if (request.contains("SET VERSION UP TO DATE")) {
-                val rightBorder = retrieveName(request, "SET VERSION UP TO DATE")
-                val rightBorderDate = rightBorder + "T12:00:00"
-                selectedAssociation.cInterface?.addRightOpenDelimiter(RightOpen(borderVersionTime = Timestamp.valueOf(rightBorderDate)))
+                val leftBorder = retrieveName(request, "SET VERSION UP TO DATE")
+                val leftBorderDate = leftBorder + "T12:00:00"
+                selectedAssociation!!.cInterface?.addOLeftOpenDelimiter(LeftOpen(borderVersionTime = Timestamp.valueOf(leftBorderDate)))
+
             }
             if (request.contains("SET VERSION STARTING FROM DATE")) {
-                val leftBorder = retrieveName(request, "SET VERSION STARTING FROM DATE")
-                val leftBorderDate = leftBorder + "T12:00:00"
-                selectedAssociation.cInterface?.addOLeftOpenDelimiter(LeftOpen(borderVersionTime = Timestamp.valueOf(leftBorderDate)))
+                val rightBorder = retrieveName(request, "SET VERSION STARTING FROM DATE")
+                val rightBorderDate = rightBorder + "T12:00:00"
+                selectedAssociation!!.cInterface?.addRightOpenDelimiter(RightOpen(borderVersionTime = Timestamp.valueOf(rightBorderDate)))
             }
             if (request.contains("ADD PARENT_RELATION")) {
                 val targetClass = retrieveName(request, "ADD PARENT_RELATION")
@@ -266,7 +267,7 @@ class EvolutionService(
                     }
                 }
                 if (foundTarget) {
-                    selectedNode.addParentRelation(ParentRelation(uri = inheritanceUri, node = selectedNode))
+                    selectedNode!!.addParentRelation(ParentRelation(uri = inheritanceUri, node = selectedNode))
                     continue
                 } else {
                     throw Exception("No target class with this name found!")
@@ -277,7 +278,7 @@ class EvolutionService(
                 val inheritanceUri = "modicio:$targetClass"
                 var foundRelation = false
                 lateinit var relationToDelete: ParentRelation
-                for (relation in selectedNode.getParentRelations()) {
+                for (relation in selectedNode!!.getParentRelations()) {
                     if (relation.uri.equals(inheritanceUri, ignoreCase = true)) {
                         relationToDelete = relation
                         foundRelation = true
@@ -295,7 +296,7 @@ class EvolutionService(
                 val compositionUri = "modicio:$compositionName"
                 var foundComposition = false
                 lateinit var composToDelete: Composition
-                for (composition in selectedNode.getCompositions()) {
+                for (composition in selectedNode!!.getCompositions()) {
                     if (composition.uri.equals(compositionUri, ignoreCase = true)) {
                         composToDelete = composition
                         foundComposition = true
@@ -305,6 +306,7 @@ class EvolutionService(
                     throw Exception("Composition does not exist!")
                 } else {
                     selectedNode.removeComposition(composToDelete)
+                    selectedComposition = null
                     continue
                 }
             }
@@ -312,28 +314,29 @@ class EvolutionService(
                 val compositionName = retrieveNameFromComplexCommand(request, "ADD COMPOSITION", "TARGET")
                 val targetName = retrieveName(request, "ADD COMPOSITION")
                 val compositionUri = "modicio:$compositionName"
+                val targetUri = "modicio:$targetName"
                 var foundTarget = false
                 for (node in fragment.model!!.getNodes()) {
-                    if (node.name.equals(targetName, ignoreCase = true)) {
+                    if (node.uri.equals(targetUri, ignoreCase = true)) {
                         foundTarget = true
                     }
                 }
                 if (foundTarget) {
-                    selectedComposition = Composition(role = compositionName, uri = compositionUri, target = targetName, node = selectedNode)
-                    selectedNode.addComposition(selectedComposition)
+                    selectedComposition = Composition(role = compositionName, uri = compositionUri, target = targetUri, node = selectedNode)
+                    selectedNode!!.addComposition(selectedComposition)
                     continue
                 } else {
                     throw Exception("No target class with this name found!")
                 }
             }
             if (request.contains("MAKE COMPOSITION")) {
-                selectedComposition.isPublic = request.contains("PUBLIC")
+                selectedComposition!!.isPublic = request.contains("PUBLIC")
                 continue
             }
             if (request.contains("OPEN COMPOSITION")) {
                 val compositionName = retrieveName(request, "OPEN COMPOSITION")
                 var foundComposition = false
-                for (composition in selectedNode.getCompositions()) {
+                for (composition in selectedNode!!.getCompositions()) {
                     if (composition.role.equals(compositionName, ignoreCase = true)) {
                         selectedComposition = composition
                         foundComposition = true
@@ -347,19 +350,19 @@ class EvolutionService(
             }
             if (request.contains("CHANGE ATTRIBUTE NAME")) {
                 val newName = retrieveName(request, "CHANGE ATTRIBUTE NAME TO")
-                selectedAttribute.name = newName
+                selectedAttribute!!.name = newName
                 continue
             }
             if (request.contains("CHANGE ATTRIBUTE URI")) {
                 val newUri = retrieveName(request, "CHANGE ATTRIBUTE URI TO")
-                selectedAttribute.uri = newUri
+                selectedAttribute!!.uri = newUri
                 continue
             }
             if (request.contains("SET ATTRIBUTE VALUE")) {
                 val value = retrieveName(request, "SET ATTRIBUTE VALUE TO")
-                val attributeInstance = AttributeInstance(attributeUri = selectedAttribute.uri, anyValue = value)
+                val attributeInstance = AttributeInstance(attributeUri = selectedAttribute!!.uri, anyValue = value)
                 lateinit var concretToDelete: Concretization
-                for (concretization in selectedNode.getConcretizations()) {
+                for (concretization in selectedNode!!.getConcretizations()) {
                     if (concretization.attributeInstance?.attributeUri.equals(selectedAttribute.uri)) {
                         concretToDelete = concretization
                     }

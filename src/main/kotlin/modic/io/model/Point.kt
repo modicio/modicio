@@ -21,8 +21,6 @@ import jakarta.xml.bind.annotation.XmlAccessType
 import jakarta.xml.bind.annotation.XmlAccessorType
 import jakarta.xml.bind.annotation.XmlAttribute
 import jakarta.xml.bind.annotation.XmlTransient
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
-import modic.io.model.xml.XMLDateTimeAdaptor
 import java.sql.Timestamp
 import java.time.Instant
 
@@ -77,9 +75,9 @@ class Point(
      * @editable
      */
     @field:Column
-    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
     @field:XmlAttribute(name = "version_time")
-    val versionTime: Instant? = null,
+    val versionTime: Timestamp = Timestamp.from(Instant.MIN),
 
     /**
      * Binds the [versionTime] to a specific version ID to resolve unambiguity,

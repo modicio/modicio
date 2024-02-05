@@ -31,6 +31,7 @@ class TestDataHelper {
             preRunningID: String? = null): Fragment {
 
             val variantTime = Timestamp.from(Instant.now())
+            val versionTime = Timestamp.from(Instant.now())
             val variantId = preVariantID ?: UUID.randomUUID().toString()
             val runningId = preRunningID ?: UUID.randomUUID().toString()
 
@@ -78,7 +79,7 @@ class TestDataHelper {
                     Interface(0)
             ))
             node2.getAssociationRelations().first().cInterface!!.addPointDelimiter(
-                Point(0, variantTime, variantId)
+                Point(0, variantTime, variantId, versionTime)
             )
 
             model.addNode(node1)

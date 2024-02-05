@@ -26,9 +26,9 @@ class EvolutionServiceTests {
     fun createClassWithAttribute() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest = "CREATE CLASS TestClass/DELETE CLASS TestClass,OPEN CLASS TestClass/CLOSE CLASS TestClass," +
-                "ADD ATTRIBUTE testAttribute/DELETE ATTRIBUTE testAttribute," +
-                "OPEN ATTRIBUTE testAttribute,SET TYPE NUMBER,CLOSE ATTRIBUTE testAttribute,CLOSE CLASS TestClass/OPEN CLASS TestClass"
+        val evolutionRequest = "CREATE CLASS TestClass/DELETE CLASS TestClass,OPEN CLASS TestClass/CLOSE CLASS TestClass,&" +
+                "ADD ATTRIBUTE testAttribute/DELETE ATTRIBUTE testAttribute,&" +
+                "OPEN ATTRIBUTE testAttribute,SET TYPE NUMBER,CLOSE ATTRIBUTE testAttribute,CLOSE CLASS TestClass/OPEN CLASS TestClass,"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest)
         val result = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
         Assertions.assertEquals(1, result.size)
@@ -56,7 +56,7 @@ class EvolutionServiceTests {
     fun createAbstractClass() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest1 = "CREATE ABSTRACT CLASS TestClass/DELETE CLASS TestClass"
+        val evolutionRequest1 = "CREATE ABSTRACT CLASS TestClass/DELETE CLASS TestClass,"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest1)
         val result = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
 
@@ -79,7 +79,7 @@ class EvolutionServiceTests {
     fun deleteClass() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest2 = "DELETE CLASS Todo/CREATE CLASS Todo"
+        val evolutionRequest2 = "DELETE CLASS Todo/CREATE CLASS Todo,"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest2)
         val result2 = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
         val evolvedFragment2 = result2.first()
