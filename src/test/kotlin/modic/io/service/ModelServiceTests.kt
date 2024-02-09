@@ -44,7 +44,7 @@ class ModelServiceTests {
     @Test
     fun pushFullVariantNoMetadataTest() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
-        modelService.newFullVariantWithNameFromFragment(fragment, "Some Name")
+        modelService.pushFullModel(fragment, null, "Some Name", asVersion = false)
         val res = fragmentRepository.findFragmentByVariantID(fragment.variantID)
         Assertions.assertEquals(1, res.size)
         val resFragment = res.first()
@@ -141,9 +141,10 @@ class ModelServiceTests {
     @Test
     fun newVariantFromExistingTrunkAsVersionTest(){
         val oldFragment = TestDataHelper.getSimpleFragmentOnlyModel()
+        fragmentRepository.save(oldFragment)
         val newFragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
-        modelService.newVariantFromExistingTrunk(newFragment, oldFragment, true)
+        modelService.pushFullModel(newFragment, oldFragment.variantID,  "Some Name", true)
 
         val fragment = testGeneralCaseForNewVariantFromTrunk(oldFragment)
         Assertions.assertEquals(oldFragment.variantID, fragment.variantID)
@@ -154,9 +155,10 @@ class ModelServiceTests {
     @Test
     fun newVariantFromExistingTrunkNotAsVersionTest(){
         val oldFragment = TestDataHelper.getSimpleFragmentOnlyModel()
+        fragmentRepository.save(oldFragment)
         val newFragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
-        modelService.newVariantFromExistingTrunk(newFragment, oldFragment, false)
+        modelService.pushFullModel(newFragment, oldFragment.variantID,  "Some Name", false)
 
         val fragment = testGeneralCaseForNewVariantFromTrunk(oldFragment)
         Assertions.assertNotEquals(oldFragment.variantID, fragment.variantID)
@@ -165,8 +167,8 @@ class ModelServiceTests {
 
     private fun testGeneralCaseForNewVariantFromTrunk(oldFragment: Fragment): Fragment{
         val fragments = fragmentRepository.findAll()
-        Assertions.assertEquals(1, fragments.size)
-        val fragment = fragments[0]
+        Assertions.assertEquals(2, fragments.size)
+        val fragment = fragments.filter { f -> f.predecessorID != null }[0]
         Assertions.assertEquals(oldFragment.globalID, fragment.predecessorID)
         Assertions.assertTrue(oldFragment.runningTime.time - fragment.runningTime.time < 10)
         Assertions.assertFalse(fragment.isReference)

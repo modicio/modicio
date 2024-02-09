@@ -126,7 +126,7 @@ class ModelService(
     /**
      * Initialize a given [Fragment] ...TODO
      */
-    internal fun newFullVariantWithNameFromFragment(newFragment: Fragment, name: String){
+    private fun newFullVariantWithNameFromFragment(newFragment: Fragment, name: String){
         val now = Timestamp.from(Instant.now())
         newFragment.isReference = false
         newFragment.variantID = UUID.randomUUID().toString()
@@ -137,7 +137,7 @@ class ModelService(
         fragmentRepository.save(newFragment)
     }
 
-    internal fun newVariantFromExistingTrunk(newFragment: Fragment, oldFragment: Fragment, asVersion: Boolean){
+    private fun newVariantFromExistingTrunk(newFragment: Fragment, oldFragment: Fragment, asVersion: Boolean){
         val now = Timestamp.from(Instant.now())
         newFragment.isReference = false
         if(asVersion){
