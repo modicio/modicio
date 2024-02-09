@@ -243,14 +243,14 @@ class Fragment(
     }
 
 companion object {
-//FIXME some validation experiments that do not work right now
+    //FIXME some validation experiments that do not work right now
     fun validateToXSD(fragment: Fragment): Unit{
         val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-    val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
+        val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
 
         val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
-//        marshaller.schema = schema
+        marshaller.schema = schema
         marshaller.marshal(fragment, PrintWriter( System.out))
     }
 
