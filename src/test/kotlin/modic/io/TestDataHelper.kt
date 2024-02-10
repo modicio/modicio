@@ -78,7 +78,7 @@ class TestDataHelper {
                     Interface(0)
             ))
             node2.getAssociationRelations().first().cInterface!!.addPointDelimiter(
-                Point(0, variantTime, variantId)
+                Point(0, variantTime, variantId, Timestamp.from(Instant.now()))
             )
 
             model.addNode(node1)

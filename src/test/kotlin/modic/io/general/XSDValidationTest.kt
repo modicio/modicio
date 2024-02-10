@@ -13,7 +13,7 @@ class XSDValidationTest {
 
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
-        Fragment.validateToXSD(fragment)
+        Fragment.marshallFragment(fragment)
 
     }
 }
