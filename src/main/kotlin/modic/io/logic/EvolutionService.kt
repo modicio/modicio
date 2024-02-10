@@ -23,6 +23,7 @@ import modic.io.model.*
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
 import java.sql.Timestamp
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -120,6 +121,15 @@ class EvolutionService(
                     continue
                 }
             }
+            if (request.contains("CLOSE CLASS")) {
+                val nodeName = retrieveName(request, "CLOSE CLASS")
+                if (nodeName.equals(selectedNode!!.name, ignoreCase = true)) {
+                    selectedNode = null
+                    continue
+                } else {
+                    throw Exception("Error when closing class: class with this name is not open!")
+                }
+            }
             if (request.contains("DELETE ATTRIBUTE")) {
                 val attributeName = retrieveName(request, "DELETE ATTRIBUTE")
                 var foundAttribute = false
@@ -164,6 +174,15 @@ class EvolutionService(
                     throw Exception("Attribute does not exist!")
                 } else {
                     continue
+                }
+            }
+            if (request.contains("CLOSE ATTRIBUTE")) {
+                val attributeName = retrieveName(request, "CLOSE ATTRIBUTE")
+                if (attributeName.equals(selectedAttribute!!.name, ignoreCase = true)) {
+                    selectedAttribute = null
+                    continue
+                } else {
+                    throw Exception("Error when closing attribute: attribute with this name is not open!")
                 }
             }
             if (request.contains("SET TYPE")) {
@@ -228,10 +247,20 @@ class EvolutionService(
                     continue
                 }
             }
+            if (request.contains("CLOSE ASSOCIATION")) {
+                val associationName = retrieveName(request, "CLOSE ASSOCIATION")
+                if (associationName.equals(selectedAssociation!!.name, ignoreCase = true)) {
+                    selectedAssociation = null
+                    continue
+                } else {
+                    throw Exception("Error when closing association: association with this name is not open!")
+                }
+            }
             if (request.contains("SET COMPATIBLE WITH VERSION")) {
                 val versionDate = retrieveName(request, "SET COMPATIBLE WITH VERSION")
                 val timestampDate = versionDate + "T12:00:00"
-                selectedAssociation!!.cInterface?.addPointDelimiter(Point(versionTime = Timestamp.valueOf(timestampDate)))
+                selectedAssociation!!.cInterface?.addPointDelimiter(Point(versionTime = Timestamp.valueOf(timestampDate),
+                                                                            variantTime = Timestamp.from(Instant.now())))
             }
             if (request.contains("SET VERSION RANGE FROM")) {
                 val rangeStart = retrieveNameFromComplexCommand(request, "SET VERSION RANGE FROM", "TO")
@@ -244,7 +273,8 @@ class EvolutionService(
             if (request.contains("SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")) {
                 val variantDate = retrieveName(request, "SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")
                 val timestampVariant = variantDate + "T12:00:00"
-                selectedAssociation!!.cInterface?.addPointDelimiter(Point(variantTime = Timestamp.valueOf(timestampVariant)))
+                selectedAssociation!!.cInterface?.addPointDelimiter(Point(variantTime = Timestamp.valueOf(timestampVariant),
+                                                                            versionTime = Timestamp.from(Instant.now())))
             }
             if (request.contains("SET VERSION UP TO DATE")) {
                 val leftBorder = retrieveName(request, "SET VERSION UP TO DATE")
@@ -346,6 +376,15 @@ class EvolutionService(
                     throw Exception("Composition does not exist!")
                 } else {
                     continue
+                }
+            }
+            if (request.contains("CLOSE COMPOSITION")) {
+                val compositionName = retrieveName(request, "CLOSE COMPOSITION")
+                if (compositionName.equals(selectedComposition!!.role, ignoreCase = true)) {
+                    selectedComposition = null
+                    continue
+                } else {
+                    throw Exception("Error when closing composition: this composition is not open!")
                 }
             }
             if (request.contains("CHANGE ATTRIBUTE NAME")) {
