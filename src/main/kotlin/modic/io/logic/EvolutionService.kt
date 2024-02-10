@@ -188,9 +188,9 @@ class EvolutionService(
             if (request.contains("SET TYPE")) {
                 val typeName = retrieveName(request, "SET TYPE")
                 when (typeName) {
-                    "WORD" -> selectedAttribute!!.dType = "Date"
-                    "PHRASE" -> selectedAttribute!!.dType = "String"
-                    "NUMBER" -> selectedAttribute!!.dType = "Integer"
+                    "time" -> selectedAttribute!!.dType = "DateTime"
+                    "phrase" -> selectedAttribute!!.dType = "String"
+                    "number" -> selectedAttribute!!.dType = "Integer"
                     else -> selectedAttribute!!.dType = "Default"
                 }
                 continue
@@ -258,33 +258,35 @@ class EvolutionService(
             }
             if (request.contains("SET COMPATIBLE WITH VERSION")) {
                 val versionDate = retrieveName(request, "SET COMPATIBLE WITH VERSION")
-                val timestampDate = versionDate + "T12:00:00"
+                val timestampDate = "$versionDate 12:00:00"
                 selectedAssociation!!.cInterface?.addPointDelimiter(Point(versionTime = Timestamp.valueOf(timestampDate),
-                                                                            variantTime = Timestamp.from(Instant.now())))
+                                                                            variantTime = Timestamp.from(Instant.now()),
+                                                                            variantID = variantID))
             }
             if (request.contains("SET VERSION RANGE FROM")) {
                 val rangeStart = retrieveNameFromComplexCommand(request, "SET VERSION RANGE FROM", "TO")
                 val rangeEnd = retrieveName(request, "SET VERSION RANGE FROM $rangeStart TO")
-                val startDate = rangeStart + "T12:00:00"
-                val endDate = rangeEnd + "T12:00:00"
+                val startDate = "$rangeStart 12:00:00"
+                val endDate = "$rangeEnd 12:00:00"
                 selectedAssociation!!.cInterface?.addIntervalDelimiter(Region(leftBorderVersionTime = Timestamp.valueOf(startDate),
                     rightBorderVersionTime = Timestamp.valueOf(endDate)))
             }
             if (request.contains("SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")) {
                 val variantDate = retrieveName(request, "SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")
-                val timestampVariant = variantDate + "T12:00:00"
+                val timestampVariant = "$variantDate 12:00:00"
                 selectedAssociation!!.cInterface?.addPointDelimiter(Point(variantTime = Timestamp.valueOf(timestampVariant),
-                                                                            versionTime = Timestamp.from(Instant.now())))
+                                                                            versionTime = Timestamp.from(Instant.now()),
+                                                                                variantID = variantID))
             }
             if (request.contains("SET VERSION UP TO DATE")) {
                 val leftBorder = retrieveName(request, "SET VERSION UP TO DATE")
-                val leftBorderDate = leftBorder + "T12:00:00"
+                val leftBorderDate = "$leftBorder 12:00:00"
                 selectedAssociation!!.cInterface?.addOLeftOpenDelimiter(LeftOpen(borderVersionTime = Timestamp.valueOf(leftBorderDate)))
 
             }
             if (request.contains("SET VERSION STARTING FROM DATE")) {
                 val rightBorder = retrieveName(request, "SET VERSION STARTING FROM DATE")
-                val rightBorderDate = rightBorder + "T12:00:00"
+                val rightBorderDate = "$rightBorder 12:00:00"
                 selectedAssociation!!.cInterface?.addRightOpenDelimiter(RightOpen(borderVersionTime = Timestamp.valueOf(rightBorderDate)))
             }
             if (request.contains("ADD PARENT_RELATION")) {
@@ -342,7 +344,7 @@ class EvolutionService(
             }
             if (request.contains("ADD COMPOSITION")) {
                 val compositionName = retrieveNameFromComplexCommand(request, "ADD COMPOSITION", "TARGET")
-                val targetName = retrieveName(request, "ADD COMPOSITION")
+                val targetName = retrieveName(request, "ADD COMPOSITION $compositionName TARGET")
                 val compositionUri = "modicio:$compositionName"
                 val targetUri = "modicio:$targetName"
                 var foundTarget = false
@@ -400,13 +402,15 @@ class EvolutionService(
             if (request.contains("SET ATTRIBUTE VALUE")) {
                 val value = retrieveName(request, "SET ATTRIBUTE VALUE TO")
                 val attributeInstance = AttributeInstance(attributeUri = selectedAttribute!!.uri, anyValue = value)
-                lateinit var concretToDelete: Concretization
+                var concretToDelete: Concretization? = null
                 for (concretization in selectedNode!!.getConcretizations()) {
                     if (concretization.attributeInstance?.attributeUri.equals(selectedAttribute.uri)) {
                         concretToDelete = concretization
                     }
                 }
-                selectedNode.removeConcretization(concretToDelete)
+                if (concretToDelete != null) {
+                    selectedNode.removeConcretization(concretToDelete)
+                }
                 selectedNode.addConcretization(Concretization(attributeInstance = attributeInstance, node = selectedNode))
                 continue
             }
@@ -426,7 +430,7 @@ class EvolutionService(
 
     private fun retrieveNameFromComplexCommand(requestFull: String, requestCommand: String, secondPart: String): String {
         val nameStartIndex = requestCommand.length + 1
-        val nameEndIndex = requestFull.indexOf(secondPart) - 1
+        val nameEndIndex = requestFull.indexOf(secondPart) - 2
         return requestFull.slice(nameStartIndex..nameEndIndex)
     }
 
