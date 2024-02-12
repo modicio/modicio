@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional
 import modic.io.model.*
 import modic.io.repository.FragmentRepository
 import org.springframework.stereotype.Service
+import java.io.File
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
@@ -46,7 +47,9 @@ class EvolutionService(
         //3. do all the request compilation stuff
 
         //get the Evolution String ready for parsing
-        val requestList = evolutionRequest.replace("&", "").split(",", ignoreCase = true)
+        val requestList = evolutionRequest.replace("&", "")
+            .replace("\n", "")
+            .split(",", ignoreCase = true)
 
         val forwardEvolution: MutableList<String> = LinkedList()
         val backwardsEvolution: MutableList<String> = LinkedList()
@@ -420,6 +423,28 @@ class EvolutionService(
         //4. store the fragment with a new runningID and current runningTime
         fragment.globalID = UUID.randomUUID().toString()
         modelService.pushFullModel(fragment, variantID, fragment.variantName ?: "", true)
+    }
+
+    fun translateEvolutionRequest(initRequest: String): String {
+
+        // new file with evolution request is created
+        val newFileId = UUID.randomUUID().toString()
+        val newFileName = "$newFileId.featurelang"
+        File(newFileName).writeText(initRequest)
+
+        //evolution request is translated into a string command sequence
+        val process = Runtime.getRuntime().exec("java -jar src/main/resources/feature-lang/featurelang.jar $newFileName " +
+                "src/main/resources/feature-lang/out")
+        process.waitFor()
+        val output = process.inputStream.bufferedReader().lineSequence().joinToString("\n")
+        val outputRequest = output.slice(output.indexOf(">>>")+4..output.indexOf("<<<")-3)
+
+        //output request into the console for additional check
+        println(outputRequest)
+
+        //created file is cleaned up
+        File(newFileName).delete()
+        return outputRequest
     }
 
     private fun retrieveName(requestFull: String, requestCommand: String): String {

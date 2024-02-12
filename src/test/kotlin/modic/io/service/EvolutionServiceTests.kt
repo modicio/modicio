@@ -95,12 +95,12 @@ class EvolutionServiceTests {
     fun createAttributeWithTypeAndValue() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
         fragmentRepository.save(fragment)
-        val evolutionRequest = "OPEN CLASS Project/CLOSE CLASS Project," +
-        "ADD ATTRIBUTE Beta/DELETE ATTRIBUTE Beta," +
-        "OPEN ATTRIBUTE Beta," +
-        "SET TYPE number," +
-        "SET ATTRIBUTE VALUE TO 13," +
-        "CLOSE ATTRIBUTE Beta," +
+        val evolutionRequest = "OPEN CLASS Project/CLOSE CLASS Project,\n" +
+        "ADD ATTRIBUTE Beta/DELETE ATTRIBUTE Beta,\n" +
+        "OPEN ATTRIBUTE Beta,\n" +
+        "SET TYPE number,\n" +
+        "SET ATTRIBUTE VALUE TO 13,\n" +
+        "CLOSE ATTRIBUTE Beta,\n" +
         "CLOSE CLASS Project/OPEN CLASS Project,"
         evolutionService.evolveFragment(fragment.variantID, fragment.runningID, evolutionRequest)
         val result = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(fragment.variantName, 3)
@@ -232,6 +232,20 @@ class EvolutionServiceTests {
 
         Assertions.assertEquals(Timestamp.valueOf("2023-12-01 12:00:00"), rightOpen?.borderVersionTime)
         Assertions.assertEquals(Timestamp.valueOf("2023-10-01 12:00:00"), point?.variantTime)
+    }
+
+    @Test
+    fun processTest() {
+        val usersRequest = "Class Alpha must exist. " +
+                "Class Alpha must have an attribute Beta. " +
+                "It is a phrase."
+        val expectedResult = "CREATE CLASS Alpha/DELETE CLASS Alpha,\n&\nOPEN CLASS Alpha/CLOSE CLASS Alpha,\n" +
+                "ADD ATTRIBUTE Beta/DELETE ATTRIBUTE Beta,\n" +
+                "OPEN ATTRIBUTE Beta,\nSET TYPE phrase,\nCLOSE ATTRIBUTE Beta,\nCLOSE CLASS Alpha/OPEN CLASS Alpha,"
+
+        val result = evolutionService.translateEvolutionRequest(usersRequest)
+
+        Assertions.assertEquals(expectedResult, result)
     }
 
 }
