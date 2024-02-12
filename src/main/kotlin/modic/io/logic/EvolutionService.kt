@@ -136,6 +136,7 @@ class EvolutionService(
             if (request.contains("DELETE ATTRIBUTE")) {
                 val attributeName = retrieveName(request, "DELETE ATTRIBUTE")
                 var foundAttribute = false
+                var foundConcret = false
                 lateinit var attributeToDelete: Attribute
                 lateinit var concretToDelete: Concretization
                 for (attribute in selectedNode!!.getAttributes()) {
@@ -145,6 +146,7 @@ class EvolutionService(
                         for (concretization in selectedNode.getConcretizations()) {
                             if (concretization.attributeInstance?.attributeUri.equals(attribute.uri)) {
                                 concretToDelete = concretization
+                                foundConcret = true
                             }
                         }
                     }
@@ -152,7 +154,9 @@ class EvolutionService(
                 if (!foundAttribute) {
                     throw Exception("Attribute does not exist!")
                 } else {
-                    selectedNode.removeConcretization(concretToDelete)
+                    if (foundConcret) {
+                        selectedNode.removeConcretization(concretToDelete)
+                    }
                     selectedNode.removeAttribute(attributeToDelete)
                     selectedAttribute = null
                     continue
