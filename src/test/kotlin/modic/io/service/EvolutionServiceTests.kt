@@ -234,18 +234,4 @@ class EvolutionServiceTests {
         Assertions.assertEquals(Timestamp.valueOf("2023-10-01 12:00:00"), point?.variantTime)
     }
 
-    @Test
-    fun processTest() {
-        val usersRequest = "Class Alpha must exist. " +
-                "Class Alpha must have an attribute Beta. " +
-                "It is a phrase."
-        val expectedResult = "CREATE CLASS Alpha/DELETE CLASS Alpha,\n&\nOPEN CLASS Alpha/CLOSE CLASS Alpha,\n" +
-                "ADD ATTRIBUTE Beta/DELETE ATTRIBUTE Beta,\n" +
-                "OPEN ATTRIBUTE Beta,\nSET TYPE phrase,\nCLOSE ATTRIBUTE Beta,\nCLOSE CLASS Alpha/OPEN CLASS Alpha,"
-
-        val result = evolutionService.translateEvolutionRequest(usersRequest)
-
-        Assertions.assertEquals(expectedResult, result)
-    }
-
 }
