@@ -53,10 +53,10 @@ class UseCase6Helper {
                 )
             )
 
-            node2.getAssociationRelations().first().cInterface!!.addIntervalDelimiter(Region(leftBorderVersionTime = Timestamp.from(Instant.now()),
-                rightBorderVersionTime = Timestamp.from(Instant.now())))
+            node2.getAssociationRelations().first().cInterface!!.addIntervalDelimiter(Region(leftBorderVersionTime = Timestamp.valueOf("2022-10-01 12:00:00"),
+                rightBorderVersionTime = Timestamp.valueOf("2022-11-10 12:00:00")))
 
-            node2.getAssociationRelations().first().cInterface!!.addRightOpenDelimiter(RightOpen(borderVersionTime = Timestamp.from(Instant.now())))
+            node2.getAssociationRelations().first().cInterface!!.addRightOpenDelimiter(RightOpen(borderVersionTime = Timestamp.valueOf("2021-09-08 12:00:00")))
 
             model.addNode(node1)
             model.addNode(node2)

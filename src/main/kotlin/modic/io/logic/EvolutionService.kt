@@ -269,6 +269,25 @@ class EvolutionService(
                 selectedAssociation!!.cInterface?.addPointDelimiter(Point(versionTime = Timestamp.valueOf(timestampDate),
                                                                             variantTime = Timestamp.from(Instant.now()),
                                                                             variantID = variantID))
+                continue
+            }
+            if (request.contains("REMOVE COMPATIBLE WITH VERSION")) {
+                val versionDate = retrieveName(request, "REMOVE COMPATIBLE WITH VERSION")
+                val timestampDate = Timestamp.valueOf("$versionDate 12:00:00")
+                var foundPoint = false
+                lateinit var pointToDelete: Point
+                for (point in selectedAssociation!!.cInterface?.getPointDelimiters()!!) {
+                    if (point.versionTime.compareTo(timestampDate) == 0) {
+                        pointToDelete = point
+                        foundPoint = true
+                    }
+                }
+                if (foundPoint) {
+                    selectedAssociation.cInterface?.removePointDelimiter(pointToDelete)
+                    continue
+                } else {
+                    throw Exception("Point with version date $versionDate not found!")
+                }
             }
             if (request.contains("SET VERSION RANGE FROM")) {
                 val rangeStart = retrieveNameFromComplexCommand(request, "SET VERSION RANGE FROM", "TO")
@@ -277,6 +296,27 @@ class EvolutionService(
                 val endDate = "$rangeEnd 12:00:00"
                 selectedAssociation!!.cInterface?.addIntervalDelimiter(Region(leftBorderVersionTime = Timestamp.valueOf(startDate),
                     rightBorderVersionTime = Timestamp.valueOf(endDate)))
+                continue
+            }
+            if (request.contains("REMOVE VERSION RANGE FROM")) {
+                val rangeStart = retrieveNameFromComplexCommand(request, "REMOVE VERSION RANGE FROM", "TO")
+                val rangeEnd = retrieveName(request, "REMOVE VERSION RANGE FROM $rangeStart TO")
+                val startDate = Timestamp.valueOf("$rangeStart 12:00:00")
+                val endDate = Timestamp.valueOf("$rangeEnd 12:00:00")
+                var foundRegion = false
+                lateinit var regionToDelete: Region
+                for (region in selectedAssociation!!.cInterface?.getIntervalDelimiters()!!) {
+                    if ((region.leftBorderVersionTime.compareTo(startDate) == 0) && (region.rightBorderVersionTime.compareTo(endDate) == 0)) {
+                        regionToDelete = region
+                        foundRegion = true
+                    }
+                }
+                if (foundRegion) {
+                    selectedAssociation.cInterface?.removeIntervalDelimiter(regionToDelete)
+                    continue
+                } else {
+                    throw Exception("Region from $startDate to $endDate not found!")
+                }
             }
             if (request.contains("SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")) {
                 val variantDate = retrieveName(request, "SET COMPATIBLE WITH ALL VERSIONS OF VARIANT")
@@ -284,17 +324,74 @@ class EvolutionService(
                 selectedAssociation!!.cInterface?.addPointDelimiter(Point(variantTime = Timestamp.valueOf(timestampVariant),
                                                                             versionTime = Timestamp.from(Instant.now()),
                                                                                 variantID = variantID))
+                continue
+            }
+            if (request.contains("REMOVE COMPATIBLE WITH ALL VERSIONS OF VARIANT")) {
+                val variantDate = retrieveName(request, "REMOVE COMPATIBLE WITH ALL VERSIONS OF VARIANT")
+                val timestampVariant = Timestamp.valueOf("$variantDate 12:00:00")
+                var foundVariant = false
+                lateinit var variantToDelete: Point
+                for (point in selectedAssociation!!.cInterface?.getPointDelimiters()!!) {
+                    if (point.variantTime.compareTo(timestampVariant) == 0) {
+                        variantToDelete = point
+                        foundVariant = true
+                    }
+                }
+                if (foundVariant) {
+                    selectedAssociation.cInterface?.removePointDelimiter(variantToDelete)
+                    continue
+                } else {
+                    throw Exception("Point with variant date $variantDate not found!")
+                }
             }
             if (request.contains("SET VERSION UP TO DATE")) {
                 val leftBorder = retrieveName(request, "SET VERSION UP TO DATE")
                 val leftBorderDate = "$leftBorder 12:00:00"
                 selectedAssociation!!.cInterface?.addOLeftOpenDelimiter(LeftOpen(borderVersionTime = Timestamp.valueOf(leftBorderDate)))
+                continue
 
+            }
+            if (request.contains("REMOVE VERSION UP TO DATE")) {
+                val leftBorder = retrieveName(request, "REMOVE VERSION UP TO DATE")
+                val leftBorderDate = Timestamp.valueOf("$leftBorder 12:00:00")
+                var foundLeftOpen = false
+                lateinit var leftToDelete: LeftOpen
+                for (left in selectedAssociation!!.cInterface?.getLeftOpenDelimiters()!!) {
+                    if (left.borderVersionTime.compareTo(leftBorderDate) == 0) {
+                        leftToDelete = left
+                        foundLeftOpen = true
+                    }
+                }
+                if (foundLeftOpen) {
+                    selectedAssociation.cInterface?.removeLeftOpenDelimiter(leftToDelete)
+                    continue
+                } else {
+                    throw Exception("LeftOpen with date $leftBorder not found!")
+                }
             }
             if (request.contains("SET VERSION STARTING FROM DATE")) {
                 val rightBorder = retrieveName(request, "SET VERSION STARTING FROM DATE")
                 val rightBorderDate = "$rightBorder 12:00:00"
                 selectedAssociation!!.cInterface?.addRightOpenDelimiter(RightOpen(borderVersionTime = Timestamp.valueOf(rightBorderDate)))
+                continue
+            }
+            if (request.contains("REMOVE VERSION STARTING FROM DATE")) {
+                val rightBorder = retrieveName(request, "REMOVE VERSION STARTING FROM DATE")
+                val rightBorderDate = Timestamp.valueOf("$rightBorder 12:00:00")
+                var foundRightOpen = false
+                lateinit var rightToDelete: RightOpen
+                for (right in selectedAssociation!!.cInterface?.getRightOpenDelimiters()!!) {
+                    if (right.borderVersionTime.compareTo(rightBorderDate) == 0) {
+                        rightToDelete = right
+                        foundRightOpen = true
+                    }
+                }
+                if (foundRightOpen) {
+                    selectedAssociation.cInterface?.removeRightOpenDelimiter(rightToDelete)
+                    continue
+                } else {
+                    throw Exception("RightOpen with date $rightBorder not found!")
+                }
             }
             if (request.contains("ADD PARENT_RELATION")) {
                 val targetClass = retrieveName(request, "ADD PARENT_RELATION")

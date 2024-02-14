@@ -1,7 +1,6 @@
 package modic.io.useCaseHelpers
 
 import modic.io.model.*
-import modic.io.model.Annotation
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
@@ -62,9 +61,9 @@ class UseCase2Helper {
                 ))
 
             node1.getAssociationRelations().first().cInterface!!.addPointDelimiter(
-                Point(0, variantTime, variantId, Timestamp.from(Instant.now()))
+                Point(0, Timestamp.valueOf("2023-10-01 12:00:00"), variantId, Timestamp.from(Instant.now()))
             )
-            node1.getAssociationRelations().first().cInterface!!.addOLeftOpenDelimiter(LeftOpen(borderVersionTime = Timestamp.from(Instant.now())))
+            node1.getAssociationRelations().first().cInterface!!.addOLeftOpenDelimiter(LeftOpen(borderVersionTime = Timestamp.valueOf("2023-12-01 12:00:00")))
 
             model.addNode(node1)
             model.addNode(node2)
