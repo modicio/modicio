@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package modic.io
+package modic.io.repository
 
 import modic.io.model.*
 import modic.io.model.Annotation
@@ -36,8 +36,8 @@ class TestDataHelper {
 
             val trace = Trace(null, LinkedList<Delta>())
 
-            val d1 = Delta(null, "foo", "modicio:t1")
-            val d2 = Delta(null, "bar", "modicio:t2")
+            val d1 = Delta(null, "foo", "t1")
+            val d2 = Delta(null, "bar", "t2")
             trace.addDelta(d1)
             trace.addDelta(d2)
 
@@ -78,7 +78,7 @@ class TestDataHelper {
                     Interface(0)
             ))
             node2.getAssociationRelations().first().cInterface!!.addPointDelimiter(
-                Point(0, variantTime, variantId, Timestamp.from(Instant.now()))
+                Point(0, variantTime, variantId)
             )
 
             model.addNode(node1)

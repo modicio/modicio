@@ -92,9 +92,9 @@ class InstanceService(
 
     @Transactional
     fun getAllInstances(typeNamePattern: String, variantID: String?, versionID: String?, limit: Int): List<Fragment> {
-        val fragmentIDs: List<Long> = if (variantID != null && versionID != null){
-            instanceRepository.getInstancesByTypeNameSoftMatchAndVariantAndVersion(
-                typeNamePattern, variantID, versionID, limit)
+        val fragmentIDs: List<Long> =
+            if (variantID != null && versionID != null){
+            instanceRepository.getInstancesByTypeNameSoftMatchAndVariantAndVersion(typeNamePattern, variantID, versionID, limit)
         } else if(variantID != null){
             instanceRepository.getInstancesByTypeNameSoftMatchAndVariant(typeNamePattern, variantID, limit)
         } else {

@@ -19,6 +19,7 @@ package modic.io.controller
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
 import modic.io.model.Fragment
+import modic.io.repository.TestDataHelper
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 
@@ -58,7 +59,7 @@ class ModelController(
      */
     @GetMapping("model/reference", produces = [MediaType.APPLICATION_XML_VALUE])
     fun getReferenceModel(): Fragment? {
-        return modelService.getReferenceFragment()
+        return TestDataHelper.getSimpleFragmentOnlyModel()
     }
 
     /**

@@ -16,10 +16,21 @@
 package modic.io.model
 
 import jakarta.persistence.*
+import jakarta.xml.bind.JAXBContext
+import jakarta.xml.bind.Marshaller
 import jakarta.xml.bind.annotation.*
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+import modic.io.model.xml.XMLDateTimeAdaptor
+import org.springframework.core.io.ClassPathResource
+import java.io.StringReader
+import java.io.StringWriter
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
+import javax.xml.XMLConstants
+import javax.xml.transform.stream.StreamSource
+import javax.xml.validation.Schema
+import javax.xml.validation.SchemaFactory
 
 /**
  * The [Fragment] is the central class (aka root element) of the modicio metamodel.
@@ -107,7 +118,7 @@ class Fragment(
      * The runningTime represents the creation point / update of the running version as UTC timestamp.
      */
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "running_time")
     var runningTime: Timestamp = Timestamp.from(Instant.MIN),
 
@@ -209,7 +220,7 @@ class Fragment(
         }
 
     @field:Column
-    //@field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Instant::class)
+    @field:XmlJavaTypeAdapter(value = XMLDateTimeAdaptor::class, type = Timestamp::class)
     @field:XmlAttribute(name = "variant_time")
     var variantTime: Timestamp = variantTime
         set(value) {
@@ -233,18 +244,41 @@ class Fragment(
         instance?.autowire()
     }
 
-    //companion object {
-    //FIXME some validation experiments that do not work right now
-    /*
-    fun validateToXSD(fragment: Fragment): Unit{
-        val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-        val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
+    companion object {
 
-        val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
-        marshaller.schema = schema
-        marshaller.marshal(fragment, DefaultHandler())
+        //FIXME null-values Date-Time Objects dont work
+        fun marshallFragment(fragment: Fragment){
+            val marshaller: Marshaller = initMarshaller()
+            val xml = marshallXMLToString(marshaller, fragment)
+            val schema: Schema = loadSchema()
+            validateXMLAgainstSchema(xml, schema)
+            //TODO Do Something with that validated XML
+        }
+
+        private fun initMarshaller(): Marshaller {
+            val marshaller: Marshaller = JAXBContext.newInstance(Fragment::class.java).createMarshaller()
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true)
+            return marshaller
+        }
+
+        private fun loadSchema(): Schema {
+            val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+            val schema: Schema = schemaFactory.newSchema(ClassPathResource("modicio_lang.xsd").file)
+            return schema
+        }
+
+        private fun validateXMLAgainstSchema(xml: String, schema: Schema) {
+            val validator = schema.newValidator()
+            val streamSource = StreamSource(StringReader(xml))
+            validator.validate(streamSource)
+        }
+
+        private fun marshallXMLToString(marshaller: Marshaller, fragment: Fragment): String {
+            val xmlWriter = StringWriter()
+            marshaller.marshal(fragment, xmlWriter)
+            val xml = xmlWriter.toString()
+            return xml
+        }
     }
-    */
-    //}
 
 }

@@ -19,6 +19,7 @@ package modic.io.service
 import modic.io.TestDataHelper
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
+import modic.io.model.Fragment
 import modic.io.repository.FragmentRepository
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -43,7 +44,7 @@ class ModelServiceTests {
     @Test
     fun pushFullVariantNoMetadataTest() {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
-        modelService.pushFullModel(fragment, null, "Some Name", false)
+        modelService.pushFullModel(fragment, null, "Some Name", asVersion = false)
         val res = fragmentRepository.findFragmentByVariantID(fragment.variantID)
         Assertions.assertEquals(1, res.size)
         val resFragment = res.first()
@@ -54,13 +55,14 @@ class ModelServiceTests {
         Assertions.assertNotEquals("", resFragment.model?.getNodes()?.first()?.annotation?.variantID)
 
         Assertions.assertEquals(
-            resFragment.model?.getNodes()?.first()?.annotation?.variantID,
+            fragment.model?.getNodes()?.first()?.annotation?.variantID,
             resFragment.model?.getNodes()?.first()?.annotation?.variantID
         )
 
-        Assertions.assertEquals(
-            resFragment.model?.getNodes()?.first()?.annotation?.variantTime,
-            resFragment.model?.getNodes()?.first()?.annotation?.variantTime
+        Assertions.assertTrue(
+            fragment.model?.getNodes()?.first()?.annotation?.variantTime!!.time
+                    - resFragment.model?.getNodes()?.first()?.annotation?.variantTime!!.time
+                    < 10
         )
     }
 
@@ -134,8 +136,44 @@ class ModelServiceTests {
             Assertions.assertNotNull(e)
             Assertions.assertEquals("Predecessor variant not found", e.message)
         }
+    }
 
+    @Test
+    fun newVariantFromExistingTrunkAsVersionTest(){
+        val oldFragment = TestDataHelper.getSimpleFragmentOnlyModel()
+        fragmentRepository.save(oldFragment)
+        val newFragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
+        modelService.pushFullModel(newFragment, oldFragment.variantID,  "Some Name", true)
+
+        val fragment = testGeneralCaseForNewVariantFromTrunk(oldFragment)
+        Assertions.assertEquals(oldFragment.variantID, fragment.variantID)
+        //Difference to check whether Dates are close enough. Rounding happens when saving.
+        Assertions.assertTrue(oldFragment.variantTime.time - fragment.variantTime.time < 10)
+
+    }
+    @Test
+    fun newVariantFromExistingTrunkNotAsVersionTest(){
+        val oldFragment = TestDataHelper.getSimpleFragmentOnlyModel()
+        fragmentRepository.save(oldFragment)
+        val newFragment = TestDataHelper.getSimpleFragmentOnlyModel()
+
+        modelService.pushFullModel(newFragment, oldFragment.variantID,  "Some Name", false)
+
+        val fragment = testGeneralCaseForNewVariantFromTrunk(oldFragment)
+        Assertions.assertNotEquals(oldFragment.variantID, fragment.variantID)
+        Assertions.assertTrue(oldFragment.variantTime <= fragment.variantTime)
+    }
+
+    private fun testGeneralCaseForNewVariantFromTrunk(oldFragment: Fragment): Fragment{
+        val fragments = fragmentRepository.findAll()
+        Assertions.assertEquals(2, fragments.size)
+        val fragment = fragments.filter { f -> f.predecessorID != null }[0]
+        Assertions.assertEquals(oldFragment.globalID, fragment.predecessorID)
+        Assertions.assertTrue(oldFragment.runningTime.time - fragment.runningTime.time < 10)
+        Assertions.assertFalse(fragment.isReference)
+        Assertions.assertNotEquals(oldFragment.runningID, fragment.runningID)
+        return fragment
     }
 
 }
