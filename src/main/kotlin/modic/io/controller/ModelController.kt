@@ -16,16 +16,26 @@
 
 package modic.io.controller
 
+import modic.io.logic.EvolutionService
 import modic.io.logic.MetadataService
 import modic.io.logic.ModelService
+import modic.io.messages.EvolutionDto
 import modic.io.model.Fragment
+import modic.io.model.Model
+import modic.io.model.Node
+import modic.io.repository.FragmentRepository
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
+import java.sql.Timestamp
+import java.time.Instant
+import java.util.*
 
 @RestController
 class ModelController(
     val modelService: ModelService,
-    val metadataService: MetadataService) {
+    val metadataService: MetadataService,
+    val evolutionService: EvolutionService,
+    val fragmentRepository: FragmentRepository) {
 
     /**
      * Create a new variant. If an existing variant is specified, the new variant will be initialized with a copy of the model.
@@ -98,5 +108,20 @@ class ModelController(
         return "OK"
     }
 
+    @PostMapping("model/evolve", produces=[MediaType.APPLICATION_XML_VALUE])
+    fun evolveFragment(
+        @RequestBody evolutionDto: EvolutionDto,
+        @RequestParam(required = false, name = "backward") backward: Boolean = false,
+        @RequestParam(required = true, name = "variantName") variantName: String
+    ): String {
+
+        val evolutionRequest = evolutionService.translateEvolutionRequest(evolutionDto.request)
+
+        val retrievedFragments = fragmentRepository.findMostRecentFragmentsByVariantNameLazy(variantName, limit = 3)
+        val resultFragment = retrievedFragments.first()
+        evolutionService.evolveFragment(resultFragment.variantID, resultFragment.runningID, evolutionRequest, backward)
+
+        return evolutionRequest
+    }
 
 }
