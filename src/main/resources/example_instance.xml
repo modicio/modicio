@@ -32,6 +32,19 @@
                 </any_value>
             </Script>
         </Node>
+        <Node name="Todos" uri="modicio:demo.todo" is_abstract="false">
+            <Annotation version_time="2023-08-10T09:30:00" version_id="2" variant_time="2023-08-10T09:30:00" variant_id="2"/>
+            <Attribute uri="modicio:demo.todo.title" name="Title" dType="string"/>
+        </Node>
+        <Node name="Epic" uri="modicio:demo.epic" is_abstract="false">
+            <Annotation version_time="2023-08-10T09:30:00" version_id="2" variant_time="2023-08-10T09:30:00" variant_id="2"/>
+            <Attribute uri="modicio:demo.epic.title" name="Title" dType="string"/>
+            <ParentRelation uri="modicio:demo.todo"/>
+        </Node>
+        <Node name="Issues" uri="modicio:demo.issues" is_abstract="false">
+            <Annotation version_time="2023-08-10T09:30:00" version_id="2" variant_time="2023-08-10T09:30:00" variant_id="2"/>
+            <Composition uri="modicio:demo..issues.todo" role="role" target="modicio:demo.todo" public="true"/>
+        </Node>
     </Model>
 
     <Instance name="myProject" modelRoot="modicio:demo.project" uri="modicio:instance.myProject">

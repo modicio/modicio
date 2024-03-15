@@ -100,7 +100,7 @@
         </xs:unique>
 
         <xs:unique name="UniqueURI">
-            <xs:selector xpath=".//*" />
+            <xs:selector xpath=".//Node|.//Instance|.//Attribute"/>
             <xs:field xpath="@uri" />
         </xs:unique>
 
