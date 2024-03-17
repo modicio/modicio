@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fragment is_open="false" variant_name="main" running_time="2024-03-17T15:20:31.6664766" running_id="92c87fd3-f127-4892-9779-1e7e395f3460" is_reference="false" global_id="ee15a8cb-3011-4831-8e3f-0dcfbeb4b651"    variant_id="144f02f6-12df-4e04-b993-4c17b83d08e5" variant_time="2024-03-17T15:20:31.6664766">
+    <Model>
+        <Node name="Todo" uri="modicio:demo.todo" is_abstract="false">
+            <Annotation version_time="2024-03-17T15:20:31.6664766" version_id="f286f8a4-54e2-4a44-b0c2-59d4fa918757" variant_time="2024-03-17T15:20:31.6664766" variant_id="144f02f6-12df-4e04-b993-4c17b83d08e5"/>
+            <Attribute uri="modicio:demo.todo.Title" name="Title" dType="string"/>
+            <Attribute uri="modicio:demo.todo.Due" name="Due" dType="datetime"/>
+        </Node>
+        <Node name="Project" uri="modicio:demo.project" is_abstract="false">
+            <Annotation version_time="2024-03-17T15:20:31.6664766" version_id="3546490c-a432-4829-8413-6f5c7982a1f3" variant_time="2024-03-17T15:20:31.6664766" variant_id="144f02f6-12df-4e04-b993-4c17b83d08e5"/>
+            <Attribute uri="modicio:demo.project.Description" name="Description" dType="string"/>
+            <AssociationRelation uri="modicio:demo.project.related" name="Related Todos" target="modicio:demo.todo">
+                <Interface>
+                    <Point variant_time="2024-03-17T15:20:31.6664766" variant_id="144f02f6-12df-4e04-b993-4c17b83d08e5" version_time="2024-03-17T15:20:31.6664766"/>
+                </Interface>
+            </AssociationRelation>
+        </Node>
+    </Model>
+    <Trace>
+        <Delta content="foo" target="modicio:t1"/>
+        <Delta content="bar" target="modicio:t2"/>
+    </Trace>
+</Fragment>

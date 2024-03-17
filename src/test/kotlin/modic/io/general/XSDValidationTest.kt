@@ -13,7 +13,8 @@ class XSDValidationTest {
 
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
-        Fragment.marshallFragment(fragment)
+        val xml = Fragment.marshallFragment(fragment)
 
+        println(Fragment.transformXMLtoPlantUML(xml))
     }
 }

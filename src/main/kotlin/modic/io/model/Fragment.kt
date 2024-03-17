@@ -21,7 +21,11 @@ import jakarta.xml.bind.Marshaller
 import jakarta.xml.bind.annotation.*
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import modic.io.model.xml.XMLDateTimeAdaptor
+import net.sf.saxon.s9api.Processor
+import net.sf.saxon.s9api.XsltTransformer
 import org.springframework.core.io.ClassPathResource
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.StringReader
 import java.io.StringWriter
 import java.sql.Timestamp
@@ -246,13 +250,52 @@ class Fragment(
 
     companion object {
 
+        fun transformXMLtoPlantUML(xml: String): File {
+            var input = prepareInput(xml)
+            val stylesheet = File("./src/main/resources/plantuml.xsl")
+            val outputStream = ByteArrayOutputStream()
+
+            val transformer = prepareTransformer(stylesheet, input, outputStream)
+            transformer?.transform()
+
+            val output = File("./src/main/resources/diagram.puml")
+            output.writeText(outputStream.toString())
+            return output
+        }
+
+        private fun prepareInput(xml: String): File {
+            val input = prepareXMLForPlantUML(xml)
+            var inputFile = File("./src/main/resources/plantuml.xml")
+            inputFile.writeText(input)
+            return inputFile
+        }
+
+        private fun prepareTransformer( stylesheet: File, input: File, outputStream: ByteArrayOutputStream): XsltTransformer? {
+            val processor = Processor(false)
+            val compiler = processor.newXsltCompiler()
+            val executable = compiler.compile(StreamSource(stylesheet))
+            val transformer = executable.load()
+            val source = processor.newDocumentBuilder().build(StreamSource(input))
+            val output = processor.newSerializer(outputStream)
+            transformer.destination = output
+            transformer.initialContextNode = source
+            return transformer
+        }
+
+        private fun prepareXMLForPlantUML(xml: String): String {
+            val s = xml.replace(Regex("xmlns:xsi=\".*?\""), "")
+            val s1 = s.replace(Regex("xmlns=\".*?\""), "")
+            val s2 = s1.replace(Regex("xsi:schemaLocation=\".*?\""), "")
+            return s2
+        }
+
         //FIXME null-values Date-Time Objects dont work
-        fun marshallFragment(fragment: Fragment){
+        fun marshallFragment(fragment: Fragment): String {
             val marshaller: Marshaller = initMarshaller()
             val xml = marshallXMLToString(marshaller, fragment)
             val schema: Schema = loadSchema()
             validateXMLAgainstSchema(xml, schema)
-            //TODO Do Something with that validated XML
+            return xml
         }
 
         private fun initMarshaller(): Marshaller {
