@@ -14,7 +14,9 @@ class XSDValidationTest {
         val fragment = TestDataHelper.getSimpleFragmentOnlyModel()
 
         val xml = Fragment.marshallFragment(fragment)
+        val plantUML = Fragment.transformXMLtoPlantUML(xml)
+        val image = Fragment.renderPlantUML(plantUML)
 
-        println(Fragment.transformXMLtoPlantUML(xml))
+        println(image)
     }
 }

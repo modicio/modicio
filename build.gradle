@@ -50,6 +50,7 @@ dependencies {
     implementation 'org.springframework.session:spring-session-core'
     implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.3'
     implementation("net.sf.saxon:Saxon-HE:9.9.1-4")
+    implementation("net.sourceforge.plantuml:plantuml-mit:1.2024.3")
     //implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'

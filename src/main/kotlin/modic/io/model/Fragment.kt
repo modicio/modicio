@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import modic.io.model.xml.XMLDateTimeAdaptor
 import net.sf.saxon.s9api.Processor
 import net.sf.saxon.s9api.XsltTransformer
+import net.sourceforge.plantuml.SourceFileReader
 import org.springframework.core.io.ClassPathResource
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -249,6 +250,12 @@ class Fragment(
     }
 
     companion object {
+
+        fun renderPlantUML(file: File): File? {
+            val reader = SourceFileReader(file)
+            val images = reader.generatedImages
+            return images[0].pngFile
+        }
 
         fun transformXMLtoPlantUML(xml: String): File {
             var input = prepareInput(xml)
