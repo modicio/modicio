@@ -251,10 +251,22 @@ class Fragment(
 
     companion object {
 
-        fun renderPlantUML(file: File): File? {
+        fun renderFragmentToPlantUML(fragment: Fragment?) : File? {
+            if (fragment == null) return null
+
+            val xml = marshallFragment(fragment)
+            val plantUML = transformXMLtoPlantUML(xml)
+            return Fragment.renderPlantUML(plantUML)
+        }
+
+        fun renderPlantUML(file: File): File {
             val reader = SourceFileReader(file)
             val images = reader.generatedImages
-            return images[0].pngFile
+            val diagram = File("src/main/resources/static/diagram.jpeg")
+            val sourceFile = images[0].pngFile
+            sourceFile.copyTo(diagram, overwrite = true)
+            sourceFile.delete()
+            return diagram
         }
 
         fun transformXMLtoPlantUML(xml: String): File {
