@@ -51,11 +51,17 @@ dependencies {
     implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.3'
     implementation("net.sf.saxon:Saxon-HE:9.9.1-4")
     implementation("net.sourceforge.plantuml:plantuml-mit:1.2024.3")
-    //implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
+    implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+    implementation('nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect')
+    implementation('org.webjars:bootstrap:5.3.3')
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'com.h2database:h2:2.2.222'
+
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "io.mockk:mockk:1.13.8"
     testImplementation("com.ninja-squad:springmockk:4.0.2")

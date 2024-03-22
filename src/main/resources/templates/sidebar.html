@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>Sidebars · Bootstrap v5.0</title>
+
+    <!-- Bootstrap core CSS -->
+    <meta name="theme-color" content="#7952b3">
+
+</head>
+<body>
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px" th:fragment="sidebar">
+        <h1 class="h4">Modicio Admin Panel</h1>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a class="nav-link active" href="/admin">Reference Model</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/admin/variants">Versions and Variants</a>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
