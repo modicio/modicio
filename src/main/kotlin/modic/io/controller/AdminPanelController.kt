@@ -22,11 +22,7 @@ class AdminPanelController {
     fun getLandingPage(model : Model): String {
         val referenceFragment = modelService.getReferenceFragment()
         Fragment.renderFragmentToPlantUML(referenceFragment)
-        model.addAttribute("diagram", "diagram.jpeg")
-        model.addAttribute("variantName", referenceFragment?.variantName)
-        model.addAttribute("variantID", referenceFragment?.variantID)
-        model.addAttribute("runningTime", referenceFragment?.runningTime)
-        model.addAttribute("runningID", referenceFragment?.runningID)
+        addFragmentMetadataToModel(model, referenceFragment)
         return "referenceFragment"
     }
 
@@ -38,8 +34,19 @@ class AdminPanelController {
     @GetMapping("/admin/fragmentDetails")
     fun displayFragmentDetails(model: Model, @RequestParam fragmentID : String): String{
         val fragment = fragmentRepository.getFragmentByDataID(fragmentID.toLong())
+        model.addAttribute("header", fragment?.instance?.header?.getElements())
+        model.addAttribute("deltas", fragment?.trace?.getDeltas())
+        //Nodes --> Interfaces
+        model.addAttribute("interfaces", fragment?.model?.getNodes())
+        addFragmentMetadataToModel(model, fragment)
         return "fragmentDetails"
     }
 
-
+    private fun addFragmentMetadataToModel(model: Model, referenceFragment: Fragment?) {
+        model.addAttribute("diagram", "diagram.jpeg")
+        model.addAttribute("variantName", referenceFragment?.variantName)
+        model.addAttribute("variantID", referenceFragment?.variantID)
+        model.addAttribute("runningTime", referenceFragment?.runningTime)
+        model.addAttribute("runningID", referenceFragment?.runningID)
+    }
 }
