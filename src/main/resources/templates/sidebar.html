@@ -11,15 +11,15 @@
 
 </head>
 <body>
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px" th:fragment="sidebar">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px" th:fragment="sidebar(currentPage)">
         <h1 class="h4">Modicio Admin Panel</h1>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item">
-                <a class="nav-link active" href="/admin">Reference Model</a>
+                <a class="nav-link" th:classappend="${currentPage} == 'referenceFragment'? 'active' : 'text-white'" href="/admin">Reference Model</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="/admin/variants">Versions and Variants</a>
+                <a class="nav-link" th:classappend="${currentPage} == 'variants'? 'active' : 'text-white'" href="/admin/variants">Versions and Variants</a>
             </li>
         </ul>
     </div>
