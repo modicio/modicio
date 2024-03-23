@@ -16,13 +16,32 @@
 
 package modic.io.repository
 
+import modic.io.logic.MetadataService
 import modic.io.model.*
 import modic.io.model.Annotation
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.ApplicationArguments
+import org.springframework.boot.ApplicationRunner
+import org.springframework.stereotype.Component
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.*
+@Component
+class TestDataHelper : ApplicationRunner {
 
-class TestDataHelper {
+    @Autowired
+    lateinit var fragmentRepository: FragmentRepository
+
+    @Autowired
+    lateinit var metadataService: MetadataService
+
+    override fun run(args: ApplicationArguments?) {
+        val save = fragmentRepository.save(getSimpleFragmentOnlyModel())
+        val referenceFragment = fragmentRepository.save(getSimpleFragmentOnlyModel())
+        metadataService.setReferenceFragment(referenceFragment.variantID, referenceFragment.runningID)
+        println("normal Fragment Data ID: " + save.dataID)
+        println("reference Fragment Data ID: " + referenceFragment.dataID)
+    }
 
     companion object {
 
