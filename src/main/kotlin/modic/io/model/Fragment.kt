@@ -256,7 +256,7 @@ class Fragment(
 
             val xml = marshallFragment(fragment)
             val plantUML = transformXMLtoPlantUML(xml)
-            return Fragment.renderPlantUML(plantUML)
+            return renderPlantUML(plantUML)
         }
 
         fun renderPlantUML(file: File): File {

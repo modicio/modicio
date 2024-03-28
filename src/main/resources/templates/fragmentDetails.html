@@ -26,23 +26,23 @@
         </div>
         <div class="d-flex flex-row justify-content-between">
           <!-- Buttons -->
-          <button type="button" class="btn btn-primary" style="width: 45%;">Show Model</button>
-          <button type="button" class="btn btn-primary" style="width: 45%;">Edit Fragment</button>
+          <button type="button" class="btn btn-primary" style="width: 45%;" data-bs-target="#diagram" data-bs-toggle="modal">Show Model</button>
+          <button type="button" class="btn btn-primary" style="width: 45%;" data-bs-target="#editFragment" data-bs-toggle="modal">Edit Fragment</button>
         </div>
       </div>
       <!-- right Column -->
       <div class="d-flex flex-column" style="width: 45%;">
         <!-- Trace -->
-        <div class="d-flex flex-column align-items-center">
+        <div class="d-flex flex-column align-items-center flex-grow-1 overflow-auto" style="flex-shrink: 0.8">
           <h3>Trace</h3>
           <ul class="list-group" style="width: 95%; padding: 1em 0" >
             <li class="list-group-item bg-light" th:each="delta: ${deltas}" th:text="${delta.getTarget()} + ' -> ' + ${delta.getContent()}"></li>
           </ul>
         </div>
         <!-- Interfaces -->
-        <div class="d-flex flex-column align-items-center">
+        <div class="d-flex flex-column align-items-center flex-grow-1 overflow-auto" style="flex-shrink: 1">
           <h3>Interfaces</h3>
-          <ul class="list-group" style="width: 95%; padding: 1em 0">
+          <ul class="list-group" style="width: 95%; padding: 1em 0;">
             <li class="list-group-item bg-light">NodeURI</li>
             <li class="list-group-item bg-light">NodeURI</li>
             <li class="list-group-item bg-light">NodeURI</li>
@@ -52,6 +52,43 @@
     </div>
   </div>
 </main>
+
+<div class="modal" tabindex="-1" id="diagram">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body d-flex align-items-center justify-content-around">
+        <img th:src="@{/diagram.jpeg}" class="img-fluid" alt="Responsive image">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" id="editFragment">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Fragment</h3>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label class="form-label" for="prompt">Enter prompt below</label>
+            <textarea class="form-control" id="prompt" rows="15" cols="100"></textarea>
+          </div>
+          <div class="d-flex">
+            <button type="submit" class="btn btn-secondary me-2">Set as Reference</button>
+            <button type="submit" class="btn btn-secondary me-auto">Clone Variant</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>

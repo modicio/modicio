@@ -34,6 +34,7 @@ class AdminPanelController {
     @GetMapping("/admin/fragmentDetails")
     fun displayFragmentDetails(model: Model, @RequestParam fragmentID : String): String{
         val fragment = fragmentRepository.getFragmentByDataID(fragmentID.toLong())
+        Fragment.renderFragmentToPlantUML(fragment)
         model.addAttribute("header", fragment?.instance?.header?.getElements())
         model.addAttribute("deltas", fragment?.trace?.getDeltas())
         //Nodes --> Interfaces
